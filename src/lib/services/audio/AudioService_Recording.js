@@ -262,6 +262,13 @@ export async function stopRecording(context) {
           streamRef.current = null;
         }
         
+        // Log the blob before returning it to ensure it's properly formed
+        logger.info('Returning audio blob to caller', {
+          size: audioBlob.size,
+          type: audioBlob.type,
+          valid: audioBlob instanceof Blob
+        });
+        
         audioChunksRef.current = [];
         mediaRecorderRef.current = null;
         

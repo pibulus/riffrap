@@ -82,33 +82,20 @@ export function handleTextSelection(event) {
         }
         
         // CRITICAL: Find and click the "Grab Lyrics" button in the PurpleStyleCollectionBox
-        setTimeout(() => {
-          // Look for a button with specific class
-          let grabLyricsButton = document.querySelector('.collect-button');
-                
-          if (grabLyricsButton) {
-            console.log('Found Grab Lyrics button, triggering click!');
-            grabLyricsButton.click();
-            
-            // Show success notification - use dispatch from store
-            const dispatch = get(dispatchStore);
-            if (dispatch) {
-              dispatch('notification', {
-                message: 'Line collected!',
-                type: 'success'
-              });
-            }
-            
-            return; // Exit if we successfully found and clicked the button
-          }
+        // Use a flag to prevent duplicate collection
+        if (typeof window !== 'undefined' && !window.collectionInProgress) {
+          window.collectionInProgress = true;
+          console.log('Setting collection in progress flag to prevent duplicates');
           
-          // Fallback to direct method if button wasn't found
-          if (typeof window !== 'undefined' && 
-              typeof window.addToMainCollectionBox === 'function') {
-            console.log('Using direct window.addToMainCollectionBox method');
-            const result = window.addToMainCollectionBox(selectionText);
-            
-            if (result) {
+          setTimeout(() => {
+            // Look for a button with specific class
+            let grabLyricsButton = document.querySelector('.collect-button');
+                  
+            if (grabLyricsButton) {
+              console.log('Found Grab Lyrics button, triggering click!');
+              grabLyricsButton.click();
+              
+              // Show success notification - use dispatch from store
               const dispatch = get(dispatchStore);
               if (dispatch) {
                 dispatch('notification', {
@@ -116,20 +103,76 @@ export function handleTextSelection(event) {
                   type: 'success'
                 });
               }
-              return; // Exit if direct method worked
+              
+              // Reset collection flag after a delay
+              setTimeout(() => {
+                window.collectionInProgress = false;
+                console.log('Resetting collection in progress flag');
+              }, 500);
+              
+              return; // Exit if we successfully found and clicked the button
             }
-          }
-        }, 50);
+            
+            // Fallback to direct method if button wasn't found
+            if (typeof window !== 'undefined' && 
+                typeof window.addToMainCollectionBox === 'function') {
+              console.log('Using direct window.addToMainCollectionBox method');
+              const result = window.addToMainCollectionBox(selectionText);
+              
+              if (result) {
+                const dispatch = get(dispatchStore);
+                if (dispatch) {
+                  dispatch('notification', {
+                    message: 'Line collected!',
+                    type: 'success'
+                  });
+                }
+                
+                // Reset collection flag after a delay
+                setTimeout(() => {
+                  window.collectionInProgress = false;
+                  console.log('Resetting collection in progress flag');
+                }, 500);
+                
+                return; // Exit if direct method worked
+              }
+            }
+            
+            // Reset collection flag if we didn't succeed with the first two methods
+            window.collectionInProgress = false;
+          }, 50);
+        } else {
+          console.log('Collection already in progress, skipping duplicate collection');
+        }
         
-        // Fallback: Try using parent container method
+        // Fallback: Try using parent container method only if collection not in progress
         // Short delay to allow visual selection first
         setTimeout(() => {
+          // Skip fallback if collection is already in progress
+          if (typeof window !== 'undefined' && window.collectionInProgress) {
+            console.log('Collection in progress, skipping fallback methods');
+            return;
+          }
+          
+          // Flag to prevent duplicate collection
+          if (typeof window !== 'undefined') {
+            window.collectionInProgress = true;
+          }
+          
           // Check if parent container is available before trying to use it
           const parentContainer = get(parentContainerStore);
           if (parentContainer && typeof parentContainer.addLyricsSnippet === 'function') {
             const dispatch = get(dispatchStore);
             if (dispatch) {
               dispatch('collect', { text: selectionText });
+            }
+            
+            // Reset collection flag after a delay
+            if (typeof window !== 'undefined') {
+              setTimeout(() => {
+                window.collectionInProgress = false;
+                console.log('Resetting collection in progress flag (fallback method)');
+              }, 500);
             }
           } else {
             // No valid collection method found - try setting global trigger
@@ -155,6 +198,9 @@ export function handleTextSelection(event) {
                     });
                   }
                 }
+                
+                // Reset collection flag
+                window.collectionInProgress = false;
               }, 300);
             } else {
               const dispatch = get(dispatchStore);
@@ -163,6 +209,11 @@ export function handleTextSelection(event) {
                   message: 'Collection not available. Try using the Grab Lyrics button.',
                   type: 'info'
                 });
+              }
+              
+              // Reset collection flag
+              if (typeof window !== 'undefined') {
+                window.collectionInProgress = false;
               }
             }
           }

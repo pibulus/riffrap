@@ -115,11 +115,24 @@ import { quintOut } from 'svelte/easing';
 			uiActions.clearErrorMessage();
 			
 			// Set initial transcription text to indicate re-rolling
-			// We need to update the parent transcriptionState store since transcriptionText is a derived read-only store
+			// Don't set to null as it causes the component to unmount
+			// Instead, directly update with a visually appealing re-rolling message
+			console.log('[DEBUG] Setting transcript to re-rolling message');
 			transcriptionState.update(current => ({
 				...current,
-				text: "Re-rolling lyrics..."
+				text: "✨ Re-rolling lyrics... ⏳",
+				rerolling: true // Flag to trigger animations
 			}));
+			
+			// Trigger the height animation by forcing a layout reflow
+			// This will make the bloopy animation look nicer
+			setTimeout(() => {
+				const el = document.querySelector('.transcript-container');
+				if (el) {
+					void el.offsetHeight; // Force reflow
+					console.log('[DEBUG] Forcing reflow for animation');
+				}
+			}, 10);
 			
 			// Subtle pulse ghost icon when re-rolling
 			if (ghostComponent && typeof ghostComponent.pulse === 'function') {
@@ -137,6 +150,19 @@ import { quintOut } from 'svelte/easing';
 			// Log the result to ensure we're getting a response
 			console.log('[DEBUG] Re-rolled transcript received:', newTranscript);
 			
+			// Reset the rerolling state for animations
+			transcriptionState.update(current => ({
+				...current,
+				rerolling: false
+			}));
+			
+			// Ensure the transcriptionCompletedEvent fires for re-rolls
+			const { transcriptionCompletedEvent } = await import('$lib/services/infrastructure/stores.js');
+			if (transcriptionCompletedEvent.forceEmit && newTranscript) {
+				console.log('[DEBUG] Force emitting transcriptionCompletedEvent after re-roll');
+				transcriptionCompletedEvent.forceEmit(newTranscript);
+			}
+			
 			// Auto-scroll disabled to keep existing content in view
 			
 			// Stop thinking animation
@@ -147,9 +173,13 @@ import { quintOut } from 'svelte/easing';
 			console.error('❌ Error re-rolling transcript:', err);
 			uiActions.setErrorMessage(`Re-roll error: ${err.message || 'Unknown error'}`);
 			
-			// Reset transcription state
+			// Reset transcription state and animation flags
 			transcriptionActions.updateProgress(0);
 			transcriptionActions.completeTranscription($transcriptionText);
+			transcriptionState.update(current => ({
+				...current,
+				rerolling: false
+			}));
 			
 			// Stop thinking animation if it's still running
 			if (ghostComponent && typeof ghostComponent.stopThinking === 'function') {
@@ -255,7 +285,51 @@ import { quintOut } from 'svelte/easing';
 
 			// Start transcription process if we have audio data
 			if (audioBlob && audioBlob.size > 0) {
-				await transcriptionService.transcribeAudio(audioBlob);
+				try {
+					// Log the audio blob before sending for transcription
+					console.log('[DEBUG] Sending audio blob for transcription:', {
+						size: audioBlob.size,
+						type: audioBlob.type,
+						valid: audioBlob instanceof Blob
+					});
+					
+					// Get the actual transcription text from the service
+					const transcriptText = await transcriptionService.transcribeAudio(audioBlob);
+					
+					console.log('[DEBUG] Got transcript text after recording:', transcriptText);
+					
+					// Double check the text is in the store - force an update if needed
+					const currentStoreText = get(transcriptionText);
+					if (!currentStoreText && transcriptText) {
+						console.log('[DEBUG] Forcing transcript update with direct text');
+						// Force direct update to ensure text is displayed
+						transcriptionState.update(current => ({
+							...current,
+							inProgress: false,
+							progress: 100,
+							text: transcriptText
+						}));
+						
+						// Force event emission as a safety measure - use await import to ensure module is loaded
+						const { transcriptionCompletedEvent } = await import('$lib/services/infrastructure/stores.js');
+						if (transcriptionCompletedEvent && transcriptionCompletedEvent.forceEmit) {
+							console.log('[DEBUG] Force emitting transcriptionCompletedEvent after first recording');
+							transcriptionCompletedEvent.forceEmit(transcriptText);
+						}
+					}
+					
+					// Update the UI state to show the new transcript
+					// This update is needed to trigger the display of the transcript
+					if (transcriptText) {
+						// Stop the ghost thinking animation if it's still running
+						if (ghostComponent && typeof ghostComponent.stopThinking === 'function') {
+							ghostComponent.stopThinking();
+						}
+					}
+				} catch (transcribeError) {
+					console.error('[DEBUG] Error during transcription:', transcribeError);
+					uiActions.setErrorMessage(`Transcription error: ${transcribeError.message}`);
+				}
 
 				// Auto-scroll disabled to keep visualizer and controls in view
 
@@ -490,6 +564,17 @@ import { quintOut } from 'svelte/easing';
 				// $isTranscribing should be false by now.
 				console.log('[DEBUG] transcriptionCompletedEvent fired in component with text:', completedText);
 				handleTranscriptCompletion(completedText); // <-- Pass completedText to the handler
+				
+				// Force the UI to update if needed by ensuring the transcription text is updated in the store
+				// This ensures the TranscriptDisplay component will be rendered
+				const currentStoreText = get(transcriptionText);
+				if (currentStoreText !== completedText) {
+					console.log('[DEBUG] Forcing transcription text store update from completedEvent handler');
+					transcriptionState.update(current => ({
+						...current,
+						text: completedText
+					}));
+				}
 			}
 		});
 
@@ -600,16 +685,20 @@ import { quintOut } from 'svelte/easing';
 				</div>
 
 				<!-- Transcript output - only visible when not recording and has transcript -->
-				{#if $transcriptionText && !$isRecording}
-					<TranscriptDisplay
-						transcript={$transcriptionText}
-						{showCopyTooltip}
-						{responsiveFontSize}
-						{parentContainer}
-						on:copy={handleTranscriptEvent}
-						on:reroll={handleReroll}
-						on:focus={handleTranscriptEvent}
-					/>
+				{#if ($transcriptionText || $transcriptionText === '') && !$isRecording}
+					<div class="transcript-container transition-all duration-500 ease-in-out" 
+					     style="transform-origin: top center;" 
+					     class:animate-height-bloopy={$transcriptionState.rerolling}>
+						<TranscriptDisplay
+							transcript={$transcriptionText || ''}
+							{showCopyTooltip}
+							{responsiveFontSize}
+							{parentContainer}
+							on:copy={handleTranscriptEvent}
+							on:reroll={handleReroll}
+							on:focus={handleTranscriptEvent}
+						/>
+					</div>
 				{/if}
 			</div>
 
@@ -767,6 +856,18 @@ import { quintOut } from 'svelte/easing';
 	clip: rect(0, 0, 0, 0);
 	white-space: nowrap;
 	border-width: 0;
+}
+
+/* Bloopy height animation for the transcript container */
+.animate-height-bloopy {
+	animation: heightBloopy 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes heightBloopy {
+	0% { transform: scaleY(0.98); }
+	50% { transform: scaleY(1.02); }
+	70% { transform: scaleY(0.99); }
+	100% { transform: scaleY(1); }
 }
 
 /* Improved focus styles for keyboard navigation */

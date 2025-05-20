@@ -26,7 +26,8 @@ export const transcriptionState = writable({
   progress: 0,
   text: '',
   error: null,
-  timestamp: null
+  timestamp: null,
+  rerolling: false // Flag to indicate re-rolling state for UI animations
 });
 
 // UI state
@@ -202,13 +203,24 @@ export const transcriptionActions = {
   },
   
   completeTranscription(text) {
-    transcriptionState.update(current => ({
-      ...current,
-      inProgress: false,
-      progress: 100,
-      text,
-      timestamp: Date.now()
-    }));
+    const currentTime = Date.now();
+    
+    // Add a small delay to ensure UI updates properly
+    setTimeout(() => {
+      transcriptionState.update(current => ({
+        ...current,
+        inProgress: false,
+        progress: 100,
+        text,
+        timestamp: currentTime
+      }));
+      
+      // Log to help with debugging
+      import('./loggerService').then(({ createLogger }) => {
+        const storeLogger = createLogger('Stores');
+        storeLogger.info('completeTranscription called with text length:', text?.length || 0);
+      });
+    }, 50);
   },
   
   setTranscriptionError(error) {
@@ -326,28 +338,62 @@ export function resetStores() {
 export const transcriptionCompletedEvent = (() => {
   const { subscribe, set } = writable(null); // Event store, emits text on completion then null
   let _previousInProgress = get(transcriptionState).inProgress; // Initialize with current state
-
+  
+  // Maintain a flag to track if an event is pending to be fired
+  let _pendingEvent = false;
+  
   transcriptionState.subscribe(currentState => {
-    if (
-      _previousInProgress === true &&
-      currentState.inProgress === false &&
-      currentState.text &&
-      currentState.text.trim() !== ''
-    ) {
-      // Condition: Was transcribing, now finished, and there's actual text.
-      // Use our new logger instead of console.log
+    // First check: was transcribing and now finished
+    const justCompleted = _previousInProgress === true && currentState.inProgress === false;
+    
+    // Second check: has valid text content
+    const hasValidContent = currentState.text && currentState.text.trim() !== '';
+    
+    if (justCompleted && hasValidContent) {
+      // Use our logger instead of console.log
       import('./loggerService').then(({ createLogger }) => {
         const storeLogger = createLogger('Stores');
-        storeLogger.info('transcriptionCompletedEvent: Firing with text -', currentState.text);
+        storeLogger.info('transcriptionCompletedEvent: Detected completion with text -', currentState.text);
       });
       
+      // Set flag that an event is pending
+      _pendingEvent = true;
+      
+      // Fire immediately, no delay
       set(currentState.text); // Emit the text value
-      // Reset to null in a microtask to ensure current subscribers process the text value first
-      // and to make it a true "event" store for the next completion.
-      Promise.resolve().then(() => set(null));
+      
+      // Reset to null to make it a true "event" store for the next completion
+      // but do it as a microtask to ensure current subscribers process the text value first
+      Promise.resolve().then(() => {
+        set(null);
+        _pendingEvent = false;
+      });
     }
+    
+    // Update previous state for next check
     _previousInProgress = currentState.inProgress;
   });
 
-  return { subscribe };
+  // Extend the store with a method to manually trigger the event
+  const forceEmit = (text) => {
+    if (!text || _pendingEvent) return false; // Prevent duplicate events
+    
+    import('./loggerService').then(({ createLogger }) => {
+      const storeLogger = createLogger('Stores');
+      storeLogger.info('transcriptionCompletedEvent: Force emitting with text -', text);
+    });
+    
+    _pendingEvent = true;
+    set(text); // Emit the text value
+    
+    // Reset to null as a microtask
+    Promise.resolve().then(() => {
+      set(null);
+      _pendingEvent = false;
+    });
+    
+    return true;
+  };
+
+  return { subscribe, forceEmit };
 })();

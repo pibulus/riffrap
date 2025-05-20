@@ -188,18 +188,19 @@
       <div
         class="transcript-box animate-shadow-appear relative mx-auto mb-4 box-border 
                rounded-[2rem] border border-purple-100/70 bg-white/95
-               shadow-sm transition-all duration-300 contain-layout"
+               shadow-sm transition-all duration-500 ease-in-out contain-layout"
       >
-        <!-- Re-roll button in the top-right corner - now bigger and with text -->
+        <!-- Re-roll button in the top-right corner - enhanced with animation and improved visual feedback -->
         <div class="absolute top-3 right-3 z-10">
           <button
             class="reroll-btn rounded-full px-4 py-3 hover:scale-105 transform transition-all duration-300 bg-gradient-to-br from-pink-400 to-rose-400 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-rose-300 focus:ring-offset-2 active:scale-95 flex items-center gap-2"
             on:click|preventDefault={handleReroll}
             aria-label="Re-roll lyrics"
-            title="Re-roll lyrics from the same audio"
+            title="Generate new interpretation from the same audio"
+            class:reroll-spinning={$isRerollingStore}
           >
-            <!-- Dice icon for better visual association -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="dice-icon">
+            <!-- Enhanced dice icon with spinning animation when rerolling -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="dice-icon" class:spin-animation={$isRerollingStore}>
               <rect width="12" height="12" x="2" y="10" rx="2" ry="2"></rect>
               <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"></path>
               <path d="M6 18h.01"></path>
@@ -207,13 +208,14 @@
               <path d="M15 6h.01"></path>
               <path d="M18 9h.01"></path>
             </svg>
-            <span class="text-white font-medium">Reroll</span>
+            <!-- Dynamic text based on rerolling state -->
+            <span class="text-white font-medium">{$isRerollingStore ? 'Rolling...' : 'Reroll'}</span>
           </button>
         </div>
         
-        <!-- Content Area - scrollable with increased height -->
+        <!-- Content Area - scrollable with increased height and smooth transitions -->
         <div 
-          class="transcript-content-area w-full max-h-[600px] overflow-y-auto overflow-x-hidden px-7 pt-6 pb-8 sm:px-10 sm:pt-7 sm:pb-10 relative z-5"
+          class="transcript-content-area w-full max-h-[600px] overflow-y-auto overflow-x-hidden px-7 pt-6 pb-8 sm:px-10 sm:pt-7 sm:pb-10 relative z-5 transition-all duration-500 ease-in-out"
           bind:this={transcriptBoxRef}
         >
           <div
@@ -225,6 +227,7 @@
             tabindex="0"
             aria-describedby="transcript-instructions"
             bind:this={editableTranscript}
+            style="min-height: 100px; transition: min-height 0.5s ease-in-out;"
             on:focus={() => {
               dispatch('focus', {
                 message: 'You can edit this transcript. Use keyboard to make changes.'
@@ -309,10 +312,12 @@
     transition: background-color 0.6s cubic-bezier(0.22, 1, 0.36, 1), 
                 border-color 0.6s cubic-bezier(0.22, 1, 0.36, 1),
                 box-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.3s ease-out;
+                transform 0.3s ease-out,
+                height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bloopy animation curve for height */
     animation: subtle-breathe 10s infinite ease-in-out alternate;
     position: relative; /* For the pseudo-element highlight */
-    contain: layout; /* Contain layout changes */
+    min-height: 150px; /* Minimum height to prevent collapse */
+    will-change: height, transform; /* Hardware acceleration hint */
   }
   
   /* Extremely subtle mouseover highlight effect */
@@ -399,7 +404,9 @@
   .custom-transcript-text {
     text-align: left;
     font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    transition: background-color 0.4s ease, text-shadow 0.3s ease;
+    transition: background-color 0.4s ease, 
+                text-shadow 0.3s ease, 
+                min-height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bloopy animation for height changes */
     caret-color: rgba(236, 72, 153, 1); /* Darker, more visible cursor color */
     /* Remove explicit font-size to allow Tailwind classes to work */
     /* Base text size now handled by responsiveFontSize classes */
@@ -411,6 +418,7 @@
     isolation: isolate; /* Create stacking context to prevent interference */
     contain: content; /* Contain layout changes */
     line-height: 1.6; /* Fixed line height for consistency */
+    will-change: min-height; /* Hardware acceleration hint */
   }
   
   /* Lyric display container styling */
@@ -423,6 +431,9 @@
     overflow-x: hidden;
     max-width: 100%;
     contain: content; /* Contain layout changes */
+    transition: height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                min-height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bloopy animation for lyrics container */
+    will-change: height; /* Hardware acceleration hint */
   }
   
   /* Individual lyric line styling */
@@ -494,6 +505,13 @@
     width: 100%; /* Ensure full width */
   }
   
+/* Animation to make the height transition more smooth and bloopy */
+@keyframes height-bloopy {
+  0% { transform: scaleY(0.95); }
+  50% { transform: scaleY(1.02); }
+  100% { transform: scaleY(1); }
+}
+  
   @keyframes lyric-collected-pulse {
     0% {
       background-color: rgba(249, 168, 212, 0.6);
@@ -552,7 +570,9 @@
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
                 background-color 0.28s cubic-bezier(0.22, 1, 0.36, 1), 
                 border-color 0.28s cubic-bezier(0.22, 1, 0.36, 1), 
-                box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+                box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+                height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), /* Ensure height transitions are smooth */
+                min-height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); /* Same for min-height */
   }
   
   /* Clean highlight when clicked/editing - single consistent background */
@@ -594,16 +614,28 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
   
-  /* Fun dice animation on hover */
+  /* Fun dice animation on hover and spinning animation when rerolling */
   .dice-icon {
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     transform-origin: center;
   }
   
-  .reroll-btn:hover .dice-icon {
+  .reroll-btn:hover .dice-icon:not(.spin-animation) {
     animation: diceBounceWiggle 1s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
   }
   
+  /* Spin animation for when rerolling is in progress */
+  .spin-animation {
+    animation: spinDice 1.2s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+  }
+  
+  @keyframes spinDice {
+    0% { transform: rotate(0deg); }
+    50% { transform: rotate(180deg) scale(1.1); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Enhanced wiggle animation on hover */
   @keyframes diceBounceWiggle {
     0%, 100% { transform: rotate(0deg) scale(1); }
     10% { transform: rotate(-10deg) scale(1.1); }
@@ -615,6 +647,20 @@
     70% { transform: rotate(-2deg) scale(1); }
     80% { transform: rotate(2deg) scale(1.05); }
     90% { transform: rotate(0deg) scale(1); }
+  }
+  
+  /* Visual changes for the button when rerolling */
+  .reroll-spinning {
+    background: linear-gradient(to right, #f43f5e, #ec4899, #f43f5e) !important;
+    background-size: 200% 100% !important;
+    animation: gradient-shift 2s ease infinite !important;
+    box-shadow: 0 6px 16px rgba(236, 72, 153, 0.3) !important;
+  }
+  
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
   
   /* Add subtle shimmer on hover */

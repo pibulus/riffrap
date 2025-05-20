@@ -37,12 +37,31 @@ export async function initializeAudioContext(existingContext) {
   let audioContext = existingContext;
 
   if (!audioContext && typeof window !== 'undefined') {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    audioContext = new AudioContext();
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioContext = new AudioContext();
+      
+      // Create and play a silent sound to activate audio context on iOS
+      if (isIOS() && audioContext) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 0.01; // Nearly silent
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start(0);
+        oscillator.stop(0.1); // Short duration
+      }
+    } catch (err) {
+      logger.error('Failed to create audio context', { error: err.message });
+    }
   }
 
   if (audioContext?.state === 'suspended') {
-    await audioContext.resume();
+    try {
+      await audioContext.resume();
+    } catch (err) {
+      logger.error('Failed to resume audio context', { error: err.message });
+    }
   }
 
   return { 
@@ -122,12 +141,28 @@ export async function requestPermissions(options) {
  * @returns {Promise<Object>} Result with granted status and stream or error
  */
 async function requestIOSPermissions({ audioContext }) {
-  const contextReady = audioContext?.state === 'running';
-  if (!contextReady) {
-    throw new UIError('Failed to initialize audio context', {
-      code: 'ERR_AUDIO_CONTEXT_INIT',
-      context: { platform: 'iOS' }
-    });
+  // Try to resume the audio context one more time if it's not running
+  if (audioContext?.state !== 'running') {
+    try {
+      await audioContext?.resume();
+      logger.info('Attempted to resume audio context for iOS');
+      
+      // Create and play a silent sound to help activate context
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0.01; // Nearly silent
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.start(0);
+      oscillator.stop(0.1);
+    } catch (err) {
+      logger.warn('Failed to resume audio context for iOS', { error: err.message });
+    }
+  }
+  
+  // Try to proceed even if context isn't running - it might start once we get permission
+  if (audioContext?.state !== 'running') {
+    logger.warn('Audio context not running, but attempting to get permissions anyway');
   }
 
   const constraints = {

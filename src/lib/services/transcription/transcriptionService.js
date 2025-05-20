@@ -56,8 +56,44 @@ export class TranscriptionService {
       // Complete progress animation with smooth transition
       this.completeProgressAnimation();
       
-      // Update transcription state with completed text
-      transcriptionActions.completeTranscription(transcriptText);
+      // Make sure we have valid text before continuing
+      if (!transcriptText) {
+        logger.warn('Transcription returned empty text');
+        throw new TranscriptionError('Transcription returned empty result', {
+          code: 'ERR_TRANSCRIPTION_EMPTY_RESULT'
+        });
+      }
+      
+      // Log the text we're about to apply
+      logger.info('About to apply transcription text', { 
+        textLength: transcriptText.length,
+        textPreview: transcriptText.substring(0, 20) + '...'
+      });
+      
+      // Wait a brief moment to ensure UI is ready
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      // Update transcription state with completed text - force direct update
+      transcriptionState.update(current => ({
+        ...current,
+        inProgress: false,
+        progress: 100,
+        text: transcriptText,
+        timestamp: Date.now()
+      }));
+      
+      // Make sure the UI knows there's text
+      setTimeout(() => {
+        // Double-check if text is still missing
+        const currentText = get(transcriptionState).text;
+        if (!currentText || currentText !== transcriptText) {
+          logger.warn('Text mismatch after update, forcing second update');
+          transcriptionState.update(current => ({
+            ...current,
+            text: transcriptText
+          }));
+        }
+      }, 100);
       
       // Log successful transcription
       logger.info('Audio transcription completed successfully', {

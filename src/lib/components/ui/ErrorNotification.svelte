@@ -24,7 +24,7 @@
   
   // Add a new notification
   function addNotification(notification) {
-    const id = Date.now().toString();
+    const id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
     const notificationWithDefaults = {
       id,
       type: 'info', // info, success, warning, error

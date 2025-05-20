@@ -80,6 +80,18 @@ export function handleCollectSnippet(event) {
   const { text, success } = event.detail;
   let collectionSuccessful = false;
   
+  // Skip if collection already in progress
+  if (typeof window !== 'undefined' && window.collectionInProgress) {
+    console.log('Collection already in progress in handleCollectSnippet, skipping');
+    return;
+  }
+  
+  // Set flag to prevent duplicate collection
+  if (typeof window !== 'undefined') {
+    window.collectionInProgress = true;
+    console.log('Setting collection in progress flag in handleCollectSnippet');
+  }
+  
   const parentContainer = get(parentContainerStore);
   
   console.log('TranscriptDisplay.handleCollectSnippet called with text:', text);
@@ -152,6 +164,14 @@ export function handleCollectSnippet(event) {
       });
     }
     
+    // Reset collection flag after a delay
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        window.collectionInProgress = false;
+        console.log('Resetting collection in progress flag in handleCollectSnippet');
+      }, 500);
+    }
+    
     // Always clear the selection regardless of collection success
     selectedTextStore.set(''); // Reset the text AFTER collection is complete
     hideSelectionButton();
@@ -164,6 +184,12 @@ export function handleCollectSnippet(event) {
       message: 'No text selected',
       type: 'error'
     });
+    
+    // Reset collection flag
+    if (typeof window !== 'undefined') {
+      window.collectionInProgress = false;
+      console.log('Resetting collection in progress flag - no valid text');
+    }
   }
 }
 
@@ -174,17 +200,41 @@ export function handleCollectionError(event) {
     message: message || 'Failed to collect snippet',
     type: 'error'
   });
+  
+  // Reset collection flag
+  if (typeof window !== 'undefined') {
+    window.collectionInProgress = false;
+    console.log('Resetting collection in progress flag in handleCollectionError');
+  }
 }
 
 export function handleDirectCollection(event) {
   const { text } = event.detail;
   let collectionSuccessful = false;
   
+  // Skip if collection already in progress
+  if (typeof window !== 'undefined' && window.collectionInProgress) {
+    console.log('Collection already in progress in handleDirectCollection, skipping');
+    return;
+  }
+  
+  // Set flag to prevent duplicate collection
+  if (typeof window !== 'undefined') {
+    window.collectionInProgress = true;
+    console.log('Setting collection in progress flag in handleDirectCollection');
+  }
+  
   if (!text || !text.trim()) {
     showNotification({
       message: 'No text selected for direct collection',
       type: 'error'
     });
+    
+    // Reset collection flag
+    if (typeof window !== 'undefined') {
+      window.collectionInProgress = false;
+    }
+    
     return;
   }
   
@@ -251,6 +301,14 @@ export function handleDirectCollection(event) {
       message: 'Collection failed, try the Grab Lyrics button instead',
       type: 'info'
     });
+  }
+  
+  // Reset collection flag after a delay
+  if (typeof window !== 'undefined') {
+    setTimeout(() => {
+      window.collectionInProgress = false;
+      console.log('Resetting collection in progress flag in handleDirectCollection');
+    }, 500);
   }
 }
 

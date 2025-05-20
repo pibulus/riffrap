@@ -144,6 +144,11 @@ export function setupLifecycleHooks(handlers) {
     // Check if content is scrollable on mount
     checkScrollable();
     
+    // Initialize collection in progress flag
+    if (typeof window !== 'undefined') {
+      window.collectionInProgress = false;
+    }
+    
     // Make this component available globally for debugging
     if (typeof window !== 'undefined') {
       window.transcriptDisplay = { stores: {
@@ -172,6 +177,10 @@ export function setupLifecycleHooks(handlers) {
           handleDirectCollection({ detail: { text: text || selectedText } });
           return 'Direct collection triggered';
         },
+        resetCollectionFlag: () => {
+          window.collectionInProgress = false;
+          return 'Collection flag reset';
+        },
         getComponentInfo: () => {
           const parentContainer = get(parentContainerStore);
           const selectedText = get(selectedTextStore);
@@ -181,7 +190,8 @@ export function setupLifecycleHooks(handlers) {
             hasParentContainer: !!parentContainer,
             parentContainerHasAddMethod: parentContainer && typeof parentContainer.addLyricsSnippet === 'function',
             currentSelectedText: selectedText,
-            isSelectionActive: selectionActive
+            isSelectionActive: selectionActive,
+            collectionInProgress: window.collectionInProgress
           };
         }
       };
