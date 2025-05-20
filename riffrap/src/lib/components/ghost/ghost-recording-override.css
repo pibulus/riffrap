@@ -1,0 +1,25 @@
+/* Override recording glow animations with orange theme */
+
+/* Recording state overrides - Replace green with orange for all themes */
+.ghost-container.recording.theme-peach,
+.ghost-container.recording.theme-mint,
+.ghost-container.recording.theme-bubblegum {
+  animation: recording-glow-orange 2s ease-in-out infinite !important;
+}
+
+/* New orange glow animation to replace the green */
+@keyframes recording-glow-orange {
+  0%,
+  5%,
+  95%,
+  100% {
+    filter: drop-shadow(0 0 15px rgba(255, 120, 50, 0.8))
+      drop-shadow(0 0 25px rgba(255, 150, 80, 0.6));
+    transform: scale(1.02);
+  }
+  25%, 75% {
+    filter: drop-shadow(0 0 20px rgba(255, 150, 80, 0.7))
+      drop-shadow(0 0 30px rgba(255, 180, 120, 0.5));
+    transform: scale(1.04);
+  }
+}

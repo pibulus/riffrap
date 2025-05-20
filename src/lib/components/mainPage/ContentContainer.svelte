@@ -209,7 +209,7 @@
 />
 
 <!-- Content area with transcript and collection panel -->
-<div class="main-content-area relative w-full overflow-hidden">
+<div class="main-content-area relative w-full overflow-visible">
   {#if isMobile}
     <!-- Mobile tab-based layout -->
     <div class="mobile-container w-full flex flex-col">
@@ -272,8 +272,8 @@
   
   .collection-container {
     opacity: 0;
-    animation: fadeInRight 0.3s ease-out forwards;
-    animation-delay: 0.2s; /* Delay animation to ensure load is complete */
+    animation: fadeInRight 0.6s ease-out forwards;
+    animation-delay: 0.5s; /* Increased delay to reduce jumpiness during initial load */
     overflow: visible; /* Ensure tooltips are visible */
     position: relative; /* Provide position context */
     z-index: 5; /* Ensure the container is above other elements */

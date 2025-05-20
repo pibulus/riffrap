@@ -5,6 +5,7 @@
 <script>
 	import { geminiService } from '$lib/services/geminiService';
 	import { promptStyle, theme } from '$lib/index.js';
+import { AudioStates } from '$lib/services/audio/audioStates';
 	import { onMount, onDestroy } from 'svelte';
 import { fade, fly } from 'svelte/transition';
 import { quintOut } from 'svelte/easing';
@@ -54,7 +55,6 @@ import { quintOut } from 'svelte/easing';
 		uiState,
 		audioState,
 		hasPermissionError,
-		transcriptionCompletedEvent, // <-- Import the new event store
 		// Actions
 		audioActions,
 		transcriptionActions,
@@ -116,11 +116,15 @@ import { quintOut } from 'svelte/easing';
 			
 			// Set initial transcription text to indicate re-rolling
 			// Don't set to null as it causes the component to unmount
-			// Instead, directly update with a visually appealing re-rolling message
+			// Instead, create a centered, prettier re-rolling message with HTML formatting
 			console.log('[DEBUG] Setting transcript to re-rolling message');
+			// Simple re-rolling message as plain text
+const reRollingMessage = "✨ Re-rolling lyrics... ⏳";
+			
+			// Update state with HTML-formatted message
 			transcriptionState.update(current => ({
 				...current,
-				text: "✨ Re-rolling lyrics... ⏳",
+				text: reRollingMessage,
 				rerolling: true // Flag to trigger animations
 			}));
 			
@@ -156,11 +160,20 @@ import { quintOut } from 'svelte/easing';
 				rerolling: false
 			}));
 			
-			// Ensure the transcriptionCompletedEvent fires for re-rolls
-			const { transcriptionCompletedEvent } = await import('$lib/services/infrastructure/stores.js');
-			if (transcriptionCompletedEvent.forceEmit && newTranscript) {
-				console.log('[DEBUG] Force emitting transcriptionCompletedEvent after re-roll');
-				transcriptionCompletedEvent.forceEmit(newTranscript);
+			// CRITICAL: Ensure the transcript is updated for re-rolls
+			// Use direct state update instead of event emission
+			if (newTranscript) {
+				console.log('[DEBUG] Updating transcript text after re-roll, text length:', newTranscript?.length);
+				// Force direct update via state
+				transcriptionState.update(current => ({
+					...current,
+					text: newTranscript
+				}));
+				
+				// Also call completion handler directly
+				handleTranscriptCompletion(newTranscript);
+			} else {
+				console.warn('[DEBUG] Unable to update - missing transcript');
 			}
 			
 			// Auto-scroll disabled to keep existing content in view
@@ -298,11 +311,20 @@ import { quintOut } from 'svelte/easing';
 					
 					console.log('[DEBUG] Got transcript text after recording:', transcriptText);
 					
-					// Double check the text is in the store - force an update if needed
+					// Force an update ALWAYS on first transcription completion
+					// This ensures the text appears regardless of the current store state
 					const currentStoreText = get(transcriptionText);
-					if (!currentStoreText && transcriptText) {
-						console.log('[DEBUG] Forcing transcript update with direct text');
-						// Force direct update to ensure text is displayed
+					console.log('[DEBUG] Current store text:', currentStoreText ? currentStoreText.substring(0, 30) : 'empty');
+					
+					// Always update to ensure text is displayed - critical fix for first recording
+					if (transcriptText) {
+						console.log('[DEBUG] Forcing transcript update with direct text:', transcriptText?.substring(0, 30));
+						
+						// CRITICAL FIX: Directly call the handleTranscriptCompletion function first
+						// This ensures all UI components are updated properly
+						handleTranscriptCompletion(transcriptText);
+						
+						// Force direct update to ensure text is displayed (both approaches)
 						transcriptionState.update(current => ({
 							...current,
 							inProgress: false,
@@ -310,17 +332,24 @@ import { quintOut } from 'svelte/easing';
 							text: transcriptText
 						}));
 						
-						// Force event emission as a safety measure - use await import to ensure module is loaded
-						const { transcriptionCompletedEvent } = await import('$lib/services/infrastructure/stores.js');
-						if (transcriptionCompletedEvent && transcriptionCompletedEvent.forceEmit) {
-							console.log('[DEBUG] Force emitting transcriptionCompletedEvent after first recording');
-							transcriptionCompletedEvent.forceEmit(transcriptText);
+						// Also directly update the derived store as a final backup
+						transcriptionActions.completeTranscription(transcriptText);
+						
+						// IMPORTANT: Ensure recording state is properly reset
+						if ($isRecording) {
+							console.log('[DEBUG] Force resetting recording state to ensure UI consistency');
+							audioActions.updateState(AudioStates.IDLE);
 						}
+						
+						console.log('[DEBUG] Applied multiple update mechanisms to ensure transcript is visible');
 					}
 					
-					// Update the UI state to show the new transcript
-					// This update is needed to trigger the display of the transcript
-					if (transcriptText) {
+					// ALWAYS ensure we make transcription visible after completion
+					// This additional check ensures the UI reflects the transcription result
+					// Double safety net to ensure transcript appears
+					console.log('[DEBUG] Final transcript check to ensure visibility');
+					// No conditional check - always execute this block
+					{
 						// Stop the ghost thinking animation if it's still running
 						if (ghostComponent && typeof ghostComponent.stopThinking === 'function') {
 							ghostComponent.stopThinking();
@@ -509,6 +538,18 @@ import { quintOut } from 'svelte/easing';
 	function handleTranscriptCompletion(textToProcess) { // <-- Accept text as a parameter
 		console.log('[DEBUG] handleTranscriptCompletion() called with textToProcess:', textToProcess);
 
+		// Force update UI state directly to ensure text is displayed
+		// This is critical as a safety measure for transcript display
+		if (textToProcess && textToProcess.trim() !== '') {
+			console.log('[DEBUG] Directly updating transcription state in handleTranscriptCompletion');
+			transcriptionState.update(current => ({
+				...current,
+				inProgress: false,
+				progress: 100,
+				text: textToProcess
+			}));
+		}
+
 		// Only attempt to use ghost component if it exists
 		if (ghostComponent && typeof ghostComponent.reactToTranscript === 'function') {
 			// React to transcript with ghost expression based on length
@@ -554,29 +595,15 @@ import { quintOut } from 'svelte/easing';
 		// Existing subscription to transcriptionText for general debugging (no longer calls handleTranscriptCompletion)
 		const transcriptUnsub = transcriptionText.subscribe((text) => {
 			console.log('[DEBUG] (Raw transcriptionText update) Text:', text, 'IsTranscribing:', $isTranscribing);
-			// NOTE: The call to handleTranscriptCompletion() has been removed from here.
-		});
-
-		// New subscription to the dedicated transcriptionCompletedEvent
-		const transcriptionCompletedUnsub = transcriptionCompletedEvent.subscribe(completedText => {
-			if (completedText) {
-				// This event fires only when transcription is truly complete and text is available.
-				// $isTranscribing should be false by now.
-				console.log('[DEBUG] transcriptionCompletedEvent fired in component with text:', completedText);
-				handleTranscriptCompletion(completedText); // <-- Pass completedText to the handler
-				
-				// Force the UI to update if needed by ensuring the transcription text is updated in the store
-				// This ensures the TranscriptDisplay component will be rendered
-				const currentStoreText = get(transcriptionText);
-				if (currentStoreText !== completedText) {
-					console.log('[DEBUG] Forcing transcription text store update from completedEvent handler');
-					transcriptionState.update(current => ({
-						...current,
-						text: completedText
-					}));
-				}
+			// Re-add call to handleTranscriptCompletion to ensure it gets called
+			if (text && !$isTranscribing) {
+				console.log('[DEBUG] Calling handleTranscriptCompletion from transcriptionText subscription');
+				handleTranscriptCompletion(text);
 			}
 		});
+
+		// We no longer need the transcriptionCompletedEvent subscription 
+		// The direct state updates are enough
 
 		// Subscribe to permission denied state to show error modal
 		const permissionUnsub = hasPermissionError.subscribe((denied) => {
@@ -607,7 +634,7 @@ import { quintOut } from 'svelte/easing';
 		});
 
 		// Add to unsubscribe list
-		unsubscribers.push(transcriptUnsub, transcriptionCompletedUnsub, permissionUnsub, audioStateUnsub);
+		unsubscribers.push(transcriptUnsub, permissionUnsub, audioStateUnsub);
 
 		// Check if the app is running as a PWA after a short delay
 		if (browser) {
@@ -684,10 +711,10 @@ import { quintOut } from 'svelte/easing';
 					{/if}
 				</div>
 
-				<!-- Transcript output - only visible when not recording and has transcript -->
-				{#if ($transcriptionText || $transcriptionText === '') && !$isRecording}
+				<!-- Transcript output - show whenever we have non-empty transcript, regardless of recording state -->
+				{#if $transcriptionText && $transcriptionText !== ''}
 					<div class="transcript-container transition-all duration-500 ease-in-out" 
-					     style="transform-origin: top center;" 
+					     style="transform-origin: top center; min-width: 280px;" 
 					     class:animate-height-bloopy={$transcriptionState.rerolling}>
 						<TranscriptDisplay
 							transcript={$transcriptionText || ''}
@@ -868,6 +895,18 @@ import { quintOut } from 'svelte/easing';
 	50% { transform: scaleY(1.02); }
 	70% { transform: scaleY(0.99); }
 	100% { transform: scaleY(1); }
+}
+
+/* Loading dot animation for re-rolling indicator */
+.loading-dot {
+	animation: pulseFade 1.5s ease-in-out infinite;
+	font-size: 1.5rem;
+}
+
+@keyframes pulseFade {
+	0% { opacity: 0.3; transform: scale(0.8); }
+	50% { opacity: 1; transform: scale(1.2); }
+	100% { opacity: 0.3; transform: scale(0.8); }
 }
 
 /* Improved focus styles for keyboard navigation */

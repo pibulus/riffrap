@@ -1,0 +1,1599 @@
+<script>
+  /**
+   * === COMPONENT OVERVIEW ===
+   * 
+   * TranscriptDisplay Component
+   *
+   * This is a large, complex component that displays transcribed text from audio recordings.
+   * It handles both display and interaction with the transcript, including:
+   * - Text selection and manipulation
+   * - Copy/share functionality
+   * - Snippet collection for lyrics
+   * - Visual feedback for user actions
+   * - Accessibility features
+   * 
+   * The component has 5 main "Glam Zones":
+   * 1. Core State & Config - Properties, refs, and state variables
+   * 2. User Interaction Handlers - Event handlers for UI interaction
+   * 3. Text Selection System - Logic for handling text selection and highlighting
+   * 4. Notification & Feedback System - Managing visual user feedback
+   * 5. Lifecycle Hooks - Component initialization and cleanup
+   * 
+   * OMG REF (App Glam-Up): See glam_up_manifest.md for the overall plan and next steps. ✨
+   * This file is a prime candidate for future modularization in Phase 3.
+   */
+  
+  // === IMPORTS & DEPENDENCIES ===
+  import { ANIMATION, ATTRIBUTION } from '$lib/constants';
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+  import Ghost from '$lib/components/ghost/Ghost.svelte';
+  import { geminiService } from '$lib/services/geminiService';
+  import { transcriptionService } from '$lib/services/transcription/transcriptionService';
+  import { transcriptionText, uiActions } from '$lib/services';
+  import SelectionButton from './SelectionButton.svelte';
+  import DirectCollectionLink from './DirectCollectionLink.svelte';
+  import { fade, fly } from 'svelte/transition';
+  import { get } from 'svelte/store';
+  
+  // === GLAM ZONE START: CORE STATE & CONFIG ===
+  /**
+   * Core state and configuration for the transcript display.
+   * This zone contains all props, refs, state variables, and the event dispatcher.
+   * 
+   * Dependencies:
+   * - Consumed by all other zones
+   * - Used by template for reactive updates
+   * 
+   * OMG REF (App Glam-Up): State management could be extracted into a dedicated store.
+   */
+  
+  // Props passed from parent
+  export let transcript = '';             // The actual transcript text to display
+  export let showCopyTooltip = false;     // Whether to show the copy tooltip
+  export let responsiveFontSize = 'text-base'; // Font size class for responsive design
+  export let parentContainer;             // Reference to parent ContentContainer
+  
+  // DOM references for direct manipulation
+  let editableTranscript;                 // Ref to the editable transcript element
+  let copyButtonRef;                      // Ref to the copy button
+  let transcriptBoxRef;                   // Ref to the transcript box for scrolling
+  
+  // Notification system state
+  let notification = null;                // Current notification object
+  let notificationTimeout;                // Timeout handle for clearing notifications
+  
+  // UI state flags
+  let tooltipHoverCount = 0;              // Count of times user has hovered over tooltip
+  let hasUsedCopyButton = false;          // Whether user has used copy button
+  let isScrollable = false;               // Whether transcript is scrollable
+  let showRerollTooltip = false;          // Whether to show reroll tooltip
+  let isRerolling = false;                // Whether currently rerolling transcript
+  
+  // Text selection state
+  let selectionActive = false;            // Whether text selection is active
+  let selectionLeft = 0;                  // Left position of selection highlight
+  let selectionTop = 0;                   // Top position of selection highlight
+  let selectedText = '';                  // The currently selected text
+  let currentSelection = null;            // The current selection object
+  
+  // Event communication channel
+  const dispatch = createEventDispatcher(); // For sending events to parent
+  // === GLAM ZONE END: CORE STATE & CONFIG ===
+  
+  // === GLAM ZONE START: USER INTERACTION HANDLERS ===
+  /**
+   * User Interaction Handlers
+   * 
+   * This zone handles direct user interactions with the transcript UI, including:
+   * - Content extraction and manipulation
+   * - Tooltip interactions
+   * - Browser feature detection
+   * - Re-roll functionality
+   * 
+   * Dependencies:
+   * - Depends on Core State & Config zone for state access
+   * - Used by the template to handle user events
+   * 
+   * OMG REF (App Glam-Up): These handlers could be extracted into a dedicated module
+   * to improve testability and maintainability.
+   */
+  
+  // Get the current editable content
+  export function getEditedTranscript() {
+    if (!editableTranscript) return transcript;
+    
+    // Get all lyric lines and join them with newlines
+    const lyricLines = editableTranscript.querySelectorAll('.lyric-line');
+    if (lyricLines.length > 0) {
+      return Array.from(lyricLines).map(line => line.textContent).join('\n');
+    }
+    
+    // Fallback to innerText if no lyric lines found
+    return editableTranscript.innerText;
+  }
+
+  // Show tooltip when mouse hovers over copy button (with limits)
+  function handleTooltipMouseEnter() {
+    if (typeof window !== 'undefined' && 
+        window.innerWidth >= 640 &&
+        !hasUsedCopyButton &&
+        tooltipHoverCount < ANIMATION.COPY.TOOLTIP_MAX_COUNT) {
+      showCopyTooltip = true;
+      tooltipHoverCount++;
+    }
+  }
+  
+  // Check if content is scrollable and update UI accordingly
+  function checkScrollable() {
+    if (transcriptBoxRef) {
+      const hasOverflow = transcriptBoxRef.scrollHeight > transcriptBoxRef.clientHeight + 20; // Add buffer for more reliable detection
+      isScrollable = hasOverflow;
+      
+      // We could also check if we're near the bottom to hide the indicator
+      // but for simplicity, we'll just show it whenever there's overflow
+      console.log(`Transcript scrollable: ${isScrollable}, height: ${transcriptBoxRef.scrollHeight}, visible: ${transcriptBoxRef.clientHeight}`);
+    }
+  }
+  
+  // Browser feature detection for Web Share API
+  function isWebShareSupported() {
+    return (
+      typeof window !== 'undefined' &&
+      typeof navigator !== 'undefined' &&
+      navigator.share &&
+      typeof navigator.share === 'function'
+    );
+  }
+  
+  // Show tooltip when mouse hovers over reroll button
+  function handleRerollTooltipMouseEnter() {
+    if (typeof window !== 'undefined' && 
+        window.innerWidth >= 640) {
+      showRerollTooltip = true;
+    }
+  }
+  
+  // Handle re-roll action - request new transcript from parent
+  async function handleReroll() {
+    if (isRerolling) return; // Prevent multiple simultaneous re-rolls
+    
+    try {
+      isRerolling = true;
+      
+      // Get the audio data from the transcription service or parent component
+      // For this implementation, we'll need to store the audio blob at the AudioToText component
+      // and pass it to this component when needed
+      
+      // Instead of directly accessing the blob (which we don't have here), 
+      // we'll dispatch an event to the parent to request a re-roll
+      dispatch('reroll');
+      
+      // Note: We no longer manually set the text here since the transcription text
+      // is managed by the transcriptionState store from the parent component
+      // and will be automatically updated there
+    } catch (error) {
+      console.error("Error re-rolling transcript:", error);
+      // Return to original state if there's an error
+      isRerolling = false;
+    } finally {
+      // Set a timeout to reset the isRerolling state after a reasonable time
+      // This ensures we can re-roll again if something goes wrong
+      setTimeout(() => {
+        isRerolling = false;
+      }, 5000);
+    }
+  }
+  // === GLAM ZONE END: USER INTERACTION HANDLERS ===
+  
+  // === GLAM ZONE START: TEXT SELECTION SYSTEM ===
+  /**
+   * Text Selection System
+   * 
+   * This zone handles all aspects of text selection within the transcript:
+   * - Detecting and processing user selections
+   * - Line and text node selection logic
+   * - Positioning highlight and selection UI elements
+   * - Utility functions for DOM manipulation
+   * 
+   * Dependencies:
+   * - Depends on Core State & Config zone for state access
+   * - Used by the template for selection highlighting
+   * - Provides data to the Notification & Feedback System
+   * 
+   * OMG REF (App Glam-Up): This is complex logic that could be extracted into
+   * a dedicated selection manager module.
+   */
+   * OMG REF (App Glam-Up): This is complex logic that could be extracted into
+   * a dedicated selection manager module.
+   */
+  
+  // Handle text selection with improved reliability, including single-click line selection
+  function handleTextSelection(event) {
+    // Only handle selections in the transcript content
+    if (!editableTranscript || !editableTranscript.contains(event.target)) {
+      hideSelectionButton();
+      return;
+    }
+    
+    // Get the current selection
+    if (window.getSelection) {
+      const selection = window.getSelection();
+      let selectionText = selection.toString().trim();
+      
+      // Check if we have a click (rather than a drag selection)
+      // We can determine this by checking if the selection is empty
+      if (selectionText.length === 0 && event.type === 'mouseup' && event.target.nodeName !== 'BUTTON') {
+        // This was a click, so select the entire line
+        selectEntireLine(event.target);
+        
+        // After selecting the line, get the new selection
+        const newSelection = window.getSelection();
+        selectionText = newSelection.toString().trim();
+        
+        // Add refined haptic feedback pattern designed to feel satisfying
+        if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+          // Two-stage tactile feedback: quick double-tap sensation
+          // First a short sharp pulse, then a slightly longer one with perfect timing
+          window.navigator.vibrate([8, 20, 25]); // Optimized for perceptual satisfaction
+        }
+        
+        // ✨ NEW: Auto-grab the lyric when clicking on a line
+        if (selectionText && selectionText.length > 0 && event.type === 'mouseup') {
+          // Add visual highlight to the clicked line
+          const lineElement = event.target.closest('.lyric-line');
+          if (lineElement) {
+            // First remove grabbed class from any other line
+            const allLines = editableTranscript.querySelectorAll('.lyric-line');
+            allLines.forEach(line => line.classList.remove('lyric-line-grabbed'));
+            
+            // Add grabbed class to current line with a more persistent selection feel
+            lineElement.classList.add('lyric-line-grabbed');
+            
+            // Keep the selection visible for a little longer so the user can see it
+            setTimeout(() => {
+              if (lineElement.classList.contains('lyric-line-grabbed')) {
+                lineElement.classList.remove('lyric-line-grabbed');
+              }
+            }, 1500);
+          }
+          
+          // Store selected text globally for collection
+          if (typeof window !== 'undefined') {
+            window.transcriptSelectedText = selectionText;
+          }
+          
+          // Position the selection button and activate it (but keep it invisible)
+          if (lineElement) {
+            const rect = lineElement.getBoundingClientRect();
+            const containerRect = transcriptBoxRef.getBoundingClientRect();
+            selectionLeft = rect.right - containerRect.left - 160; // Position to the right
+            selectionTop = rect.top - containerRect.top + 3; // Slightly below the line
+            selectionActive = true;
+            selectedText = selectionText;
+          }
+          
+          // CRITICAL: Find and click the "Grab Lyrics" button in the PurpleStyleCollectionBox
+          setTimeout(() => {
+            // Look for a button with specific class
+            let grabLyricsButton = document.querySelector('.collect-button');
+                  
+            if (grabLyricsButton) {
+              console.log('Found Grab Lyrics button, triggering click!');
+              grabLyricsButton.click();
+              
+              // Show success notification
+              showNotification({
+                message: 'Line collected!',
+                type: 'success'
+              });
+              
+              return; // Exit if we successfully found and clicked the button
+            }
+            
+            // Fallback to direct method if button wasn't found
+            if (typeof window !== 'undefined' && 
+                typeof window.addToMainCollectionBox === 'function') {
+              console.log('Using direct window.addToMainCollectionBox method');
+              const result = window.addToMainCollectionBox(selectionText);
+              
+              if (result) {
+                showNotification({
+                  message: 'Line collected!',
+                  type: 'success'
+                });
+                return; // Exit if direct method worked
+              }
+            }
+          }, 50);
+          
+          // Fallback: Try using parent container method
+          // Short delay to allow visual selection first
+          setTimeout(() => {
+            // Check if parent container is available before trying to use it
+            if (parentContainer && typeof parentContainer.addLyricsSnippet === 'function') {
+              handleCollectSnippet({ detail: { text: selectionText } });
+            } else {
+              // No valid collection method found - try setting global trigger
+              if (typeof window !== 'undefined') {
+                console.log('Using global trigger for collection');
+                window.transcriptCollectTrigger = true;
+                
+                // Show notification and use global method if available
+                setTimeout(() => {
+                  // Check if collection was successful
+                  if (window.transcriptCollectTrigger === false) {
+                    showNotification({
+                      message: 'Line collected!',
+                      type: 'success'
+                    });
+                  } else {
+                    window.transcriptCollectTrigger = false;
+                    showNotification({
+                      message: 'Line collected!',
+                      type: 'success'
+                    });
+                  }
+                }, 300);
+              } else {
+                showNotification({
+                  message: 'Collection not available. Try using the Grab Lyrics button.',
+                  type: 'info'
+                });
+              }
+            }
+          }, 100);
+        }
+      }
+      
+      // Make sure we have a valid selection - but only process if it wasn't already handled by click-to-grab
+      if (selectionText.length > 0 && event.type !== 'mouseup') {
+        // Store the selected text for collection
+        selectedText = selectionText;
+        currentSelection = selection;
+        
+        // IMPORTANT: Make the selected text available globally so collection boxes can access it
+        if (typeof window !== 'undefined') {
+          window.transcriptSelectedText = selectionText;
+          // No longer need to set selectionActive since we don't show buttons anymore
+        }
+        
+        console.log('Selected text:', selectionText);
+      } else if (selectionText.length === 0) {
+        selectedText = '';
+        if (typeof window !== 'undefined') {
+          window.transcriptSelectedText = '';
+        }
+      }
+    }
+  }
+  
+  // Helper function to select the entire line containing the clicked node
+  function selectEntireLine(node) {
+    // Remove selected class from all lines first
+    if (editableTranscript) {
+      const allLines = editableTranscript.querySelectorAll('.lyric-line');
+      allLines.forEach(line => line.classList.remove('selected'));
+    }
+    
+    // If the node is the main contenteditable container
+    if (node === editableTranscript) {
+      // Try to select the first lyric line
+      const firstLine = editableTranscript.querySelector('.lyric-line');
+      if (firstLine) {
+        firstLine.classList.add('selected');
+        selectElementContents(firstLine);
+        return;
+      }
+      return; // No lyric lines found
+    }
+    
+    // Find the lyric-line element containing this node
+    let lineElement = node;
+    while (lineElement && !lineElement.classList?.contains('lyric-line') && lineElement !== editableTranscript) {
+      lineElement = lineElement.parentNode;
+    }
+    
+    // If we found a line element, select its contents and add selected class
+    if (lineElement && lineElement.classList?.contains('lyric-line')) {
+      lineElement.classList.add('selected');
+      selectElementContents(lineElement);
+      return;
+    }
+    
+    // Fallback to old behavior if no line element found
+    // Find the text node we clicked on or nearest to the click
+    let textNode = findTextNode(node);
+    if (!textNode) return; // No text node found
+    
+    // Get the content of the text node
+    const text = textNode.textContent;
+    
+    // Find the start and end of the line
+    let startPos = 0;
+    let endPos = text.length;
+    
+    // Create a range for the line
+    const range = document.createRange();
+    range.setStart(textNode, startPos);
+    range.setEnd(textNode, endPos);
+    
+    // Apply the selection
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+  
+  // Helper function to select all contents of an element
+  function selectElementContents(element) {
+    if (!element) return;
+    
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+  
+  // Helper function to get the offset within a text node
+  function getNodeOffset(node) {
+    if (!window.getSelection) return 0;
+    
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return 0;
+    
+    const range = selection.getRangeAt(0);
+    return range.startOffset;
+  }
+  
+  // Helper function to find the first text node in an element
+  function findFirstTextNode(element) {
+    if (!element) return null;
+    
+    // If this is a text node, return it
+    if (element.nodeType === Node.TEXT_NODE) return element;
+    
+    // Otherwise, search through child nodes
+    for (let i = 0; i < element.childNodes.length; i++) {
+      const found = findFirstTextNode(element.childNodes[i]);
+      if (found) return found;
+    }
+    
+    return null;
+  }
+  
+  // Helper function to find the text node closest to the clicked node
+  function findTextNode(node) {
+    // If this is a text node, return it
+    if (node.nodeType === Node.TEXT_NODE) return node;
+    
+    // If this is an element, check its parent
+    let parent = node.parentNode;
+    while (parent && parent !== editableTranscript) {
+      if (parent.nodeType === Node.TEXT_NODE) return parent;
+      parent = parent.parentNode;
+    }
+    
+    // No text node found, return the first text node in the transcript
+    return findFirstTextNode(editableTranscript);
+  }
+  
+  // Hide the selection button and clear selected state
+  function hideSelectionButton() {
+    selectionActive = false;
+    // Remove selected class from all lines
+    if (editableTranscript) {
+      const allLines = editableTranscript.querySelectorAll('.lyric-line');
+      allLines.forEach(line => line.classList.remove('selected'));
+    }
+    // We no longer clear selectedText here to ensure it's available when the collect button is clicked
+  }
+  
+  // Handle collecting the selected text - with multiple fallback options
+  function handleCollectSnippet(event) {
+    // Get the text from the event detail
+    const { text, success } = event.detail;
+    let collectionSuccessful = false;
+    
+    console.log('TranscriptDisplay.handleCollectSnippet called with text:', text);
+    console.log('parentContainer exists:', !!parentContainer);
+    
+    if (parentContainer) {
+      console.log('parentContainer addLyricsSnippet exists:', typeof parentContainer.addLyricsSnippet === 'function');
+    }
+    
+    if (text && text.trim()) {
+      // Try multiple collection methods in order of preference
+      
+      // 1. Direct window method (preferred) - from PurpleStyleCollectionBox global export
+      if (typeof window !== 'undefined' && typeof window.addToMainCollectionBox === 'function') {
+        console.log('Using direct window.addToMainCollectionBox method');
+        try {
+          const added = window.addToMainCollectionBox(text);
+          if (added) {
+            console.log('Collection successful via window.addToMainCollectionBox');
+            collectionSuccessful = true;
+          }
+        } catch (err) {
+          console.error('Error using window.addToMainCollectionBox:', err);
+        }
+      }
+      
+      // 2. Parent container method (if direct method failed)
+      if (!collectionSuccessful && parentContainer && typeof parentContainer.addLyricsSnippet === 'function') {
+        console.log('TranscriptDisplay: Trying parentContainer.addLyricsSnippet as fallback');
+        try {
+          const added = parentContainer.addLyricsSnippet(text);
+          console.log('TranscriptDisplay: parentContainer.addLyricsSnippet returned:', added);
+          
+          if (added) {
+            console.log('Collection successful via parent container');
+            collectionSuccessful = true;
+          }
+        } catch (err) {
+          console.error('Error using parentContainer.addLyricsSnippet:', err);
+        }
+      }
+      
+      // 3. Global trigger method (last resort)
+      if (!collectionSuccessful && typeof window !== 'undefined') {
+        console.log('Attempting collection via global trigger mechanism');
+        window.transcriptSelectedText = text.trim();
+        window.transcriptCollectTrigger = true;
+        
+        // We'll assume this worked since we have no way to check synchronously
+        // The collection boxes should be monitoring for this flag
+        collectionSuccessful = true;
+      }
+      
+      // Show appropriate notification based on collection result
+      if (collectionSuccessful) {
+        showNotification({
+          message: 'Line collected!',
+          type: 'success'
+        });
+        
+        // Add to window for debugging
+        if (typeof window !== 'undefined') {
+          window.lastCollectedText = text;
+          window.transcriptDisplay = this;
+        }
+      } else {
+        console.error('All collection methods failed');
+        showNotification({
+          message: 'Try using the Grab Lyrics button instead',
+          type: 'info'
+        });
+      }
+      
+      // Always clear the selection regardless of collection success
+      selectedText = ''; // Reset the text AFTER collection is complete
+      hideSelectionButton();
+      if (window.getSelection) {
+        window.getSelection().removeAllRanges();
+      }
+    } else {
+      // No valid text
+      showNotification({
+        message: 'No text selected',
+        type: 'error'
+      });
+    }
+  }
+  
+  // Handle collection errors
+  function handleCollectionError(event) {
+    const { message } = event.detail;
+    
+    showNotification({
+      message: message || 'Failed to collect snippet',
+      type: 'error'
+    });
+  }
+  
+  // Handle direct collection request (bypass store) - with multiple fallbacks
+  function handleDirectCollection(event) {
+    const { text } = event.detail;
+    let collectionSuccessful = false;
+    
+    if (!text || !text.trim()) {
+      showNotification({
+        message: 'No text selected for direct collection',
+        type: 'error'
+      });
+      return;
+    }
+    
+    console.log('TranscriptDisplay: Direct collection requested:', text);
+    
+    // Try multiple collection methods in order of preference
+    
+    // 1. Direct window method (preferred) 
+    if (typeof window !== 'undefined' && typeof window.addToMainCollectionBox === 'function') {
+      try {
+        console.log('Using direct window.addToMainCollectionBox method for direct collection');
+        const added = window.addToMainCollectionBox(text);
+        if (added) {
+          console.log('Direct collection successful via window.addToMainCollectionBox');
+          collectionSuccessful = true;
+        }
+      } catch (err) {
+        console.error('Error using window.addToMainCollectionBox for direct collection:', err);
+      }
+    }
+    
+    // 2. Parent container method (if direct method failed)
+    if (!collectionSuccessful && parentContainer && typeof parentContainer.addLyricsSnippet === 'function') {
+      try {
+        console.log('Using parentContainer.addLyricsSnippet as fallback for direct collection');
+        const success = parentContainer.addLyricsSnippet(text);
+        
+        if (success) {
+          console.log('Direct collection successful via parent container');
+          collectionSuccessful = true;
+        }
+      } catch (err) {
+        console.error('Error using parentContainer.addLyricsSnippet for direct collection:', err);
+      }
+    }
+    
+    // 3. Global trigger method (last resort)
+    if (!collectionSuccessful && typeof window !== 'undefined') {
+      console.log('Attempting direct collection via global trigger mechanism');
+      window.transcriptSelectedText = text.trim();
+      window.transcriptCollectTrigger = true;
+      
+      // We'll assume this worked since we have no way to check synchronously
+      collectionSuccessful = true;
+    }
+    
+    // Show appropriate notification and clear selection
+    if (collectionSuccessful) {
+      showNotification({
+        message: 'Line collected!',
+        type: 'success'
+      });
+      
+      // Clear the selection
+      selectedText = '';
+      hideSelectionButton();
+      if (window.getSelection) {
+        window.getSelection().removeAllRanges();
+      }
+    } else {
+      console.error('All direct collection methods failed');
+      showNotification({
+        message: 'Collection failed, try the Grab Lyrics button instead',
+        type: 'info'
+      });
+    }
+  }
+  
+  // Show an ephemeral notification above the selected text
+  function showNotification({ message, type = 'info' }) {
+    // Clear any existing notification timeout
+    if (notificationTimeout) {
+      clearTimeout(notificationTimeout);
+    }
+    
+    // For success notifications (including visual effect for text selection)
+    if (type === 'success' && message.includes('collected') || message === 'Line collected!') {
+      // Find both the transcription box and the selected text element
+      const transcriptBox = document.querySelector('.transcript-box');
+      const selectedLine = editableTranscript?.querySelector('.lyric-line-grabbed') || 
+                           editableTranscript?.querySelector('.selected');
+      if (!transcriptBox || !selectedLine) {
+        // If we can't find the elements, just show a global notification
+        notification = { message, type };
+        notificationTimeout = setTimeout(() => {
+          notification = null;
+        }, 2000);
+        return;
+      }
+      
+      // Add a subtle pulse animation to the selected line
+      selectedLine.classList.add('lyric-pulse-collected');
+      
+      // Remove the animation class after it completes
+      setTimeout(() => {
+        if (selectedLine.classList.contains('lyric-pulse-collected')) {
+          selectedLine.classList.remove('lyric-pulse-collected');
+        }
+      }, 1500);
+      
+      // ALWAYS set global notification for collection actions
+      notification = { message, type };
+      notificationTimeout = setTimeout(() => {
+        notification = null;
+      }, 1500);
+      return;
+    }
+    
+    // For other notifications, set the global notification
+    notification = { message, type };
+    
+    // Auto-hide after shorter time for success notifications
+    const hideDelay = type === 'success' ? 1500 : 2500;
+    notificationTimeout = setTimeout(() => {
+      notification = null;
+    }, hideDelay);
+  }
+  
+  // Listen for clicks outside to dismiss the selection button
+  function handleClickOutside(event) {
+    // Don't hide if clicking on the selection button
+    const isSelectButton = event.target.closest('.selection-button-container');
+    if (isSelectButton) {
+      console.log('Click on selection button, keeping visible');
+      return;
+    }
+    
+    if (editableTranscript && !editableTranscript.contains(event.target)) {
+      console.log('Click outside transcript, hiding selection button');
+      hideSelectionButton();
+    }
+  }
+  
+  // Mouse position tracking removed for simplicity
+  
+  // Keyboard shortcut handler for testing
+  function handleKeyboardShortcut(event) {
+    // Debug shortcut: Ctrl+Shift+A adds test snippet
+    if (event.ctrlKey && event.shiftKey && event.key === 'A') {
+      console.log('Debug shortcut: Adding current selection');
+      if (selectedText) {
+        handleCollectSnippet({ detail: { text: selectedText } });
+      } else {
+        // Add generic test text
+        handleCollectSnippet({ 
+          detail: { 
+            text: `Test text from keyboard shortcut at ${new Date().toLocaleTimeString()}` 
+          } 
+        });
+      }
+    }
+  }
+  
+  onMount(() => {
+    // Check if content is scrollable on mount
+    checkScrollable();
+    
+    
+    // Make this component available globally for debugging
+    if (typeof window !== 'undefined') {
+      window.transcriptDisplay = this;
+      window.forceCollect = (text) => {
+        handleCollectSnippet({ detail: { text: text || selectedText } });
+      };
+      
+      // Create a debug monitor object to track transcript selection state
+      window.transcriptDebug = {
+        getSelectedText: () => selectedText,
+        forceCollect: (text) => {
+          handleCollectSnippet({ detail: { text: text || selectedText } });
+          return 'Collection triggered';
+        },
+        forceDirectCollect: (text) => {
+          handleDirectCollection({ detail: { text: text || selectedText } });
+          return 'Direct collection triggered';
+        },
+        getComponentInfo: () => {
+          return {
+            hasParentContainer: !!parentContainer,
+            parentContainerHasAddMethod: parentContainer && typeof parentContainer.addLyricsSnippet === 'function',
+            currentSelectedText: selectedText,
+            isSelectionActive: selectionActive
+          };
+        }
+      };
+      
+      console.log('TranscriptDisplay debug functions available at window.transcriptDebug');
+    }
+    
+    // Watch for content changes to update scrollable state
+    const resizeObserver = new ResizeObserver(() => {
+      checkScrollable();
+    });
+    
+    if (transcriptBoxRef) {
+      resizeObserver.observe(transcriptBoxRef);
+    }
+    
+    // Add event listeners for selection
+    document.addEventListener('mouseup', handleTextSelection);
+    document.addEventListener('touchend', handleTextSelection);
+    document.addEventListener('click', handleClickOutside);
+    
+    // Mouse tracking removed for simplicity
+    
+    // Add keyboard shortcut handler
+    document.addEventListener('keydown', handleKeyboardShortcut);
+    
+    return () => {
+      if (transcriptBoxRef) {
+        resizeObserver.unobserve(transcriptBoxRef);
+      }
+      
+      // Remove event listeners
+      document.removeEventListener('mouseup', handleTextSelection);
+      document.removeEventListener('touchend', handleTextSelection);
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyboardShortcut);
+      
+      // Mouse tracking removed for simplicity
+      
+      // Clear any notification timeout
+      if (notificationTimeout) {
+        clearTimeout(notificationTimeout);
+      }
+      
+    };
+  });
+</script>
+
+<div
+  class="transcript-wrapper w-full animate-fadeIn-from-top relative"
+  on:animationend={() => {
+    // No page scrolling needed anymore with fixed layout
+    checkScrollable();
+  }}
+>
+  <!-- Wrapper for positioning toast properly -->
+  
+  <div class="wrapper-container flex w-full justify-center">
+    <div
+      class="transcript-box-container relative mx-auto w-[95%] max-w-[580px] px-0 sm:w-full"
+    >
+      <!-- Toast Notification for Lyrics Collection positioned relative to this container -->
+      {#if notification}
+        <div 
+          class="lyrics-collected-toast {notification.type}" 
+          transition:fly={{y: 30, duration: 200}}
+        >
+          <div class="toast-icon">
+            {#if notification.type === 'success'}
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toast-check-icon"><path d="M20 6L9 17l-5-5"/></svg>
+            {/if}
+          </div>
+          <div class="toast-message">Line collected!</div>
+        </div>
+      {/if}
+      <!-- Redesigned transcript box with proper structure -->
+      <div
+        class="transcript-box animate-shadow-appear relative mx-auto mb-4 box-border 
+               rounded-[2rem] border border-purple-100/70 bg-white/95
+               shadow-sm transition-all duration-300 contain-layout"
+      >
+        <!-- Re-roll button in the top-right corner - now bigger and with text -->
+        <div class="absolute top-3 right-3 z-10">
+          <button
+            class="reroll-btn rounded-full px-4 py-3 hover:scale-105 transform transition-all duration-300 bg-gradient-to-br from-pink-400 to-rose-400 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-rose-300 focus:ring-offset-2 active:scale-95 flex items-center gap-2"
+            on:click|preventDefault={handleReroll}
+            aria-label="Re-roll lyrics"
+            title="Re-roll lyrics from the same audio"
+          >
+            <!-- Dice icon for better visual association -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="dice-icon">
+              <rect width="12" height="12" x="2" y="10" rx="2" ry="2"></rect>
+              <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"></path>
+              <path d="M6 18h.01"></path>
+              <path d="M10 14h.01"></path>
+              <path d="M15 6h.01"></path>
+              <path d="M18 9h.01"></path>
+            </svg>
+            <span class="text-white font-medium">Reroll</span>
+          </button>
+        </div>
+        
+        <!-- Content Area - scrollable with increased height -->
+        <div 
+          class="transcript-content-area w-full max-h-[600px] overflow-y-auto overflow-x-hidden px-7 pt-6 pb-8 sm:px-10 sm:pt-7 sm:pb-10 relative z-5"
+          bind:this={transcriptBoxRef}
+        >
+          <div
+            class={`transcript-text ${responsiveFontSize} text-left custom-transcript-text animate-text-appear font-mono mb-3 lyric-display font-medium max-w-full break-words`}
+            contenteditable="true"
+            role="textbox"
+            aria-label="Transcript editor"
+            aria-multiline="true"
+            tabindex="0"
+            aria-describedby="transcript-instructions"
+            bind:this={editableTranscript}
+            on:focus={() => {
+              dispatch('focus', {
+                message: 'You can edit this transcript. Use keyboard to make changes.'
+              });
+            }}
+          >
+            {#each transcript.split('\n') as line}
+              <div class="lyric-line" style="width:100%;">{line || ' '}</div>
+            {/each}
+          </div>
+          
+          <!-- Hidden instructions for screen readers -->
+          <div id="transcript-instructions" class="sr-only">
+            Editable transcript. You can modify the text if needed.
+          </div>
+          
+          <!-- Selection button - hidden but functionality still used -->
+          {#if selectionActive}
+            <SelectionButton 
+              left={selectionLeft}
+              top={selectionTop}
+              visible={false}
+              selectedText={selectedText}
+              on:collect={handleCollectSnippet}
+              on:collection-error={handleCollectionError}
+            />
+          {/if}
+          
+          <!-- Remove the bottom controls area with the re-roll button -->
+        </div>
+        
+        <!-- Footer area with scroll indicator only -->
+        <div class="transcript-footer-area relative w-full">
+          <!-- Scroll indicator - only visible when scrollable -->
+          {#if isScrollable}
+            <div
+              class="scroll-indicator-bottom pointer-events-none absolute top-[-32px] left-0 right-0 z-10"
+            ></div>
+          {/if}
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Debug Collection Panel for direct testing - only shown during development -->
+{#if false}
+  <DebugCollectionPanel currentSelectedText={selectedText} />
+{/if}
+</div>
+
+<style>
+  /* Container layout */
+  .transcript-wrapper {
+    contain: layout;
+    margin-top: 24px; /* Reduced space between button and transcript */
+  }
+  
+  /* Box structure */
+  .transcript-box {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Contain all scrolling internally */
+    transition: background-color 0.6s cubic-bezier(0.22, 1, 0.36, 1), 
+                border-color 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.3s ease-out;
+    animation: subtle-breathe 10s infinite ease-in-out alternate;
+    position: relative; /* For the pseudo-element highlight */
+    contain: layout; /* Contain layout changes */
+  }
+  
+  /* Extremely subtle mouseover highlight effect */
+  .transcript-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 2rem;
+    background: radial-gradient(circle at 50% 50%, rgba(249, 168, 212, 0.04), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+    pointer-events: none; /* Allow clicks to pass through */
+    z-index: 1;
+  }
+  
+  .transcript-box:hover::before {
+    opacity: 1;
+  }
+  
+  /* Subtle sparkle effect for transcript box */
+  .transcript-box::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-image: 
+      radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.8) 0.1%, transparent 0.5%),
+      radial-gradient(circle at 70% 40%, rgba(255, 255, 255, 0.8) 0.1%, transparent 0.5%),
+      radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.8) 0.1%, transparent 0.5%),
+      radial-gradient(circle at 90% 90%, rgba(255, 255, 255, 0.8) 0.1%, transparent 0.5%);
+    border-radius: 2rem;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+  
+  .transcript-box:hover::after {
+    animation: sparkle-travel 3s ease-out;
+  }
+  
+  @keyframes sparkle-travel {
+    0% {
+      opacity: 0;
+      background-position: 20% 30%, 70% 40%, 30% 70%, 90% 90%;
+    }
+    30% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      background-position: 25% 35%, 75% 45%, 35% 75%, 95% 95%;
+    }
+  }
+  
+  /* Subtle breathing animation - 80/20 rule applied for subtlety */
+  @keyframes subtle-breathe {
+    0% {
+      box-shadow: 0 4px 16px rgba(168, 85, 247, 0.1);
+      border-color: rgba(168, 85, 247, 0.15);
+    }
+    50% {
+      box-shadow: 0 4px 18px rgba(168, 85, 247, 0.12);
+      border-color: rgba(168, 85, 247, 0.18);
+    }
+    100% {
+      box-shadow: 0 4px 20px rgba(168, 85, 247, 0.14);
+      border-color: rgba(168, 85, 247, 0.2);
+    }
+  }
+  
+  /* Elegant hover effect - extremely subtle */
+  .transcript-box:hover {
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.16);
+    border-color: rgba(168, 85, 247, 0.25);
+    transform: translateY(-0.5px);
+  }
+  
+  /* Enhanced transcript text styling - dynamic sizing based on content */
+  .custom-transcript-text {
+    text-align: left;
+    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    transition: background-color 0.4s ease, text-shadow 0.3s ease;
+    caret-color: rgba(236, 72, 153, 1); /* Darker, more visible cursor color */
+    /* Remove explicit font-size to allow Tailwind classes to work */
+    /* Base text size now handled by responsiveFontSize classes */
+    white-space: pre-wrap; /* Allow text to wrap but preserve line breaks */
+    word-break: break-word; /* Break long words if needed */
+    overflow-x: hidden; /* Prevent horizontal overflow */
+    max-width: 100%; /* Ensure text doesn't overflow container */
+    z-index: 0; /* Prevent unwanted stacking issues */
+    isolation: isolate; /* Create stacking context to prevent interference */
+    contain: content; /* Contain layout changes */
+    line-height: 1.6; /* Fixed line height for consistency */
+  }
+  
+  /* Lyric display container styling */
+  .lyric-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0; /* Remove gap to prevent layout shift */
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: hidden;
+    max-width: 100%;
+    contain: content; /* Contain layout changes */
+  }
+  
+  /* Individual lyric line styling */
+  .lyric-line {
+    line-height: 1.6;
+    min-height: 1.6em; /* Use min-height instead of fixed height */
+    padding: 0.3rem 0.5rem; /* Increased padding for better readability */
+    transition: background-color 0.2s ease;
+    border-radius: 0;
+    font-weight: 500; /* Medium weight text for balanced readability */
+    box-sizing: border-box; /* Ensure padding is included in element size */
+    overflow-x: hidden; /* Prevent horizontal overflow */
+    white-space: pre-wrap; /* Allow text to wrap but preserve line breaks */
+    word-break: break-word; /* Break long words if needed */
+    display: block; /* Ensure each line is its own block */
+    max-width: 100%; /* Ensure text doesn't overflow container */
+    width: 100%; /* Full width to prevent jitter */
+    border-bottom: 1px solid rgba(197, 163, 255, 0.08); /* Subtle separator */
+  }
+  
+  /* Empty line spacing */
+  .lyric-line:empty::after {
+    content: " ";
+    display: inline-block;
+    height: 1em;
+  }
+  
+  /* Line hover effect - lighter purple to indicate hover state */
+  .lyric-line:hover {
+    background-color: rgba(197, 163, 255, 0.25); /* Even lighter purple for hover */
+    cursor: pointer; /* Show pointer cursor on hover to indicate clickable */
+    width: 100%; /* Full width to match selection */
+    transition: background-color 0.2s ease;
+    transform: none; /* Prevent transforms on hover */
+  }
+  
+  /* Line focus/selection effect - solid chunk highlight */
+  .lyric-line:focus, .lyric-line.selected, .lyric-line-grabbed {
+    background-color: #C5A3FF; /* Solid purple highlight color */
+    color: #111827;
+    outline: none;
+    border-radius: 0; /* Remove border radius */
+    width: 100%; /* Full-width highlight */
+    box-shadow: 0 0 0 2px #C5A3FF; /* Extra highlight to ensure full width */
+  }
+  
+  /* Clear, simple selection effect to avoid conflicts */
+  .lyric-line-grabbed {
+    animation: simpleGrabHighlight 0.6s ease-in-out; /* Basic animation with standard easing */
+    border-left: 5px solid #a37cff; /* Solid border on the left for extra visibility */
+    padding-left: calc(0.5rem - 5px); /* Maintain the same total padding */
+    box-shadow: 0 0 5px rgba(197, 163, 255, 0.2); /* Very subtle shadow */
+    transform: none; /* Prevent transform which could cause jitter */
+  }
+  
+  /* Simple background color flash animation */
+  @keyframes simpleGrabHighlight {
+    0% { background-color: #C5A3FF; }
+    40% { background-color: #e7deff; } /* Brighter for better feedback */
+    100% { background-color: #C5A3FF; }
+  }
+  
+  /* Animation for selected line when lyrics are collected */
+  .lyric-pulse-collected {
+    animation: lyric-collected-pulse 1.5s ease-out forwards;
+    border-left: 3px solid #ec4899;
+    box-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
+    transform: none; /* Prevent transform which could cause jitter */
+    width: 100%; /* Ensure full width */
+  }
+  
+  @keyframes lyric-collected-pulse {
+    0% {
+      background-color: rgba(249, 168, 212, 0.6);
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+    }
+    30% {
+      background-color: rgba(249, 168, 212, 0.3);
+      box-shadow: 0 0 12px rgba(236, 72, 153, 0.3);
+    }
+    60% {
+      background-color: rgba(249, 168, 212, 0.4);
+      box-shadow: 0 0 8px rgba(236, 72, 153, 0.2);
+    }
+    100% {
+      background-color: rgba(197, 163, 255, 0.3);
+      border-left: 0;
+      box-shadow: none;
+    }
+  }
+  
+  /* Smooth, flowing notification animation with satisfying motion */
+  @keyframes flowingNotification {
+    0% { opacity: 0; transform: translateY(8px) scale(0.8); }
+    30% { opacity: 1; transform: translateY(-2px) scale(1.05); } /* Gentle rise */
+    45% { transform: translateY(1px) scale(0.98); } /* Slight settling */
+    60% { transform: translateY(0) scale(1); } /* Final position */
+    80% { opacity: 1; transform: translateY(0) scale(1); } /* Hold longer */
+    100% { opacity: 0; transform: translateY(-5px); } /* Fade away gently */
+  }
+  
+  
+  
+  /* Consistent solid purple style for selected text */
+  ::selection {
+    background-color: #C5A3FF; /* Solid purple highlight color */
+    color: #111827;
+    text-shadow: none; /* Remove any text shadow during selection */
+  }
+  
+  /* Optimize spacing based on font size for better readability */
+  .text-xs, .text-sm {
+    letter-spacing: 0.01em; /* Slightly open tracking for smaller text */
+  }
+  
+  .text-base, .text-lg {
+    letter-spacing: 0; /* Normal tracking for medium text */
+  }
+  
+  .text-xl, .text-2xl, .text-3xl, .text-4xl {
+    line-height: 1.5; /* Slightly tighter for larger text */
+    letter-spacing: -0.01em; /* Slightly tighter tracking for large text */
+  }
+  
+  /* Base transition timing for box with gentle easing curve */
+  .transcript-box {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                background-color 0.28s cubic-bezier(0.22, 1, 0.36, 1), 
+                border-color 0.28s cubic-bezier(0.22, 1, 0.36, 1), 
+                box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  
+  /* Clean highlight when clicked/editing - single consistent background */
+  .transcript-box:focus-within {
+    background-color: rgba(245, 243, 255, 0.9);
+    border-color: rgba(168, 85, 247, 0.25);
+    box-shadow: 0 4px 16px rgba(168, 85, 247, 0.2), 0 0 2px rgba(168, 85, 247, 0.1) inset;
+    transform: translateY(-1px);
+  }
+  
+  /* Refined text shadow effect when editing - with subtle depth */
+  .transcript-box:focus-within .custom-transcript-text {
+    text-shadow: 0 0.5px 0 rgba(168, 85, 247, 0.15), 0 1px 1.5px rgba(0, 0, 0, 0.03);
+    letter-spacing: 0.01em; /* Very slightly open up letter spacing for editability */
+  }
+  
+  /* Fun, salmon-colored Re-roll button styling */
+  .reroll-btn {
+    position: relative;
+    background-color: #fb7185; /* rose-400 fallback - light salmon pink */
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    will-change: transform;
+    overflow: hidden;
+    font-size: 0.9rem; /* Slightly larger text */
+    font-weight: 600;
+  }
+
+  /* Hover effect matching Save button */
+  .reroll-btn:hover {
+    background-color: #f43f5e; /* rose-500 fallback - darker salmon */
+    box-shadow: 0 4px 8px rgba(244, 63, 94, 0.25);
+    transform: scale(1.03);
+  }
+  
+  /* Satisfying click effect */
+  .reroll-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Fun dice animation on hover */
+  .dice-icon {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: center;
+  }
+  
+  .reroll-btn:hover .dice-icon {
+    animation: diceBounceWiggle 1s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+  }
+  
+  @keyframes diceBounceWiggle {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    10% { transform: rotate(-10deg) scale(1.1); }
+    20% { transform: rotate(10deg) scale(1.2); }
+    30% { transform: rotate(-8deg) scale(1.1); }
+    40% { transform: rotate(8deg) scale(1.05); }
+    50% { transform: rotate(-5deg) scale(1.1); }
+    60% { transform: rotate(5deg) scale(1.05); }
+    70% { transform: rotate(-2deg) scale(1); }
+    80% { transform: rotate(2deg) scale(1.05); }
+    90% { transform: rotate(0deg) scale(1); }
+  }
+  
+  /* Add subtle shimmer on hover */
+  .reroll-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 20%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: rotate(30deg);
+    transition: left 0.7s ease;
+    pointer-events: none;
+    opacity: 0;
+    border-radius: inherit;
+  }
+  
+  .reroll-btn:hover::before {
+    left: 130%;
+    opacity: 1;
+    transition: left 0.7s ease, opacity 0.1s ease;
+  }
+  
+  /* Add satisfying 3D depth effect on hover */
+  .reroll-btn {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                background 0.3s ease;
+    will-change: transform, box-shadow;
+  }
+  
+  .reroll-btn:hover {
+    box-shadow: 0 6px 16px rgba(244, 63, 94, 0.25), 0 0 0 2px rgba(244, 63, 94, 0.1);
+    transform: translateY(-2px) scale(1.05);
+    filter: brightness(108%);
+  }
+  
+  .reroll-btn:active {
+    transform: translateY(1px) scale(0.95);
+    box-shadow: 0 2px 8px rgba(244, 63, 94, 0.2);
+    filter: brightness(95%);
+  }
+  
+  /* Subtle pulse animation when first entering edit mode */
+  @keyframes edit-pulse {
+    0% { background-color: rgba(245, 243, 255, 0.9); }
+    30% { background-color: rgba(168, 85, 247, 0.15); }
+    100% { background-color: rgba(245, 243, 255, 0.9); }
+  }
+  
+  .transcript-box:focus-within {
+    animation: edit-pulse 0.6s cubic-bezier(0.4, 0, 0.2, 1) 1;
+  }
+  
+  
+  /* Remove outline focus from the text itself for cleaner look */
+  .custom-transcript-text:focus {
+    outline: none;
+  }
+  
+  /* Style the share button area with matching elegance */
+  .transcript-button-area {
+    transition: background 0.28s cubic-bezier(0.22, 1, 0.36, 1), 
+                backdrop-filter 0.32s cubic-bezier(0.22, 1, 0.36, 1), 
+                transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .transcript-box:focus-within .transcript-button-area {
+    background-color: rgba(253, 242, 248, 0.9);
+    backdrop-filter: blur(5px);
+    transform: translateY(-0.5px);
+  }
+  
+
+  /* Content area scrolling - more refined */
+  .transcript-content-area {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(168, 85, 247, 0.3) transparent;
+    overscroll-behavior: contain; /* More controlled overscroll */
+    -webkit-overflow-scrolling: touch; /* Smoother scrolling on iOS */
+    scroll-behavior: smooth; /* Smoother scrolling */
+    transition: background-color 0.3s ease-out; /* Limit transitions to prevent layout shifts */
+    contain: paint; /* Contain paint operations */
+  }
+  
+    /* Simple hand pointer cursor */
+  .custom-transcript-text {
+    cursor: pointer;
+    contain: content; /* Contain layout changes */
+    contain-intrinsic-size: 100%; /* Set intrinsic size */
+  }
+  
+  /* Refined selection styling - only for non-lyric-line selections */
+  .transcript-box ::selection {
+    background-color: #C5A3FF; /* Solid purple highlight color */
+    color: #111827;
+  }
+  
+  /* Prevent double highlighting when line is selected */
+  .lyric-line.selected ::selection,
+  .lyric-line-grabbed ::selection {
+    background-color: transparent; /* Hide the native text selection styling */
+    color: inherit; /* Use the parent element's text color */
+    -webkit-user-select: none; /* Disable text selection in Safari */
+    user-select: none; /* Disable text selection in modern browsers */
+  }
+  
+  
+  
+  /* Custom scrollbar styles for WebKit browsers */
+  .transcript-content-area::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .transcript-content-area::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .transcript-content-area::-webkit-scrollbar-thumb {
+    background-color: rgba(168, 85, 247, 0.3);
+    border-radius: 20px;
+    border: 2px solid transparent;
+  }
+  
+  /* Elegant scroll indicator for content overflow */
+  .scroll-indicator-bottom {
+    height: 40px; /* Taller gradient for more presence */
+    background: linear-gradient(to top, 
+                rgba(255, 255, 255, 0.98) 0%, 
+                rgba(253, 242, 248, 0.9) 15%,
+                rgba(253, 242, 248, 0.5) 40%,
+                rgba(253, 242, 248, 0.1) 75%,
+                rgba(255, 255, 255, 0) 100%);
+    box-shadow: 0 -6px 12px -6px rgba(249, 168, 212, 0.15);
+    border-bottom-left-radius: 2rem;
+    border-bottom-right-radius: 2rem;
+    pointer-events: none; /* Ensures text behind it is selectable */
+    opacity: 0.95; /* Slight transparency */
+  }
+  
+  /* Mobile optimization */
+  @media (max-width: 600px) {
+    .transcript-content-area {
+      max-height: 450px; /* Increased height on mobile but still smaller than desktop */
+      padding: 1.5rem;
+      scrollbar-width: none; /* Hide scrollbar on Firefox */
+    }
+    
+    .transcript-content-area::-webkit-scrollbar {
+      display: none; /* Hide scrollbar on Webkit browsers */
+    }
+    
+    .transcript-wrapper {
+      margin-top: 24px; /* Smaller gap on mobile */
+    }
+    
+    /* Slightly taller scroll indicator on mobile */
+    .scroll-indicator-bottom {
+      height: 48px;
+    }
+  }
+  
+  /* Footer area with gradient and button */
+  .transcript-footer-area {
+    flex-shrink: 0; /* Prevent footer from shrinking */
+    position: relative; /* For positioning the gradient */
+    z-index: 5; /* Ensure it's above the content but below the gradient */
+    margin-top: -4px; /* Reduce gap between transcript and share button */
+  }
+  
+  /* Button area styling - integrated with content */
+  .transcript-button-area {
+    flex-shrink: 0; /* Prevent button area from shrinking */
+    background: transparent; /* Make it blend with content */
+    margin-top: 8px; /* Small space after gradient */
+    backdrop-filter: blur(4px); /* Subtle blur effect for elegance */
+  }
+  
+  /* Ensure Share button stays centered */
+  :global(.share-btn-text) {
+    display: inline-block;
+    text-align: center;
+  }
+  
+  /* Animation classes */
+  .animate-shadow-appear {
+    box-shadow: 0 8px 30px rgba(249, 168, 212, 0.25);
+    animation: shadowAppear 0.5s ease-out forwards;
+  }
+  
+  .animate-text-appear {
+    animation: textAppear 0.4s ease-out forwards;
+  }
+  
+  @keyframes shadowAppear {
+    from {
+      box-shadow: 0 0 0 rgba(249, 168, 212, 0);
+    }
+    to {
+      box-shadow: 0 8px 30px rgba(249, 168, 212, 0.25);
+    }
+  }
+  
+  @keyframes textAppear {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Notification animations */
+  .animate-bounce-in {
+    animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+  
+  @keyframes bounceIn {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, 20px) scale(0.8);
+    }
+    50% {
+      opacity: 1;
+      transform: translate(-50%, -5px) scale(1.05);
+    }
+    70% {
+      transform: translate(-50%, 2px) scale(0.95);
+    }
+    100% {
+      transform: translate(-50%, 0) scale(1);
+    }
+  }
+  
+  /* Notification pill styling */
+  .notification-pill {
+    animation: notificationAppear 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+  }
+  
+  .notification-pill:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  @keyframes notificationAppear {
+    0% { 
+      opacity: 0;
+      transform: translateX(-20px) scale(0.9);
+    }
+    60% { 
+      opacity: 1;
+      transform: translateX(5px) scale(1.03);
+    }
+    100% { 
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+  /* Toast Notification Styling */
+  .lyrics-collected-toast {
+    position: fixed;
+    top: 110px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    padding: 10px 14px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000;
+    font-weight: 600;
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .lyrics-collected-toast.success {
+    background: linear-gradient(to right, rgba(196, 181, 253, 0.98), rgba(196, 181, 253, 0.95));
+    border-left: 4px solid #9F7AEA;
+    box-shadow: 0 4px 16px rgba(167, 139, 250, 0.4);
+  }
+
+  .lyrics-collected-toast.error {
+    background: linear-gradient(to right, rgba(254, 226, 226, 0.9), rgba(254, 226, 226, 0.7));
+    border-left: 4px solid #F87171;
+  }
+
+  .lyrics-collected-toast.info {
+    background: linear-gradient(to right, rgba(219, 234, 254, 0.9), rgba(219, 234, 254, 0.7));
+    border-left: 4px solid #60A5FA;
+  }
+
+  .toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .toast-check-icon {
+    color: #9F7AEA;
+    stroke-width: 3;
+    width: 18px;
+    height: 18px;
+  }
+
+  .toast-error-icon {
+    color: #F87171;
+  }
+
+  .toast-info-icon {
+    color: #60A5FA;
+  }
+
+  .toast-message {
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+</style>

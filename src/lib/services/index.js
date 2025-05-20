@@ -50,7 +50,7 @@ export {
   waveformData,
   hasPermissionError,
   recordingDuration,
-  transcriptionCompletedEvent, // <-- Add this line
+  // Remove transcriptionCompletedEvent export to fix circular imports
   audioActions,
   transcriptionActions,
   uiActions

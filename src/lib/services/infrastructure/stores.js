@@ -338,9 +338,12 @@ export function resetStores() {
 export const transcriptionCompletedEvent = (() => {
   const { subscribe, set } = writable(null); // Event store, emits text on completion then null
   let _previousInProgress = get(transcriptionState).inProgress; // Initialize with current state
+  let _lastText = ''; // Track last emitted text to prevent duplicates
   
   // Maintain a flag to track if an event is pending to be fired
   let _pendingEvent = false;
+  // Timestamp of last event to prevent rapid firing
+  let _lastEventTime = 0;
   
   transcriptionState.subscribe(currentState => {
     // First check: was transcribing and now finished
@@ -349,15 +352,24 @@ export const transcriptionCompletedEvent = (() => {
     // Second check: has valid text content
     const hasValidContent = currentState.text && currentState.text.trim() !== '';
     
-    if (justCompleted && hasValidContent) {
+    // Third check: is text different from last emitted text
+    const isNewText = currentState.text !== _lastText;
+    
+    // Fourth check: enough time has passed since last event (100ms min)
+    const enoughTimePassed = Date.now() - _lastEventTime > 100;
+    
+    if (justCompleted && hasValidContent && isNewText && enoughTimePassed) {
       // Use our logger instead of console.log
       import('./loggerService').then(({ createLogger }) => {
         const storeLogger = createLogger('Stores');
-        storeLogger.info('transcriptionCompletedEvent: Detected completion with text -', currentState.text);
+        storeLogger.info('transcriptionCompletedEvent: Detected completion with text -', 
+          currentState.text?.substring(0, 20) + '...');
       });
       
       // Set flag that an event is pending
       _pendingEvent = true;
+      _lastEventTime = Date.now();
+      _lastText = currentState.text;
       
       // Fire immediately, no delay
       set(currentState.text); // Emit the text value
@@ -374,16 +386,55 @@ export const transcriptionCompletedEvent = (() => {
     _previousInProgress = currentState.inProgress;
   });
 
+  // Also subscribe to the text derived store to catch direct text updates that might bypass
+  // the normal state transition detection
+  transcriptionText.subscribe(text => {
+    // Only fire if there's valid text content and it's different from last emitted
+    if (text && text.trim() !== '' && text !== _lastText && !_pendingEvent) {
+      // Check timing to prevent duplicate events
+      const enoughTimePassed = Date.now() - _lastEventTime > 200;
+      if (enoughTimePassed) {
+        import('./loggerService').then(({ createLogger }) => {
+          const storeLogger = createLogger('Stores');
+          storeLogger.info('transcriptionCompletedEvent: Detected text change without state transition -', 
+            text?.substring(0, 20) + '...');
+        });
+        
+        _pendingEvent = true;
+        _lastEventTime = Date.now();
+        _lastText = text;
+        
+        // Fire the event
+        set(text);
+        
+        // Reset as a microtask
+        Promise.resolve().then(() => {
+          set(null);
+          _pendingEvent = false;
+        });
+      }
+    }
+  });
+
   // Extend the store with a method to manually trigger the event
   const forceEmit = (text) => {
-    if (!text || _pendingEvent) return false; // Prevent duplicate events
+    if (!text || !text.trim()) return false; // Don't emit empty text
+    
+    // If the same text was recently emitted, don't emit again
+    if (text === _lastText && Date.now() - _lastEventTime < 300) {
+      return false;
+    }
     
     import('./loggerService').then(({ createLogger }) => {
       const storeLogger = createLogger('Stores');
-      storeLogger.info('transcriptionCompletedEvent: Force emitting with text -', text);
+      storeLogger.info('transcriptionCompletedEvent: Force emitting with text -', 
+        text?.substring(0, 20) + '...');
     });
     
     _pendingEvent = true;
+    _lastEventTime = Date.now();
+    _lastText = text;
+    
     set(text); // Emit the text value
     
     // Reset to null as a microtask

@@ -275,11 +275,7 @@
                 </svg>
                 {buttonLabel}
                 
-                {#if recording}
-                  <span class="recording-timer ml-1 font-medium text-sm">
-                    {formatTime(recordingDuration)}
-                  </span>
-                {/if}
+                <!-- Removed timer display from button text -->
               </span>
               
               <!-- Screen reader text -->
@@ -299,14 +295,7 @@
       </span>
     </button>
     
-    {#if recording}
-      <!-- Visual time indicator for sighted users -->
-      <div class="recording-time-indicator text-center text-sm mt-1 font-medium">
-        <span class={isDanger ? 'text-red-600' : isWarning ? 'text-amber-600' : 'text-gray-600'}>
-          {formatTime(timeRemaining)} remaining
-        </span>
-      </div>
-    {/if}
+    <!-- Removed secondary timer indicator -->
   </div>
 {/if}
 

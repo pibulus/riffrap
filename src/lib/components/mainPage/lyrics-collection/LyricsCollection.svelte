@@ -591,7 +591,7 @@
   <!-- Main content area with snippets or empty state -->
   <div
     class="panel-body overflow-y-auto p-5 pt-6 backdrop-blur-sm"
-    style="background-color: white;"
+    style="background-color: white; max-height: 70vh;"
   >
     {#if snippets.length === 0}
       <!-- === EMPTY STATE CHUNK START === -->

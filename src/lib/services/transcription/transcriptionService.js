@@ -25,6 +25,7 @@ export class TranscriptionService {
   }
   
   async transcribeAudio(audioBlob) {
+    console.log('[TRACE] transcribeAudio called with blob:', audioBlob?.size || 'null');
     try {
       if (!audioBlob || !(audioBlob instanceof Blob)) {
         throw new TranscriptionError('Invalid audio data provided', {
@@ -32,6 +33,12 @@ export class TranscriptionService {
           context: { blobType: audioBlob ? typeof audioBlob : 'null' }
         });
       }
+      
+      // Log the received audio blob to verify it exists and has content
+      logger.info('Received audio blob for transcription', { 
+        blobSize: audioBlob.size,
+        blobType: audioBlob.type
+      });
       
       // Dispatch event through event bridge
       eventBridge.dispatchAppEvent('transcription-started', {
@@ -51,7 +58,9 @@ export class TranscriptionService {
       this.startProgressAnimation();
       
       // Transcribe using Gemini
+      console.log('[TRACE] Calling geminiService.transcribeAudio');
       const transcriptText = await this.geminiService.transcribeAudio(audioBlob);
+      console.log('[TRACE] Received transcript from geminiService:', transcriptText?.substring(0, 30));
       
       // Complete progress animation with smooth transition
       this.completeProgressAnimation();
@@ -73,6 +82,9 @@ export class TranscriptionService {
       // Wait a brief moment to ensure UI is ready
       await new Promise(resolve => setTimeout(resolve, 50));
       
+      // FIXED: Remove dynamic import of transcriptionCompletedEvent since it's not exported
+      // Direct state updates are used instead of event emission
+      
       // Update transcription state with completed text - force direct update
       transcriptionState.update(current => ({
         ...current,
@@ -82,16 +94,38 @@ export class TranscriptionService {
         timestamp: Date.now()
       }));
       
-      // Make sure the UI knows there's text
+      // Make sure the UI knows there's text by directly updating the state first
+      // then emit the event to ensure UI component receives both updates
+      
+      // 1. First ensure the text is in the store
+      const currentText = get(transcriptionState).text;
+      if (currentText !== transcriptText) {
+        logger.info('Directly updating transcriptionState with transcript');
+        transcriptionState.update(current => ({
+          ...current,
+          text: transcriptText
+        }));
+      }
+      
+      // 2. Complete the transcription through actions 
+      // This will trigger the proper state updates and UI rendering
+      logger.info('Directly completing transcription via state update');
+      transcriptionActions.completeTranscription(transcriptText);
+      
+      // 3. Schedule a safety check to verify text was applied properly
       setTimeout(() => {
-        // Double-check if text is still missing
-        const currentText = get(transcriptionState).text;
-        if (!currentText || currentText !== transcriptText) {
-          logger.warn('Text mismatch after update, forcing second update');
+        // Double-check if text is still missing or incorrect
+        const verifyText = get(transcriptionState).text;
+        if (verifyText !== transcriptText) {
+          logger.warn('Text still mismatched after initial update, forcing secondary update');
           transcriptionState.update(current => ({
             ...current,
             text: transcriptText
           }));
+          
+          // Update directly using actions as a last resort
+          logger.info('Last resort updating via transcriptionActions');
+          transcriptionActions.completeTranscription(transcriptText);
         }
       }, 100);
       

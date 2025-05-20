@@ -188,7 +188,8 @@
       <div
         class="transcript-box animate-shadow-appear relative mx-auto mb-4 box-border 
                rounded-[2rem] border border-purple-100/70 bg-white/95
-               shadow-sm transition-all duration-500 ease-in-out contain-layout"
+               shadow-sm transition-all duration-500 ease-in-out contain-layout
+               w-full min-w-[300px]"
       >
         <!-- Re-roll button in the top-right corner - enhanced with animation and improved visual feedback -->
         <div class="absolute top-3 right-3 z-10">
@@ -234,9 +235,13 @@
               });
             }}
           >
-            {#each transcript.split('\n') as line}
-              <div class="lyric-line" style="width:100%;">{line || ' '}</div>
-            {/each}
+            {#if transcript.startsWith('<div style=')}
+              {@html transcript}
+            {:else}
+              {#each transcript.split('\n') as line}
+                <div class="lyric-line" style="width:100%;">{line || ' '}</div>
+              {/each}
+            {/if}
           </div>
           
           <!-- Hidden instructions for screen readers -->
@@ -302,6 +307,8 @@
   .transcript-wrapper {
     contain: layout;
     margin-top: 24px; /* Reduced space between button and transcript */
+    min-width: 300px; /* Minimum width for the entire transcript component */
+    width: 100%; /* Take up available space */
   }
   
   /* Box structure */
@@ -317,6 +324,8 @@
     animation: subtle-breathe 10s infinite ease-in-out alternate;
     position: relative; /* For the pseudo-element highlight */
     min-height: 150px; /* Minimum height to prevent collapse */
+    min-width: 300px; /* Minimum width to maintain consistent appearance */
+    width: 100%; /* Take up available space */
     will-change: height, transform; /* Hardware acceleration hint */
   }
   
