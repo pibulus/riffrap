@@ -108,96 +108,46 @@
 				return;
 			}
 			
-			// Set UI state to indicate re-rolling
-			transcriptionActions.startTranscribing();
-			
 			// Clear any previous error messages
 			uiActions.clearErrorMessage();
 			
-			// Set initial transcription text to indicate re-rolling
-			// Don't set to null as it causes the component to unmount
-			// Instead, create a centered, prettier re-rolling message with HTML formatting
-			console.log('[DEBUG] Setting transcript to re-rolling message');
-			// Simple re-rolling message as plain text
+			// Set re-rolling state and UI feedback
 			const reRollingMessage = "✨ Re-rolling lyrics... ⏳";
-			
-			// Update state with HTML-formatted message
 			transcriptionState.update(current => ({
 				...current,
+				inProgress: true,
 				text: reRollingMessage,
-				rerolling: true // Flag to trigger animations
+				rerolling: true
 			}));
 			
-			// Trigger the height animation by forcing a layout reflow
-			// This will make the bloopy animation look nicer
-			setTimeout(() => {
-				const el = document.querySelector('.transcript-container');
-				if (el) {
-					void el.offsetHeight; // Force reflow
-					console.log('[DEBUG] Forcing reflow for animation');
-				}
-			}, 10);
+			// Ghost animations
+			ghostComponent?.pulse?.();
+			ghostComponent?.startThinking?.();
 			
-			// Subtle pulse ghost icon when re-rolling
-			if (ghostComponent && typeof ghostComponent.pulse === 'function') {
-				ghostComponent.pulse();
-			}
-			
-			// If ghost has "thinking" animation, use it
-			if (ghostComponent && typeof ghostComponent.startThinking === 'function') {
-				ghostComponent.startThinking();
-			}
-			
-			// Re-transcribe the audio with same prompt style (possibly different interpretation/output)
+			// Re-transcribe the audio
 			const newTranscript = await transcriptionService.transcribeAudio(lastAudioBlob);
-			
-			// Log the result to ensure we're getting a response
 			console.log('[DEBUG] Re-rolled transcript received:', newTranscript);
 			
-			// Reset the rerolling state for animations
-			transcriptionState.update(current => ({
-				...current,
-				rerolling: false
-			}));
-			
-			// CRITICAL: Ensure the transcript is updated for re-rolls
-			// Use direct state update instead of event emission
+			// Update with new transcript - single state update path
 			if (newTranscript) {
-				console.log('[DEBUG] Updating transcript text after re-roll, text length:', newTranscript?.length);
-				// Force direct update via state
-				transcriptionState.update(current => ({
-					...current,
-					text: newTranscript
-				}));
-				
-				// Also call completion handler directly
-				handleTranscriptCompletion(newTranscript);
+				await updateUIWithTranscription(newTranscript);
 			} else {
-				console.warn('[DEBUG] Unable to update - missing transcript');
+				throw new Error('Empty transcript received');
 			}
 			
-			// Auto-scroll disabled to keep existing content in view
-			
-			// Stop thinking animation
-			if (ghostComponent && typeof ghostComponent.stopThinking === 'function') {
-				ghostComponent.stopThinking();
-			}
 		} catch (err) {
 			console.error('❌ Error re-rolling transcript:', err);
 			uiActions.setErrorMessage(`Re-roll error: ${err.message || 'Unknown error'}`);
 			
-			// Reset transcription state and animation flags
-			transcriptionActions.updateProgress(0);
-			transcriptionActions.completeTranscription($transcriptionText);
+			// Reset state on error
 			transcriptionState.update(current => ({
 				...current,
-				rerolling: false
+				inProgress: false,
+				rerolling: false,
+				text: $transcriptionText // Restore previous text
 			}));
 			
-			// Stop thinking animation if it's still running
-			if (ghostComponent && typeof ghostComponent.stopThinking === 'function') {
-				ghostComponent.stopThinking();
-			}
+			ghostComponent?.stopThinking?.();
 		}
 	}
 
@@ -361,36 +311,27 @@
 	 * @returns {Promise<void>}
 	 */
 	async function updateUIWithTranscription(transcriptText) {
-		// Step 1: Update the transcription state
+		// Update transcription state
 		transcriptionState.update(current => ({
 			...current,
 			inProgress: false,
 			progress: 100,
-			text: transcriptText
+			text: transcriptText,
+			rerolling: false
 		}));
 		
-		// Brief delay to allow store updates to propagate
-		await new Promise(resolve => setTimeout(resolve, 10));
-		
-		// Step 2: Process transcript completion (UI updates, confetti, clipboard)
+		// Process completion (confetti, clipboard, ghost reactions)
 		handleTranscriptCompletion(transcriptText);
 		
-		// Step 3: Update UI state
+		// Clean up UI state
 		if ($isRecording) {
 			audioActions.updateState(AudioStates.IDLE);
 		}
+		ghostComponent?.stopThinking?.();
 		
-		if (ghostComponent?.stopThinking) {
-			ghostComponent.stopThinking();
-		}
-		
-		// Step 4: Increment the transcription count for PWA prompt
+		// Increment transcription count for PWA prompt
 		if (browser) {
-			if ('requestIdleCallback' in window) {
-				window.requestIdleCallback(() => incrementTranscriptionCount());
-			} else {
-				setTimeout(incrementTranscriptionCount, 0);
-			}
+			setTimeout(incrementTranscriptionCount, 100);
 		}
 	}
 
@@ -549,51 +490,31 @@
 	}
 
 	// State changes for transcript completion
-	function handleTranscriptCompletion(textToProcess) { // <-- Accept text as a parameter
+	function handleTranscriptCompletion(textToProcess) {
 		console.log('[DEBUG] handleTranscriptCompletion() called with textToProcess:', textToProcess);
 
-		// Force update UI state directly to ensure text is displayed
-		// This is critical as a safety measure for transcript display
-		if (textToProcess && textToProcess.trim() !== '') {
-			console.log('[DEBUG] Directly updating transcription state in handleTranscriptCompletion');
-			transcriptionState.update(current => ({
-				...current,
-				inProgress: false,
-				progress: 100,
-				text: textToProcess
-			}));
+		// Ghost reactions
+		if (ghostComponent?.reactToTranscript) {
+			ghostComponent.reactToTranscript(textToProcess?.length || 0);
 		}
 
-		// Only attempt to use ghost component if it exists
-		if (ghostComponent && typeof ghostComponent.reactToTranscript === 'function') {
-			// React to transcript with ghost expression based on length
-			ghostComponent.reactToTranscript(textToProcess?.length || 0); // Use parameter
-
-			// Stop thinking animation
-			if (typeof ghostComponent.stopThinking === 'function') {
-				ghostComponent.stopThinking();
-			}
-		}
-
-		// Automatically copy to clipboard when transcription finishes
-		if (textToProcess) { // <-- Use the passed-in parameter
+		// Process completion effects if we have text
+		if (textToProcess) {
 			// Show confetti celebration as a random Easter egg (1/7 chance)
 			if (Math.floor(Math.random() * 7) === 0) {
-				// Update confetti colors based on current theme
 				confettiColors = getThemeConfettiColors();
 				console.log('[DEBUG] Using theme-specific confetti colors:', confettiColors);
 				showConfetti = true;
-				// Reset after animation completes
 				setTimeout(() => {
 					showConfetti = false;
 				}, ANIMATION.CONFETTI.ANIMATION_DURATION + 500);
 			}
 			
-			// Copy to clipboard with small delay to ensure UI updates
+			// Auto-copy to clipboard
 			setTimeout(() => {
-				transcriptionService.copyToClipboard(textToProcess); // <-- Use parameter
+				transcriptionService.copyToClipboard(textToProcess);
 				console.log("Auto-copying transcript to clipboard");
-			}, 100); // Faster copying
+			}, 100);
 		} else {
 			console.log('[DEBUG] Inside handleTranscriptCompletion: textToProcess is FALSY.');
 		}
@@ -606,18 +527,11 @@
 
 		// Ghost element is now handled through the component reference
 
-		// Existing subscription to transcriptionText for general debugging (no longer calls handleTranscriptCompletion)
+		// Subscribe to transcriptionText for debug logging only - completion handled elsewhere
 		const transcriptUnsub = transcriptionText.subscribe((text) => {
 			console.log('[DEBUG] (Raw transcriptionText update) Text:', text, 'IsTranscribing:', $isTranscribing);
-			// Re-add call to handleTranscriptCompletion to ensure it gets called
-			if (text && !$isTranscribing) {
-				console.log('[DEBUG] Calling handleTranscriptCompletion from transcriptionText subscription');
-				handleTranscriptCompletion(text);
-			}
 		});
 
-		// We no longer need the transcriptionCompletedEvent subscription 
-		// The direct state updates are enough
 
 		// Subscribe to permission denied state to show error modal
 		const permissionUnsub = hasPermissionError.subscribe((denied) => {
@@ -673,9 +587,7 @@
 		if (unsubscribePromptStyle) unsubscribePromptStyle();
 	});
 
-	// Recording state is now handled by the Ghost component via props
 
-	// Use reactive declarations for progress updates instead of DOM manipulation
 	$: progressValue = $transcriptionProgress;
 </script>
 

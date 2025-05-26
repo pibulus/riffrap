@@ -129,20 +129,19 @@ export class TranscriptionService {
   
   startProgressAnimation() {
     let progress = 0;
+    const ANIMATION_INTERVAL = 50;
+    
     const animate = () => {
       if (!get(transcriptionState).inProgress) return;
       
       progress = Math.min(95, progress + 1);
-      
-      // Update store with current progress
       transcriptionActions.updateProgress(progress);
       
       if (progress < 95) {
-        setTimeout(animate, 50);
+        setTimeout(animate, ANIMATION_INTERVAL);
       }
     };
     
-    // Start animation loop
     animate();
   }
   
