@@ -55,9 +55,7 @@ export class TranscriptionService {
       this.startProgressAnimation();
       
       // Process the audio through Gemini API
-      console.log(`[DEBUG] Sending ${audioBlob.size} bytes to Gemini API`);
       const transcriptText = await this.geminiService.transcribeAudio(audioBlob);
-      console.log('[DEBUG] Transcription result:', transcriptText?.substring(0, 50));
       
       // Complete progress animation with smooth transition
       this.completeProgressAnimation();

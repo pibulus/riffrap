@@ -73,7 +73,6 @@ export function initializeServices(options = {}) {
     hapticServiceInstance.disable();
   }
   
-  console.log('🚀 TalkType services initialized with Svelte stores');
   
   // Initialize sound service
   soundServiceInstance.init();

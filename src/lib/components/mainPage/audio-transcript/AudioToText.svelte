@@ -126,7 +126,6 @@
 			
 			// Re-transcribe the audio
 			const newTranscript = await transcriptionService.transcribeAudio(lastAudioBlob);
-			console.log('[DEBUG] Re-rolled transcript received:', newTranscript);
 			
 			// Update with new transcript - single state update path
 			if (newTranscript) {
@@ -229,7 +228,6 @@
 		try {
 			// Verify that we're actually recording
 			if (!$isRecording) {
-				console.log('[DEBUG] stopRecording called but not recording');
 				return;
 			}
 
@@ -241,23 +239,19 @@
 
 			// Get audio blob from recording service
 			timeMarkers.audioBlob = Date.now();
-			console.log(`[DEBUG] Stopping recording, elapsed: ${timeMarkers.audioBlob - timeMarkers.start}ms`);
 			const audioBlob = await audioService.stopRecording();
 
 			// Validate audio blob
 			if (!audioBlob || audioBlob.size === 0) {
-				console.log('[DEBUG] No audio data received or empty blob');
 				transcriptionActions.updateProgress(0);
 				uiActions.setErrorMessage('No audio recorded. Please try again.');
 				return;
 			}
 			
-			console.log(`[DEBUG] Audio blob received: ${audioBlob.size} bytes, type: ${audioBlob.type}`);
 			lastAudioBlob = audioBlob; // Store for re-roll feature
 
 			// Begin transcription process
 			timeMarkers.transcriptionStart = Date.now();
-			console.log(`[DEBUG] Starting transcription, elapsed since stop: ${timeMarkers.transcriptionStart - timeMarkers.audioBlob}ms`);
 			
 			try {
 				// Direct transcription call with minimal intermediate layers
@@ -269,19 +263,11 @@
 					throw new Error('Empty transcription result');
 				}
 				
-				console.log(`[DEBUG] Transcription successful in ${timeMarkers.transcriptionEnd - timeMarkers.transcriptionStart}ms: "${transcriptText.substring(0, 50)}..."`);
 				
 				// Synchronized UI update with clear order of operations
 				await updateUIWithTranscription(transcriptText);
 				timeMarkers.uiUpdate = Date.now();
 				
-				// Performance logging for debugging
-				console.log('[DEBUG] Performance metrics:', {
-					total: timeMarkers.uiUpdate - timeMarkers.start,
-					audioProcessing: timeMarkers.audioBlob - timeMarkers.start,
-					transcription: timeMarkers.transcriptionEnd - timeMarkers.transcriptionStart,
-					uiUpdate: timeMarkers.uiUpdate - timeMarkers.transcriptionEnd
-				});
 				
 			} catch (transcribeError) {
 				console.error('[ERROR] Transcription failed:', transcribeError);
@@ -357,7 +343,6 @@
 
 				// When using "New Recording" button, rotate to next phrase immediately
 				if ($transcriptionText) {
-					console.log('🧹 Clearing transcript for new recording');
 
 					// Pick a random CTA phrase that's not the current one
 					let newIndex;
@@ -367,7 +352,6 @@
 
 					currentCtaIndex = newIndex;
 					currentCta = CTA_PHRASES[currentCtaIndex];
-					console.log(`🔥 Rotating to: "${currentCta}"`);
 
 					// Then clear transcript
 					transcriptionActions.completeTranscription('');
@@ -415,52 +399,39 @@
 		// total length and average word length
 		const avgWordLength = charLength / (wordCount || 1); // Avoid division by zero
 		
-		console.log(`Dynamic sizing: ${wordCount} words, ${charLength} chars, ${avgWordLength.toFixed(1)} avg length`);
 		
 		// Extremely short text (5 words or less): Use larger font, especially on desktop
 		if (wordCount <= 5) {
-			const size = isMobile 
+			return isMobile 
 				? 'text-xl sm:text-2xl md:text-3xl' 
 				: isDesktop 
 					? 'text-2xl md:text-3xl lg:text-4xl' 
 					: 'text-2xl md:text-3xl';
-			console.log(`Using size for ≤5 words: ${size}`);
-			return size;
 		}
 		
 		// Very short text: 6-10 words or under 50 chars
 		if (wordCount < 10 || charLength < 50) {
-			const size = isMobile ? 'text-lg sm:text-xl md:text-2xl' : 'text-xl md:text-2xl';
-			console.log(`Using size for 6-10 words: ${size}`);
-			return size;
+			return isMobile ? 'text-lg sm:text-xl md:text-2xl' : 'text-xl md:text-2xl';
 		}
 		
 		// Short text: 11-25 words or under 150 chars with normal word length
 		if ((wordCount < 25 || charLength < 150) && avgWordLength < 8) {
-			const size = isMobile ? 'text-base sm:text-lg md:text-xl' : 'text-lg md:text-xl';
-			console.log(`Using size for 11-25 words: ${size}`);
-			return size;
+			return isMobile ? 'text-base sm:text-lg md:text-xl' : 'text-lg md:text-xl';
 		}
 		
 		// Medium text: 26-50 words or under 300 chars
 		if (wordCount < 50 || charLength < 300) {
-			const size = isMobile ? 'text-sm sm:text-base md:text-lg' : 'text-base md:text-lg';
-			console.log(`Using size for 26-50 words: ${size}`);
-			return size;
+			return isMobile ? 'text-sm sm:text-base md:text-lg' : 'text-base md:text-lg';
 		}
 		
 		// Medium-long text: 51-100 words or under 500 chars
 		if (wordCount < 100 || charLength < 500) {
-			const size = isMobile ? 'text-xs sm:text-sm md:text-base' : 'text-sm md:text-base';
-			console.log(`Using size for 51-100 words: ${size}`);
-			return size;
+			return isMobile ? 'text-xs sm:text-sm md:text-base' : 'text-sm md:text-base';
 		}
 		
 		// Long text: Over 100 words or 500+ chars
 		// Use smaller text for better readability on longer content
-		const size = isMobile ? 'text-xs sm:text-sm' : 'text-sm md:text-base';
-		console.log(`Using size for >100 words: ${size}`);
-		return size;
+		return isMobile ? 'text-xs sm:text-sm' : 'text-sm md:text-base';
 	}
 
 	// Reactive font size based on transcript length
@@ -491,7 +462,6 @@
 
 	// State changes for transcript completion
 	function handleTranscriptCompletion(textToProcess) {
-		console.log('[DEBUG] handleTranscriptCompletion() called with textToProcess:', textToProcess);
 
 		// Ghost reactions
 		if (ghostComponent?.reactToTranscript) {
@@ -503,7 +473,6 @@
 			// Show confetti celebration as a random Easter egg (1/7 chance)
 			if (Math.floor(Math.random() * 7) === 0) {
 				confettiColors = getThemeConfettiColors();
-				console.log('[DEBUG] Using theme-specific confetti colors:', confettiColors);
 				showConfetti = true;
 				setTimeout(() => {
 					showConfetti = false;
@@ -513,10 +482,7 @@
 			// Auto-copy to clipboard
 			setTimeout(() => {
 				transcriptionService.copyToClipboard(textToProcess);
-				console.log("Auto-copying transcript to clipboard");
 			}, 100);
-		} else {
-			console.log('[DEBUG] Inside handleTranscriptCompletion: textToProcess is FALSY.');
 		}
 	}
 
@@ -527,10 +493,6 @@
 
 		// Ghost element is now handled through the component reference
 
-		// Subscribe to transcriptionText for debug logging only - completion handled elsewhere
-		const transcriptUnsub = transcriptionText.subscribe((text) => {
-			console.log('[DEBUG] (Raw transcriptionText update) Text:', text, 'IsTranscribing:', $isTranscribing);
-		});
 
 
 		// Subscribe to permission denied state to show error modal
@@ -550,7 +512,6 @@
 		// Subscribe to time limit reached event
 		const audioStateUnsub = audioState.subscribe((state) => {
 			if (state.timeLimit === true) {
-				console.log('🔴 Time limit reached, stopping recording automatically');
 				// Auto-stop recording when time limit is reached
 				if (get(isRecording)) {
 					// Small timeout to let the UI update first
@@ -562,17 +523,8 @@
 		});
 
 		// Add to unsubscribe list
-		unsubscribers.push(transcriptUnsub, permissionUnsub, audioStateUnsub);
+		unsubscribers.push(permissionUnsub, audioStateUnsub);
 
-		// Check if the app is running as a PWA after a short delay
-		if (browser) {
-			setTimeout(async () => {
-				const isPwa = await pwaService.checkIfRunningAsPwa();
-				if (isPwa) {
-					console.log('📱 App is running as PWA');
-				}
-			}, 100);
-		}
 	});
 
 	// Clean up subscriptions and services
