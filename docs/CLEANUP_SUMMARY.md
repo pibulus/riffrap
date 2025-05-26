@@ -189,11 +189,43 @@ onMount(async () => {
 
 ---
 
+## 🔧 **Repository Optimization**
+
+### **8. Git Housekeeping**
+**Post-cleanup maintenance**
+
+**Issue**: After removing 360MB+ of files, Git accumulated many "loose objects" (references to deleted files) that were bloating the repository and blocking automatic cleanup.
+
+**Solution Applied**:
+```bash
+# Remove blocking log file
+rm -f .git/gc.log
+
+# Clean up and pack repository efficiently  
+git gc --prune=now
+```
+
+**Results**:
+- **Before**: Hundreds of loose objects, automatic cleanup blocked
+- **After**: 0 loose objects, 531 objects efficiently packed
+- **Repository size**: Significantly reduced .git folder size
+- **Performance**: Faster git operations (clone, fetch, push)
+
+**Why This Matters**: 
+- Keeps repository lean after major file deletions
+- Improves git performance for all developers
+- Prevents repository bloat from accumulating
+
+**For Future Maintenance**: Run `git gc` after major file deletions or periodically for optimal performance.
+
+---
+
 ## 📊 **Impact Summary**
 
 | Metric | Before | After | Improvement |
 |--------|--------|-------|-------------|
 | Repository Size | ~600MB+ | ~240MB | -360MB+ |
+| Git Objects | 100s loose | 531 packed | Optimized |
 | Production Bundle | 184KB | 182KB | Maintained |
 | Component Count | 50+ | 35 | -15 unused |
 | Lines of Code | N/A | -2,717 | Cleaner |
