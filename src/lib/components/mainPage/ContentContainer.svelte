@@ -227,7 +227,7 @@
       />
       
       <!-- Collection panel below the transcript on mobile - always visible -->
-      <div class="collection-container w-full animate-fadeIn mt-10 mb-6" style="min-height: 180px; height: auto; max-width: 540px; margin: 0 auto; opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+      <div class="collection-container w-full mt-10 mb-6" style="height: auto; max-width: 540px; margin: 0 auto;">
         <LyricsPanel bind:this={collectionPanelComponent} />
       </div>
       
@@ -253,7 +253,7 @@
       </div>
       
       <!-- Collection panel below the transcript - always visible -->
-      <div class="collection-container w-full slide-in-bottom animate-fadeIn mt-10 mb-6" style="min-height: 180px; height: auto; max-width: 680px; margin: 0 auto; opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+      <div class="collection-container w-full mt-10 mb-6" style="height: auto; max-width: 680px; margin: 0 auto;">
         <LyricsPanel bind:this={collectionPanelComponent} />
       </div>
       
@@ -266,44 +266,14 @@
   .main-content-area {
     position: relative;
     overflow: hidden;
-    min-height: 560px; /* Increased minimum height to match the bigger styling */
+    min-height: auto; /* Remove fixed height to prevent layout flash */
   }
   
   .collection-container {
-    opacity: 0;
-    animation: fadeInRight 0.6s ease-out forwards;
-    animation-delay: 0.5s; /* Increased delay to reduce jumpiness during initial load */
     overflow: visible; /* Ensure tooltips are visible */
     position: relative; /* Provide position context */
     z-index: 5; /* Ensure the container is above other elements */
   }
   
-  @keyframes fadeInRight {
-    from {
-      opacity: 0;
-      transform: translateX(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-  
-  
-  /* Animation for slide-in from bottom */
-  .slide-in-bottom {
-    animation: slideInBottom 0.4s ease-out forwards;
-  }
-  
-  @keyframes slideInBottom {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
   
 </style>
