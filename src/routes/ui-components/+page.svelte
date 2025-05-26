@@ -4,7 +4,7 @@
   // Example branding schemes
   const brands = [
     { 
-      name: 'TalkType', 
+      name: 'RiffRap', 
       color: 'inherit', 
       size: '65%'
     },

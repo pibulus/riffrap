@@ -104,7 +104,7 @@ export function formatLyricsForDownload(snippets, customTitle = '') {
 
   // Add a footer
   formattedText += `\n\n${'* '.repeat(30)}\n\n`;
-  formattedText += `Generated with LineSnap\n`;
+  formattedText += `Generated with RiffRap\n`;
 
   return {
     formattedText,

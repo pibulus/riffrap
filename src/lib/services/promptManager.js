@@ -3,20 +3,37 @@ import { browser } from '$app/environment';
 import { promptTemplates, applyTemplate } from './promptTemplates';
 
 // Create a store for the current prompt style
-const STORAGE_KEY = 'linesnap-prompt-style';
+const STORAGE_KEY = 'riffrap-prompt-style';
+const LEGACY_STORAGE_KEY = 'linesnap-prompt-style';
 const DEFAULT_STYLE = 'standard';
 
 // Initialize with stored preference or default
 const createPromptStyleStore = () => {
   const store = writable(DEFAULT_STYLE);
   
-  // Initialize from localStorage if in browser
+  // Initialize from localStorage if in browser (with legacy support)
   if (browser) {
-    const storedStyle = localStorage.getItem(STORAGE_KEY);
+    let storedStyle = localStorage.getItem(STORAGE_KEY);
+    
+    // Check legacy storage if new key doesn't exist
+    if (!storedStyle) {
+      storedStyle = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (storedStyle) {
+        // Migrate legacy key to new key
+        localStorage.setItem(STORAGE_KEY, storedStyle);
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
+      }
+    }
+    
+    // Handle legacy style name migration
+    if (storedStyle === 'surlyPirate') {
+      storedStyle = 'lyricsMode';
+      localStorage.setItem(STORAGE_KEY, storedStyle);
+    }
+    
     if (storedStyle && promptTemplates[storedStyle]) {
       store.set(storedStyle);
     } else if (storedStyle && !promptTemplates[storedStyle]) {
-      // Handle the case where a stored style is no longer available (like 'corporate')
       console.log(`Stored prompt style '${storedStyle}' is no longer available, using default`);
       localStorage.setItem(STORAGE_KEY, DEFAULT_STYLE);
       store.set(DEFAULT_STYLE);

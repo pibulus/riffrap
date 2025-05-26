@@ -38,7 +38,7 @@ export const STORAGE_KEYS = {
 // Prompt Styles
 export const PROMPT_STYLES = {
 	STANDARD: 'standard',
-	LYRICS: 'surlyPirate', // Keeping the same key for backwards compatibility
+	LYRICS: 'lyricsMode',
 	LEET_SPEAK: 'leetSpeak',
 	SPARKLE_POP: 'sparklePop',
 	CODE_WHISPERER: 'codeWhisperer',

@@ -12,7 +12,7 @@ export const promptTemplates = {
   },
   
   // Lyrics formatter prompt style
-  surlyPirate: {
+  lyricsMode: {
     transcribeAudio: {
       text: "Transform this audio into well-formatted song lyrics. If there are no clear vocals, silence, or just random sounds where no lyrics can be discerned, simply return exactly: 'No lyrical vibes received!' and nothing else. For actual vocal content: (1) Preserve the exact words and vocal rhythm from the recording, (2) Format with proper line breaks at natural phrase endings, (3) Add blank lines between different sections (verse/chorus/bridge), (4) Create clear paragraph breaks between verses, (5) Use consistent formatting for repeated sections. Do not add any markdown formatting, special characters, or stylistic modifications. Focus purely on transcribing the words with proper spacing and line breaks. Do not enhance or modify the actual words - just clean up filler sounds while preserving the natural flow and phrasing. Return only the formatted lyrics with no additional text, explanation, or styling. Preserve all whitespace and line breaks in your response."
     },
