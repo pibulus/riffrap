@@ -24,9 +24,18 @@ export class TranscriptionService {
     this.lastTranscriptionTimestamp = null;
   }
   
+  /**
+   * Transcribes an audio blob to text using the Gemini service
+   * 
+   * @param {Blob} audioBlob - The audio blob to transcribe
+   * @returns {Promise<string>} The transcribed text
+   */
   async transcribeAudio(audioBlob) {
+    const startTime = Date.now();
     console.log('[TRACE] transcribeAudio called with blob:', audioBlob?.size || 'null');
+    
     try {
+      // Validate input
       if (!audioBlob || !(audioBlob instanceof Blob)) {
         throw new TranscriptionError('Invalid audio data provided', {
           code: 'ERR_TRANSCRIPTION_INVALID_AUDIO',
@@ -34,111 +43,54 @@ export class TranscriptionService {
         });
       }
       
-      // Log the received audio blob to verify it exists and has content
-      logger.info('Received audio blob for transcription', { 
+      // Log the received audio blob details for debugging
+      logger.info('Transcribing audio blob', { 
         blobSize: audioBlob.size,
-        blobType: audioBlob.type
+        blobType: audioBlob.type,
+        timestamp: startTime
       });
       
-      // Dispatch event through event bridge
-      eventBridge.dispatchAppEvent('transcription-started', {
-        timestamp: Date.now()
-      });
+      // Notify system that transcription is starting
+      eventBridge.dispatchAppEvent('transcription-started', { timestamp: startTime });
       
-      logger.info('Starting audio transcription', { 
-        blobSize: audioBlob.size,
-        blobType: audioBlob.type
-      });
-      
-      // Update transcription state to show in-progress
+      // Update UI state to reflect in-progress transcription
       transcriptionActions.startTranscribing();
-      this.lastTranscriptionTimestamp = Date.now();
+      this.lastTranscriptionTimestamp = startTime;
       
-      // Start progress animation
+      // Start progress animation for user feedback
       this.startProgressAnimation();
       
-      // Transcribe using Gemini
-      console.log('[TRACE] Calling geminiService.transcribeAudio');
+      // Process the audio through Gemini API
+      console.log(`[DEBUG] Sending ${audioBlob.size} bytes to Gemini API`);
       const transcriptText = await this.geminiService.transcribeAudio(audioBlob);
-      console.log('[TRACE] Received transcript from geminiService:', transcriptText?.substring(0, 30));
+      console.log('[DEBUG] Transcription result:', transcriptText?.substring(0, 50));
       
       // Complete progress animation with smooth transition
       this.completeProgressAnimation();
       
-      // Make sure we have valid text before continuing
+      // Validate transcription result
       if (!transcriptText) {
-        logger.warn('Transcription returned empty text');
+        logger.warn('Empty transcription result received');
         throw new TranscriptionError('Transcription returned empty result', {
           code: 'ERR_TRANSCRIPTION_EMPTY_RESULT'
         });
       }
       
-      // Log the text we're about to apply
-      logger.info('About to apply transcription text', { 
+      // Calculate performance metrics
+      const processingTime = Date.now() - startTime;
+      const wordsPerMinute = transcriptText.split(/\s+/).length / (processingTime / 60000);
+      
+      // Log success with detailed metrics for performance tracking
+      logger.info('Transcription successful', { 
         textLength: transcriptText.length,
-        textPreview: transcriptText.substring(0, 20) + '...'
+        processingTime,
+        wordsPerMinute: wordsPerMinute.toFixed(2)
       });
       
-      // Wait a brief moment to ensure UI is ready
-      await new Promise(resolve => setTimeout(resolve, 50));
-      
-      // FIXED: Remove dynamic import of transcriptionCompletedEvent since it's not exported
-      // Direct state updates are used instead of event emission
-      
-      // Update transcription state with completed text - force direct update
-      transcriptionState.update(current => ({
-        ...current,
-        inProgress: false,
-        progress: 100,
-        text: transcriptText,
-        timestamp: Date.now()
-      }));
-      
-      // Make sure the UI knows there's text by directly updating the state first
-      // then emit the event to ensure UI component receives both updates
-      
-      // 1. First ensure the text is in the store
-      const currentText = get(transcriptionState).text;
-      if (currentText !== transcriptText) {
-        logger.info('Directly updating transcriptionState with transcript');
-        transcriptionState.update(current => ({
-          ...current,
-          text: transcriptText
-        }));
-      }
-      
-      // 2. Complete the transcription through actions 
-      // This will trigger the proper state updates and UI rendering
-      logger.info('Directly completing transcription via state update');
-      transcriptionActions.completeTranscription(transcriptText);
-      
-      // 3. Schedule a safety check to verify text was applied properly
-      setTimeout(() => {
-        // Double-check if text is still missing or incorrect
-        const verifyText = get(transcriptionState).text;
-        if (verifyText !== transcriptText) {
-          logger.warn('Text still mismatched after initial update, forcing secondary update');
-          transcriptionState.update(current => ({
-            ...current,
-            text: transcriptText
-          }));
-          
-          // Update directly using actions as a last resort
-          logger.info('Last resort updating via transcriptionActions');
-          transcriptionActions.completeTranscription(transcriptText);
-        }
-      }, 100);
-      
-      // Log successful transcription
-      logger.info('Audio transcription completed successfully', {
-        textLength: transcriptText.length,
-        processingTime: Date.now() - this.lastTranscriptionTimestamp
-      });
-      
-      // Dispatch completion event
+      // Notify system that transcription is complete
       eventBridge.dispatchAppEvent('transcription-completed', {
         timestamp: Date.now(),
-        duration: Date.now() - this.lastTranscriptionTimestamp,
+        duration: processingTime,
         textLength: transcriptText.length
       });
       

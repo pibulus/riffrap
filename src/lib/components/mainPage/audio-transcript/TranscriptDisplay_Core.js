@@ -9,14 +9,24 @@ import { ANIMATION, ATTRIBUTION } from '$lib/constants';
 import { onMount, onDestroy } from 'svelte';
 import { geminiService } from '$lib/services/geminiService';
 import { transcriptionService } from '$lib/services/transcription/transcriptionService';
-import { transcriptionText, uiActions } from '$lib/services';
-import { get, writable } from 'svelte/store';
+import { transcriptionText, uiActions, transcriptionState } from '$lib/services';
+import { get, writable, derived } from 'svelte/store';
 
 // Do NOT create event dispatcher here - it needs to be created inside a component
 // We'll export a function that creates it instead
 
 // Props and state as Svelte stores
 export const transcriptStore = writable('');
+
+// FIXED: Create a derived store that syncs with the app's transcription state
+// This ensures transcriptStore always reflects the current transcript text
+transcriptionText.subscribe(text => {
+  if (text && text !== get(transcriptStore)) {
+    console.log('[DEBUG] TranscriptDisplay_Core: Updating transcriptStore from transcriptionText', text.substring(0, 30));
+    transcriptStore.set(text);
+  }
+});
+
 export const showCopyTooltipStore = writable(false);
 export const responsiveFontSizeStore = writable('text-base');
 export const parentContainerStore = writable(null);
