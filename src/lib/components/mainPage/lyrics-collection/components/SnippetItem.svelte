@@ -174,7 +174,6 @@
           on:input={handleTextChange}
           on:keydown={handleKeyDown}
           on:blur={handleBlur}
-          autofocus
           placeholder="Enter your lyrics here"
           aria-label="Edit lyrics text"
         ></textarea>
@@ -192,10 +191,16 @@
           ? '5rem'
           : '2rem'}; line-height: 1.5; padding: 0.375rem 0;"
         on:click={handleEditClick}
+        on:keydown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleEditClick();
+          }
+        }}
         title="Click to edit"
         role="button"
         tabindex="0"
-        aria-label="Lyrics text. Click to edit."
+        aria-label="Lyrics text. Press Enter or Space to edit."
       >
         {snippet.text}
 

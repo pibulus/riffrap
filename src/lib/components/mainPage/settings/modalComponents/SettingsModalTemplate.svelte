@@ -29,7 +29,6 @@
   id="settings_modal"
   class="modal fixed z-50"
   style="overflow: hidden !important; z-index: 999;"
-  role="dialog"
   aria-labelledby="settings_modal_title"
   aria-modal="true"
 >
@@ -246,6 +245,18 @@
         setTimeout(handleModalClose, 50);
       }
     }}
+    on:keydown={(e) => {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('settings_modal');
+        if (modal) {
+          modal.close();
+          setTimeout(handleModalClose, 50);
+        }
+      }
+    }}
+    role="button"
+    tabindex="0"
+    aria-label="Close modal backdrop"
   ></div>
 </dialog>
 <!-- === END PROCESSING ZONE: MODAL STRUCTURE === -->

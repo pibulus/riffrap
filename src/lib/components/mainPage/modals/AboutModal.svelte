@@ -5,7 +5,7 @@
   export let closeModal;
 </script>
 
-<dialog id="about_modal" class="modal modal-bottom sm:modal-middle overflow-hidden fixed z-50" style="overflow-y: hidden!important;" role="dialog" aria-labelledby="about_modal_title" aria-modal="true">
+<dialog id="about_modal" class="modal modal-bottom sm:modal-middle overflow-hidden fixed z-50" style="overflow-y: hidden!important;" aria-labelledby="about_modal_title" aria-modal="true">
   <div class="modal-box bg-gradient-to-br from-[#fffaef] to-[#fff6e6] shadow-xl border border-pink-200 rounded-2xl overflow-y-auto max-h-[80vh]">
     <form method="dialog">
       <ModalCloseButton {closeModal} label="Close about modal" modalId="about_modal" />
@@ -55,7 +55,18 @@
       </div>
     </div>
   </div>
-  <div class="modal-backdrop bg-black/40" on:click={closeModal}></div>
+  <div 
+    class="modal-backdrop bg-black/40" 
+    on:click={closeModal}
+    on:keydown={(e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    }}
+    role="button"
+    tabindex="0"
+    aria-label="Close modal backdrop"
+  ></div>
 </dialog>
 
 <style>

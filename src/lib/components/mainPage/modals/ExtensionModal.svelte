@@ -5,7 +5,7 @@
   export let closeModal;
 </script>
 
-<dialog id="extension_modal" class="modal modal-bottom sm:modal-middle overflow-hidden fixed z-50" style="overflow-y: hidden!important;" role="dialog" aria-labelledby="extension_modal_title" aria-modal="true">
+<dialog id="extension_modal" class="modal modal-bottom sm:modal-middle overflow-hidden fixed z-50" style="overflow-y: hidden!important;" aria-labelledby="extension_modal_title" aria-modal="true">
   <div class="modal-box bg-gradient-to-br from-[#fffaef] to-[#fff6e6] shadow-xl border border-pink-200 rounded-2xl overflow-y-auto max-h-[80vh]">
     <form method="dialog">
       <ModalCloseButton {closeModal} label="Close extension modal" modalId="extension_modal" />
@@ -36,10 +36,14 @@
         <h4 class="font-bold text-sm text-gray-800 mb-2">Installation in 5 easy steps:</h4>
         <ol class="mt-2 list-decimal space-y-2 pl-5 text-left text-sm text-gray-700">
           <li class="pb-1">
-            Download the extension files <a
-              href="#"
-              class="text-pink-600 transition-colors hover:text-pink-700 hover:underline font-medium"
-              >here</a
+            Download the extension files <button
+              type="button"
+              class="text-pink-600 transition-colors hover:text-pink-700 hover:underline font-medium bg-transparent border-0 p-0 cursor-pointer"
+              on:click={() => {
+                // TODO: Add actual download functionality
+                console.log('Extension download requested');
+              }}
+              >here</button
             >
           </li>
           <li class="pb-1">
@@ -61,7 +65,18 @@
       </div>
     </div>
   </div>
-  <div class="modal-backdrop bg-black/40" on:click={closeModal}></div>
+  <div 
+    class="modal-backdrop bg-black/40" 
+    on:click={closeModal}
+    on:keydown={(e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    }}
+    role="button"
+    tabindex="0"
+    aria-label="Close modal backdrop"
+  ></div>
 </dialog>
 
 <style>

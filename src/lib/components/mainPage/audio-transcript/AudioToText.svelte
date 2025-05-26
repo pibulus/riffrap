@@ -624,13 +624,13 @@
 							<p class="text-sm text-purple-700 mb-4 leading-relaxed">
 								Please add your Gemini API key in Settings to enable transcription.
 							</p>
-							<a 
-								href="#" 
-								on:click|preventDefault={() => window.dispatchEvent(new CustomEvent('show-settings'))}
-								class="inline-block px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg hover:from-purple-600 hover:to-pink-600 shadow-sm hover:shadow transition-all duration-200 transform hover:-translate-y-px focus:outline-none focus:ring-2 focus:ring-purple-300"
+							<button 
+								type="button"
+								on:click={() => window.dispatchEvent(new CustomEvent('show-settings'))}
+								class="inline-block px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg hover:from-purple-600 hover:to-pink-600 shadow-sm hover:shadow transition-all duration-200 transform hover:-translate-y-px focus:outline-none focus:ring-2 focus:ring-purple-300 border-0 cursor-pointer"
 							>
 								✨ Open Settings
-							</a>
+							</button>
 						</div>
 					{:else}
 						<p class="font-medium text-red-500 px-4 py-2 bg-red-50 border border-red-200 rounded-lg shadow-sm">

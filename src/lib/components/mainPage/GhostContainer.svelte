@@ -66,14 +66,21 @@
 <div
 	class="riffrap-icon-wrapper mb-2 sm:mb-2 md:mb-2 h-44 w-44 sm:h-48 sm:w-48 md:h-56 md:w-56 lg:h-64 lg:w-64"
 >
-	<img 
-		src="/LyricSnapIcon.png"
-		alt="RiffRap Logo"
-		class="riffrap-icon w-full h-full cursor-pointer transition-all duration-300 hover:scale-105 hover:drop-shadow-lg active:scale-95"
+	<button 
+		class="riffrap-icon-button w-full h-full bg-transparent border-0 p-0 cursor-pointer transition-all duration-300 hover:scale-105 hover:drop-shadow-lg active:scale-95 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 rounded-lg"
 		class:recording={isRecording}
 		class:processing={isProcessing}
 		on:click={handleToggleRecording}
-	/>
+		aria-label={isRecording ? "Stop recording" : "Start recording"}
+		title={isRecording ? "Stop recording" : "Start recording"}
+	>
+		<img 
+			src="/LyricSnapIcon.png"
+			alt=""
+			class="riffrap-icon w-full h-full pointer-events-none"
+			aria-hidden="true"
+		/>
+	</button>
 </div>
 
 <style>
@@ -94,7 +101,7 @@
 	}
 
 	/* Recording icon effect - enhanced contrast for accessibility */
-	.riffrap-icon.recording {
+	.riffrap-icon-button.recording .riffrap-icon {
 		filter: drop-shadow(0 0 18px rgba(236, 72, 153, 0.85));
 		/* Removed outline, keeping just the glow effect */
 		animation: recording-pulse 1.5s infinite alternate ease-in-out;
@@ -112,7 +119,7 @@
 	}
 	
 	/* Processing state styling */
-	.riffrap-icon.processing {
+	.riffrap-icon-button.processing .riffrap-icon {
 		animation: pulse 1.5s infinite alternate;
 	}
 	

@@ -50,8 +50,6 @@
         class="mx-1 heart-icon transition-all duration-300 inline-flex text-purple-400"
         class:pulse={heartHovered}
         on:mouseenter={handleHeartHover}
-        on:focus={handleHeartHover}
-        tabindex="0"
         role="img"
         aria-label="Purple heart"
       >

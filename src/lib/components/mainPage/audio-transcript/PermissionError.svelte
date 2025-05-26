@@ -11,14 +11,19 @@
 </script>
 
 <div
-  class="flex justify-center w-full permission-error-container"
-  on:click={closeModal}
+  class="flex justify-center w-full permission-error-container relative"
   role="alertdialog"
   aria-labelledby="permission_error_title"
   aria-describedby="permission_error_description"
   aria-live="assertive"
 >
-  <div class="permission-error-modal">
+  <!-- Invisible backdrop button for accessibility -->
+  <button
+    class="absolute inset-0 w-full h-full bg-transparent border-0 cursor-pointer z-0"
+    on:click={closeModal}
+    aria-label="Close permission error dialog"
+  ></button>
+  <div class="permission-error-modal relative z-10">
     <!-- Icon and title -->
     <div class="modal-header">
       <div class="error-icon">
