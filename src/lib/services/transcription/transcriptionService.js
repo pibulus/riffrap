@@ -32,7 +32,6 @@ export class TranscriptionService {
    */
   async transcribeAudio(audioBlob) {
     const startTime = Date.now();
-    console.log('[TRACE] transcribeAudio called with blob:', audioBlob?.size || 'null');
     
     try {
       // Validate input
@@ -43,21 +42,16 @@ export class TranscriptionService {
         });
       }
       
-      // Log the received audio blob details for debugging
-      logger.info('Transcribing audio blob', { 
+      // Log audio details
+      logger.info('Transcribing audio', { 
         blobSize: audioBlob.size,
-        blobType: audioBlob.type,
-        timestamp: startTime
+        blobType: audioBlob.type
       });
       
-      // Notify system that transcription is starting
+      // Update UI state and notify system
       eventBridge.dispatchAppEvent('transcription-started', { timestamp: startTime });
-      
-      // Update UI state to reflect in-progress transcription
       transcriptionActions.startTranscribing();
       this.lastTranscriptionTimestamp = startTime;
-      
-      // Start progress animation for user feedback
       this.startProgressAnimation();
       
       // Process the audio through Gemini API

@@ -356,12 +356,12 @@
 	}
 
 	/**
-	 * Updates UI with transcription text in a synchronized way
+	 * Updates UI with transcription text
 	 * @param {string} transcriptText - The transcription text
 	 * @returns {Promise<void>}
 	 */
 	async function updateUIWithTranscription(transcriptText) {
-		// Step 1: Update the store state directly
+		// Step 1: Update the transcription state
 		transcriptionState.update(current => ({
 			...current,
 			inProgress: false,
@@ -372,27 +372,19 @@
 		// Brief delay to allow store updates to propagate
 		await new Promise(resolve => setTimeout(resolve, 10));
 		
-		// Step 2: Update UI components via dedicated handler
+		// Step 2: Process transcript completion (UI updates, confetti, clipboard)
 		handleTranscriptCompletion(transcriptText);
 		
-		// Step 3: Ensure recording state is reset
+		// Step 3: Update UI state
 		if ($isRecording) {
 			audioActions.updateState(AudioStates.IDLE);
 		}
 		
-		// Step 4: Update ghost animation
 		if (ghostComponent?.stopThinking) {
 			ghostComponent.stopThinking();
 		}
 		
-		// Step 5: Final verification - force update if needed
-		const currentText = get(transcriptionText);
-		if (currentText !== transcriptText) {
-			console.log('[DEBUG] Safety update - text not propagated correctly');
-			transcriptionActions.completeTranscription(transcriptText);
-		}
-		
-		// Step 6: Increment the transcription count for PWA prompt
+		// Step 4: Increment the transcription count for PWA prompt
 		if (browser) {
 			if ('requestIdleCallback' in window) {
 				window.requestIdleCallback(() => incrementTranscriptionCount());

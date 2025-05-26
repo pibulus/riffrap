@@ -72,11 +72,14 @@
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
   
+  // Debug log for monitoring transcript updates
+  $: if (transcript) console.log('[DEBUG] TranscriptDisplay has transcript:', transcript.substring(0, 30));
+  
   // Set the dispatch in the store for other modules to use
   dispatchStore.set(dispatch);
   
-  // Subscribe to stores for local use
-  transcriptStore.subscribe(value => (transcript = value));
+  // Subscribe to stores for local use - FIXED: Removed the transcript subscription that was causing feedback loop
+  // The transcriptStore is now updated directly from TranscriptDisplay_Core.js
   showCopyTooltipStore.subscribe(value => (showCopyTooltip = value));
   responsiveFontSizeStore.subscribe(value => (responsiveFontSize = value));
   parentContainerStore.subscribe(value => (parentContainer = value));
@@ -87,8 +90,8 @@
   selectedTextStore.subscribe(value => (selectedText = value));
   isScrollableStore.subscribe(value => (isScrollable = value));
   
-  // Set the store values when props change
-  $: transcriptStore.set(transcript);
+  // Set the store values when props change - FIXED: Removed bidirectional binding for transcript
+  // We now only allow one-way updates from global transcriptionText to local transcriptStore
   $: showCopyTooltipStore.set(showCopyTooltip);
   $: responsiveFontSizeStore.set(responsiveFontSize);
   $: parentContainerStore.set(parentContainer);
