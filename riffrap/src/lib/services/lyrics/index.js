@@ -1,1 +1,0 @@
-export { snippetStore } from './snippetStore';
