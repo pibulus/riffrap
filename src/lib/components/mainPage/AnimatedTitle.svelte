@@ -9,12 +9,12 @@
   export let titleText = 'Riff Rap';
   export let subtitleText = "Freestyle-ready lyric scrapbook.\nRiff the bars — we fill the gaps.\nGibberish in, killer lines out.";
   export let title = titleText;
-  export let subtitle = subtitleText;
+  export const subtitle = subtitleText;
   
   // AppSuffix configuration
   export let showAppSuffix = true;
-  export let suffixColor = "inherit"; // Inherit color from parent title
-  export let suffixSize = "40%"; // Smaller suffix (40% of parent size)
+  export const suffixColor = "inherit"; // Inherit color from parent title
+  export const suffixSize = "40%"; // Smaller suffix (40% of parent size)
   
   onMount(() => {
     // Set up animation sequence timing (for title/subtitle)
@@ -262,8 +262,4 @@
     }
   }
   
-  /* Clean styling without hover effects */
-  .second-line {
-    font-weight: 600;
-  }
 </style>

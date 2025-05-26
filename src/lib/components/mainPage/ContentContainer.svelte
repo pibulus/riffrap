@@ -289,10 +289,6 @@
     }
   }
   
-  /* Tab buttons styling */
-  .tab-buttons button {
-    border-radius: 8px 8px 0 0;
-  }
   
   /* Animation for slide-in from bottom */
   .slide-in-bottom {
@@ -310,10 +306,4 @@
     }
   }
   
-  /* Mobile styles */
-  @media (max-width: 767px) {
-    .mobile-panels {
-      min-height: 500px;
-    }
-  }
 </style>
