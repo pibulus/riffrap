@@ -12,7 +12,7 @@ if (!genAIKEY && typeof window !== 'undefined' && typeof localStorage !== 'undef
   genAIKEY = localStorage.getItem('riffRap-gemini-api-key');
   // Check old key for backward compatibility
   if (!genAIKEY) {
-    genAIKEY = localStorage.getItem('lineSnap-gemini-api-key');
+    genAIKEY = localStorage.getItem('riffrap-gemini-api-key');
   }
   
   // Also check if it's set on window (for runtime updates)

@@ -16,41 +16,25 @@
 import { EVENT_PREFIXES, normalizeSettingName, buildEventTypeName } from './EventBridge_Constants';
 
 /**
- * Dispatch a setting change event with both current and legacy formats for compatibility
- * This is the primary method for notifying the application about setting changes
+ * Dispatch a setting change event
  * 
  * @param {string} settingName - The name of the setting being changed
- *                             Examples: 'theme', 'promptStyle', 'autoRecord'
  * @param {any} value - The new value of the setting
- *                    Examples: 'purple', true, 'standard'
- * @param {boolean} legacyOnly - Whether to only dispatch the legacy event (rarely needed)
- * 
- * Side effects:
- * - Dispatches 'linesnap-setting-changed' CustomEvent
- * - Dispatches 'talktype-setting-changed' CustomEvent (for legacy components)
  * 
  * Used by:
  * - SettingsModal.svelte: For theme changes, sound toggles, etc.
  * - TranscriptionStyleSelector.svelte: For promptStyle changes
  */
-export function dispatchSettingChanged(settingName, value, legacyOnly = false) {
+export function dispatchSettingChanged(settingName, value) {
   if (typeof window === 'undefined') return;
   
-  // Create event detail with normalized setting name
   const detail = {
     setting: normalizeSettingName(settingName),
     value: value
   };
   
-  // Always dispatch the current LineSnap event unless specifically requested not to
-  if (!legacyOnly) {
-    const currentEventType = buildEventTypeName('setting-changed');
-    window.dispatchEvent(new CustomEvent(currentEventType, { detail }));
-  }
-  
-  // Also dispatch legacy event format for backward compatibility (will be deprecated)
-  const legacyEventType = buildEventTypeName('setting-changed', true);
-  window.dispatchEvent(new CustomEvent(legacyEventType, { detail }));
+  const eventType = buildEventTypeName('setting-changed');
+  window.dispatchEvent(new CustomEvent(eventType, { detail }));
 }
 
 /**
@@ -62,7 +46,7 @@ export function dispatchSettingChanged(settingName, value, legacyOnly = false) {
  * @param {any} detail - The event detail object with relevant data
  * 
  * Side effects:
- * - Dispatches 'linesnap-[eventName]' CustomEvent
+ * - Dispatches 'riffrap-[eventName]' CustomEvent
  * 
  * Used by:
  * - LyricsCollection.svelte: 'lyricscollectionboxready' event

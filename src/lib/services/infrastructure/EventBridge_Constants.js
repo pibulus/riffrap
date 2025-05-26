@@ -17,8 +17,7 @@
  * These define the namespace for all custom events in the application
  */
 export const EVENT_PREFIXES = {
-  LEGACY: 'linesnap',  // Used for backward compatibility (previously current)
-  CURRENT: 'riffrap'   // Used for all RiffRap events - prefer this for new code
+  CURRENT: 'riffrap'
 };
 
 /**
@@ -39,13 +38,11 @@ export function normalizeSettingName(settingName) {
 }
 
 /**
- * Builds the full event type name with the appropriate prefix
+ * Builds the full event type name with the RiffRap prefix
  * 
  * @param {string} eventType - The type of event (e.g., 'setting-changed')
- * @param {boolean} useLegacy - Whether to use the legacy prefix
  * @returns {string} The full event type name
  */
-export function buildEventTypeName(eventType, useLegacy = false) {
-  const prefix = useLegacy ? EVENT_PREFIXES.LEGACY : EVENT_PREFIXES.CURRENT;
-  return `${prefix}-${eventType}`;
+export function buildEventTypeName(eventType) {
+  return `${EVENT_PREFIXES.CURRENT}-${eventType}`;
 }

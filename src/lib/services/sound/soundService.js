@@ -49,14 +49,14 @@ function initSoundSettings() {
   // Keep sounds enabled by default for now, but still check localStorage
   if (typeof localStorage !== 'undefined') {
     // Only disable if explicitly set to false
-    const storedValue = localStorage.getItem('lineSnap-sounds-enabled');
+    const storedValue = localStorage.getItem('riffrap-sounds-enabled');
     if (storedValue === 'false') {
       soundsEnabled = false;
     }
   }
   
   // Use the eventBridge to listen for setting changes
-  // This handles both 'linesnap-setting-changed' and 'talktype-setting-changed' events
+  // This handles 'riffrap-setting-changed' events
   const removeListener = eventBridge.addSettingChangeListener('sounds', (value) => {
     soundsEnabled = value;
     logger.info('Sound settings changed:', soundsEnabled);
@@ -202,10 +202,10 @@ function isSoundEnabled() {
 function setSoundEnabled(enabled) {
   soundsEnabled = enabled;
   if (typeof localStorage !== 'undefined') {
-    localStorage.setItem('lineSnap-sounds-enabled', enabled.toString());
+    localStorage.setItem('riffrap-sounds-enabled', enabled.toString());
     
     // Dispatch setting change event using the eventBridge
-    // This will dispatch both 'linesnap-setting-changed' and 'talktype-setting-changed' events
+    // This will dispatch 'riffrap-setting-changed' events
     eventBridge.dispatchSettingChanged('sounds', enabled);
   }
 }

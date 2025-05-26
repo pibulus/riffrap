@@ -5,16 +5,14 @@
  * in the application while maintaining consistent naming conventions.
  * 
  * Features:
- * - Unified event dispatching system across all LineSnap features
+ * - Unified event dispatching system across all RiffRap features
  * - Standardized event listening with built-in cleanup functions
  * - Automatic normalization of event names
- * - Legacy support for TalkType events
  * 
  * The event bridge has been modularized into the following components:
  * - EventBridge_Constants.js: Constants and utility functions
  * - EventBridge_Dispatch.js: Event dispatching functions
  * - EventBridge_Listeners.js: Event listening functions
- * - EventBridge_Legacy.js: Legacy compatibility adapters
  * 
  * This modularization improves maintainability, testability, and separation of concerns.
  */
@@ -34,12 +32,6 @@ import {
   addAppEventListener
 } from './EventBridge_Listeners';
 
-// Import legacy compatibility adapters (optional)
-import {
-  dispatchLegacySettingChanged,
-  convertLegacyEventName,
-  addLegacySettingChangeListener
-} from './EventBridge_Legacy';
 
 /**
  * Main eventBridge API object
@@ -62,20 +54,13 @@ import {
  * ```
  */
 export const eventBridge = {
-  // Setting change events (both LineSnap and TalkType)
+  // Setting change events
   dispatchSettingChanged,
   addSettingChangeListener,
   
-  // General application events (LineSnap only)
+  // General application events
   dispatchAppEvent,
   addAppEventListener,
-  
-  // Legacy compatibility (for temporary use during migration)
-  legacy: {
-    dispatchLegacySettingChanged,
-    convertLegacyEventName,
-    addLegacySettingChangeListener
-  },
   
   // Constants exported for direct use if needed
   // (Most components should not need to use these directly)
