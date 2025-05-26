@@ -9,7 +9,7 @@
     export let ambientBlinking = true;
     export let isRecording = false;
     export let isProcessing = false;
-    export let doingSpecialAnimation = false;
+    export const doingSpecialAnimation = false;
     export let isHoverSimulation = false;
     export let eyeTrackingEnabled = false;
     export let useThemeSpecificRecording = true;
@@ -511,8 +511,7 @@
     .theme-buttons,
     .animation-buttons,
     .eye-position-controls,
-    .blink-controls,
-    .state-controls {
+    .blink-controls {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;

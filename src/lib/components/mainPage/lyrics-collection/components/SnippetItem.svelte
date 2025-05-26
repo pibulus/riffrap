@@ -349,11 +349,4 @@
       0 3px 10px rgba(236, 72, 153, 0.1) !important;
   }
 
-  .highlight-compiled {
-    box-shadow:
-      0 10px 30px rgba(139, 92, 246, 0.35),
-      0 3px 12px rgba(236, 72, 153, 0.2) !important;
-    transform: translateY(-2px) scale(1.02) !important;
-    transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
-  }
 </style>

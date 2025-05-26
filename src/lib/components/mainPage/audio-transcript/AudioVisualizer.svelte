@@ -400,14 +400,6 @@
 		background-position: 0% 0%;
 	}
 	
-	/* Svelte-controlled animation states */
-	.animations-enabled [data-theme="rainbow"] .history-bar {
-		animation-play-state: running;
-	}
-	
-	.animations-paused [data-theme="rainbow"] .history-bar {
-		animation-play-state: paused;
-	}
 	
 	/* Special animation for rainbow theme bars */
 	@keyframes rainbowBars {

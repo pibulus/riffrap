@@ -78,7 +78,7 @@
 	let isPremiumUser = false; // Change this to true to enable premium features
 
 	// These will be set from the parent component
-	export let isModelPreloaded = false;
+	export const isModelPreloaded = false;
 	export let onPreloadRequest = null;
 
 	// Ghost component reference
@@ -734,21 +734,6 @@
         0 0 15px var(--shadow-color3);
 }
 
-/* Common animation for fading elements in */
-.animate-fadeIn {
-	animation: localFadeIn 0.8s ease-out forwards;
-}
-
-@keyframes localFadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(10px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
 
 /* Screen reader only class */
 .sr-only {
@@ -775,17 +760,6 @@
 	100% { transform: scaleY(1); }
 }
 
-/* Loading dot animation for re-rolling indicator */
-.loading-dot {
-	animation: pulseFade 1.5s ease-in-out infinite;
-	font-size: 1.5rem;
-}
-
-@keyframes pulseFade {
-	0% { opacity: 0.3; transform: scale(0.8); }
-	50% { opacity: 1; transform: scale(1.2); }
-	100% { opacity: 0.3; transform: scale(0.8); }
-}
 
 /* Improved focus styles for keyboard navigation */
 :focus-visible {

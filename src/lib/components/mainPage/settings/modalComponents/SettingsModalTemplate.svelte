@@ -6,19 +6,19 @@
   
   // Feature toggles
   export let autoRecordValue;
-  export let promptStyles;
-  export let selectedPromptStyle;
-  export let exportAsTextEnabled;
+  export const promptStyles = null;
+  export const selectedPromptStyle = null;
+  export const exportAsTextEnabled = false;
   export let soundsEnabled;
   export let apiKey;
   
   // Event handlers from core
   export let handleModalClose;
-  export let handleModalOpen;
+  export const handleModalOpen = () => {};
   export let handleChangeVibe;
-  export let handleChangePromptStyle;
+  export const handleChangePromptStyle = () => {};
   export let handleToggleAutoRecord;
-  export let handleToggleExportAsText;
+  export const handleToggleExportAsText = () => {};
   export let handleToggleSounds;
   export let handleSaveApiKey;
   // === END PROCESSING ZONE: TEMPLATE PROPS ===

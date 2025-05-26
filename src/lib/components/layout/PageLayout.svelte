@@ -3,7 +3,7 @@
 	export let title = 'RiffRap | Turn Your Voice Into Song Lyrics';
 	export let description =
 		'Gibberish in. Killer lines out. You riff the bars — we fill the gaps with RiffRap.';
-	export let footerYear = new Date().getFullYear();
+	export const footerYear = new Date().getFullYear();
 </script>
 
 <svelte:head>
