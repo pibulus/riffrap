@@ -81,7 +81,7 @@ export function handleTextSelection(event) {
           selectedTextStore.set(selectionText);
         }
         
-        // CRITICAL: Find and click the "Grab Lyrics" button in the PurpleStyleCollectionBox
+        // CRITICAL: Find and click the "Grab Lyrics" button in the LyricsPanel
         // Use a flag to prevent duplicate collection
         if (typeof window !== 'undefined' && !window.collectionInProgress) {
           window.collectionInProgress = true;

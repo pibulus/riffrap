@@ -104,7 +104,7 @@ export function handleCollectSnippet(event) {
   if (text && text.trim()) {
     // Try multiple collection methods in order of preference
     
-    // 1. Direct window method (preferred) - from PurpleStyleCollectionBox global export
+    // 1. Direct window method (preferred) - from LyricsPanel global export
     if (typeof window !== 'undefined' && typeof window.addToMainCollectionBox === 'function') {
       console.log('Using direct window.addToMainCollectionBox method');
       try {

@@ -2,8 +2,7 @@
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
   import AudioToText from './audio-transcript/AudioToText.svelte';
   import AnimatedTitle from './AnimatedTitle.svelte';
-  import PurpleStyleCollectionBox from './PurpleStyleCollectionBox.svelte';
-  import DebugDirectCollectionBox from './audio-transcript/DebugDirectCollectionBox.svelte';
+  import LyricsPanel from './LyricsPanel.svelte';
   import { browser } from '$app/environment';
 
   // Props passed from the parent
@@ -120,7 +119,7 @@
     
     console.log(`ContentContainer.addLyricsSnippet called with text: "${text.trim().substring(0, 20)}..."`);
     
-    // Use the global function first if available (new approach that works with PurpleStyleCollectionBox)
+    // Use the global function first if available (integrates with LyricsPanel)
     if (typeof window !== 'undefined') {
       // Set global variables that the collection boxes are watching for
       window.transcriptSelectedText = text.trim();
@@ -229,7 +228,7 @@
       
       <!-- Collection panel below the transcript on mobile - always visible -->
       <div class="collection-container w-full animate-fadeIn mt-10 mb-6" style="min-height: 180px; height: auto; max-width: 540px; margin: 0 auto; opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-        <PurpleStyleCollectionBox bind:this={collectionPanelComponent} />
+        <LyricsPanel bind:this={collectionPanelComponent} />
       </div>
       
       <!-- Removed debug box since it works better outside ContentContainer -->
@@ -255,7 +254,7 @@
       
       <!-- Collection panel below the transcript - always visible -->
       <div class="collection-container w-full slide-in-bottom animate-fadeIn mt-10 mb-6" style="min-height: 180px; height: auto; max-width: 680px; margin: 0 auto; opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-        <PurpleStyleCollectionBox bind:this={collectionPanelComponent} />
+        <LyricsPanel bind:this={collectionPanelComponent} />
       </div>
       
       <!-- Removed debug box since it works better outside ContentContainer -->

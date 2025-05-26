@@ -281,10 +281,6 @@
     </div>
   </div>
 
-<!-- Debug Collection Panel for direct testing - only shown during development -->
-{#if false}
-  <DebugCollectionPanel currentSelectedText={selectedText} />
-{/if}
 </div>
 
 <!-- === GLAM ZONE END: UI TEMPLATE === -->

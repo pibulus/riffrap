@@ -1,13 +1,12 @@
 <!--
-  === COMPONENT OVERVIEW ===
-  This is a compatibility wrapper for the new modular LyricsCollection component.
-  It maintains the same filename and interface as the original PurpleStyleCollectionBox.svelte
-  to ensure backward compatibility with existing code that depends on this component.
+  === LYRICS PANEL COMPONENT ===
   
-  All actual functionality has been refactored into the modular LyricsCollection component
-  and its supporting modules in the lyrics-collection directory.
+  A clean, focused wrapper around the modular LyricsCollection component.
+  Provides a unified interface for collecting, organizing, and managing lyric snippets
+  transcribed from audio recordings.
   
-  REF: This is a key part of Phase 3 modularization in cleanup_checklist.md
+  All core functionality is implemented in the LyricsCollection component and its
+  supporting modules in the lyrics-collection directory.
 -->
 
 <script>
@@ -37,7 +36,7 @@
   onMount(() => {
     // The LyricsCollection component will handle all global methods
     // Just log initialization for debugging
-    console.log('PurpleStyleCollectionBox wrapper initialized - now using modular LyricsCollection');
+    console.log('LyricsPanel initialized - using modular LyricsCollection');
   });
   // === LIFECYCLE CHUNK END ===
 </script>
