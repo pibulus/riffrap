@@ -166,9 +166,9 @@
 >
   <!-- Wrapper for positioning toast properly -->
   
-  <div class="wrapper-container flex w-full justify-center">
+  <div class="wrapper-container flex w-full justify-center overflow-visible">
     <div
-      class="transcript-box-container relative mx-auto w-full max-w-[600px] px-4"
+      class="transcript-box-container relative mx-auto w-[600px] px-4 overflow-visible"
     >
       <!-- Toast Notification for Lyrics Collection positioned relative to this container -->
       {#if notification}
@@ -186,7 +186,7 @@
       {/if}
       
       <!-- Re-roll button positioned outside and to the top-right of transcript box -->
-      <div class="absolute -top-6 -right-4 z-20">
+      <div class="absolute -top-6 -right-2 z-20">
         <button
           class="reroll-btn rounded-full px-4 py-3 hover:scale-105 transform transition-all duration-300 bg-gradient-to-br from-pink-400 to-rose-400 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-rose-300 focus:ring-offset-2 active:scale-95 flex items-center gap-2"
           on:click|preventDefault={handleReroll}
