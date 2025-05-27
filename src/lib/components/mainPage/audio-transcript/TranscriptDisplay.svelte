@@ -187,6 +187,30 @@
           <div class="toast-message">Line collected!</div>
         </div>
       {/if}
+      
+      <!-- Re-roll button positioned outside and to the top-right of transcript box -->
+      <div class="absolute -top-2 -right-2 z-20">
+        <button
+          class="reroll-btn rounded-full px-4 py-3 hover:scale-105 transform transition-all duration-300 bg-gradient-to-br from-pink-400 to-rose-400 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-rose-300 focus:ring-offset-2 active:scale-95 flex items-center gap-2"
+          on:click|preventDefault={handleReroll}
+          aria-label="Re-roll lyrics"
+          title="Generate new interpretation from the same audio"
+          class:reroll-spinning={$isRerollingStore}
+        >
+          <!-- Enhanced dice icon with spinning animation when rerolling -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="dice-icon" class:spin-animation={$isRerollingStore}>
+            <rect width="12" height="12" x="2" y="10" rx="2" ry="2"></rect>
+            <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"></path>
+            <path d="M6 18h.01"></path>
+            <path d="M10 14h.01"></path>
+            <path d="M15 6h.01"></path>
+            <path d="M18 9h.01"></path>
+          </svg>
+          <!-- Dynamic text based on rerolling state -->
+          <span class="text-white font-medium">{$isRerollingStore ? 'Rolling...' : 'Reroll'}</span>
+        </button>
+      </div>
+      
       <!-- Redesigned transcript box with proper structure -->
       <div
         class="transcript-box animate-shadow-appear relative mx-auto mb-4 box-border 
@@ -194,28 +218,6 @@
                shadow-sm transition-all duration-500 ease-in-out contain-layout
                w-full min-w-[300px]"
       >
-        <!-- Re-roll button in the top-right corner - enhanced with animation and improved visual feedback -->
-        <div class="absolute top-3 right-3 z-10">
-          <button
-            class="reroll-btn rounded-full px-4 py-3 hover:scale-105 transform transition-all duration-300 bg-gradient-to-br from-pink-400 to-rose-400 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-rose-300 focus:ring-offset-2 active:scale-95 flex items-center gap-2"
-            on:click|preventDefault={handleReroll}
-            aria-label="Re-roll lyrics"
-            title="Generate new interpretation from the same audio"
-            class:reroll-spinning={$isRerollingStore}
-          >
-            <!-- Enhanced dice icon with spinning animation when rerolling -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="dice-icon" class:spin-animation={$isRerollingStore}>
-              <rect width="12" height="12" x="2" y="10" rx="2" ry="2"></rect>
-              <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"></path>
-              <path d="M6 18h.01"></path>
-              <path d="M10 14h.01"></path>
-              <path d="M15 6h.01"></path>
-              <path d="M18 9h.01"></path>
-            </svg>
-            <!-- Dynamic text based on rerolling state -->
-            <span class="text-white font-medium">{$isRerollingStore ? 'Rolling...' : 'Reroll'}</span>
-          </button>
-        </div>
         
         <!-- Content Area - scrollable with increased height and smooth transitions -->
         <div 

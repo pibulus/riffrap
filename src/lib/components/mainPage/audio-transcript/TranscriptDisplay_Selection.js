@@ -15,6 +15,10 @@ import {
 
 import { get } from 'svelte/store';
 
+// Track double-click timing for paragraph selection
+let lastClickTime = 0;
+let lastClickTarget = null;
+
 // Export selection-related functions
 export function handleTextSelection(event) {
   const editableTranscript = get(editableTranscriptStore);
@@ -31,8 +35,23 @@ export function handleTextSelection(event) {
     // Check if we have a click (rather than a drag selection)
     // We can determine this by checking if the selection is empty
     if (selectionText.length === 0 && event.type === 'mouseup' && event.target.nodeName !== 'BUTTON') {
-      // This was a click, so select the entire line
-      selectEntireLine(event.target);
+      
+      // Check for double-click to select paragraph
+      const currentTime = Date.now();
+      const timeDiff = currentTime - lastClickTime;
+      const isSameTarget = event.target === lastClickTarget || event.target.closest('.lyric-line') === lastClickTarget?.closest('.lyric-line');
+      
+      if (timeDiff < 500 && isSameTarget) {
+        // Double-click detected - select the entire paragraph
+        selectEntireParagraph(event.target);
+        lastClickTime = 0; // Reset to prevent triple-click issues
+        lastClickTarget = null;
+      } else {
+        // Single click - select the entire line
+        selectEntireLine(event.target);
+        lastClickTime = currentTime;
+        lastClickTarget = event.target;
+      }
       
       // After selecting the line, get the new selection
       const newSelection = window.getSelection();
@@ -298,6 +317,78 @@ export function selectEntireLine(node) {
   const selection = window.getSelection();
   selection.removeAllRanges();
   selection.addRange(range);
+}
+
+export function selectEntireParagraph(node) {
+  const editableTranscript = get(editableTranscriptStore);
+  
+  // Remove selected class from all lines first
+  if (editableTranscript) {
+    const allLines = editableTranscript.querySelectorAll('.lyric-line');
+    allLines.forEach(line => line.classList.remove('selected'));
+  }
+  
+  // Find the lyric-line element containing this node
+  let lineElement = node;
+  while (lineElement && !lineElement.classList?.contains('lyric-line') && lineElement !== editableTranscript) {
+    lineElement = lineElement.parentNode;
+  }
+  
+  if (!lineElement || !lineElement.classList?.contains('lyric-line')) {
+    // Fallback to single line selection
+    selectEntireLine(node);
+    return;
+  }
+  
+  // Find the paragraph boundaries (consecutive non-empty lines)
+  const allLines = Array.from(editableTranscript.querySelectorAll('.lyric-line'));
+  const currentIndex = allLines.indexOf(lineElement);
+  
+  if (currentIndex === -1) {
+    selectEntireLine(node);
+    return;
+  }
+  
+  // Find paragraph start - go backwards until we hit an empty line or start
+  let paragraphStart = currentIndex;
+  while (paragraphStart > 0) {
+    const prevLine = allLines[paragraphStart - 1];
+    const prevText = prevLine.textContent.trim();
+    
+    // If previous line is empty or just whitespace, stop here
+    if (prevText === '' || prevText === ' ') {
+      break;
+    }
+    paragraphStart--;
+  }
+  
+  // Find paragraph end - go forwards until we hit an empty line or end
+  let paragraphEnd = currentIndex;
+  while (paragraphEnd < allLines.length - 1) {
+    const nextLine = allLines[paragraphEnd + 1];
+    const nextText = nextLine.textContent.trim();
+    
+    // If next line is empty or just whitespace, stop here
+    if (nextText === '' || nextText === ' ') {
+      break;
+    }
+    paragraphEnd++;
+  }
+  
+  // Select all lines in the paragraph
+  const paragraphLines = allLines.slice(paragraphStart, paragraphEnd + 1);
+  paragraphLines.forEach(line => line.classList.add('selected'));
+  
+  // Create a range that encompasses all paragraph lines
+  if (paragraphLines.length > 0) {
+    const range = document.createRange();
+    range.setStartBefore(paragraphLines[0]);
+    range.setEndAfter(paragraphLines[paragraphLines.length - 1]);
+    
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
 }
 
 export function selectElementContents(element) {
