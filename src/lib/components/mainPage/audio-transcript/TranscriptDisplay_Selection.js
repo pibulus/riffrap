@@ -15,7 +15,7 @@ import {
 
 import { get } from 'svelte/store';
 
-// Smart selection system - automatically detects chunks vs individual lines
+// Simple line-by-line selection system
 
 // Export selection-related functions
 export function handleTextSelection(event) {
@@ -33,17 +33,8 @@ export function handleTextSelection(event) {
     // Check if we have a click (rather than a drag selection)
     // We can determine this by checking if the selection is empty
     if (selectionText.length === 0 && event.type === 'mouseup' && event.target.nodeName !== 'BUTTON') {
-      // Smart selection: check if the clicked line is part of a chunk (paragraph)
-      // If it is, select the whole chunk; otherwise, select just the line
-      const shouldSelectChunk = isPartOfChunk(event.target);
-      
-      if (shouldSelectChunk) {
-        // Select the entire chunk/paragraph
-        selectEntireParagraph(event.target);
-      } else {
-        // Select just the single line
-        selectEntireLine(event.target);
-      }
+      // Simple line selection - just select the clicked line
+      selectEntireLine(event.target);
       
       // After selecting the line, get the new selection
       const newSelection = window.getSelection();
@@ -311,158 +302,6 @@ export function selectEntireLine(node) {
   selection.addRange(range);
 }
 
-export function markChunkLines() {
-  const editableTranscript = get(editableTranscriptStore);
-  if (!editableTranscript) return;
-  
-  const allLines = editableTranscript.querySelectorAll('.lyric-line');
-  
-  allLines.forEach((line, index) => {
-    const allLinesArray = Array.from(allLines);
-    let isPartOfChunk = false;
-    
-    // Check if there are adjacent non-empty lines
-    // Check previous line
-    if (index > 0) {
-      const prevText = allLinesArray[index - 1].textContent.trim();
-      if (prevText !== '' && prevText !== ' ') {
-        isPartOfChunk = true;
-      }
-    }
-    
-    // Check next line
-    if (index < allLinesArray.length - 1) {
-      const nextText = allLinesArray[index + 1].textContent.trim();
-      if (nextText !== '' && nextText !== ' ') {
-        isPartOfChunk = true;
-      }
-    }
-    
-    // Apply or remove the class
-    if (isPartOfChunk) {
-      line.classList.add('part-of-chunk');
-    } else {
-      line.classList.remove('part-of-chunk');
-    }
-  });
-}
-
-export function isPartOfChunk(node) {
-  const editableTranscript = get(editableTranscriptStore);
-  
-  // Find the lyric-line element containing this node
-  let lineElement = node;
-  while (lineElement && !lineElement.classList?.contains('lyric-line') && lineElement !== editableTranscript) {
-    lineElement = lineElement.parentNode;
-  }
-  
-  if (!lineElement || !lineElement.classList?.contains('lyric-line')) {
-    return false;
-  }
-  
-  // Get all lines
-  const allLines = Array.from(editableTranscript.querySelectorAll('.lyric-line'));
-  const currentIndex = allLines.indexOf(lineElement);
-  
-  if (currentIndex === -1) {
-    return false;
-  }
-  
-  // Check if there are adjacent non-empty lines (indicating this line is part of a chunk)
-  let hasAdjacentLines = false;
-  
-  // Check previous line
-  if (currentIndex > 0) {
-    const prevLine = allLines[currentIndex - 1];
-    const prevText = prevLine.textContent.trim();
-    if (prevText !== '' && prevText !== ' ') {
-      hasAdjacentLines = true;
-    }
-  }
-  
-  // Check next line  
-  if (currentIndex < allLines.length - 1) {
-    const nextLine = allLines[currentIndex + 1];
-    const nextText = nextLine.textContent.trim();
-    if (nextText !== '' && nextText !== ' ') {
-      hasAdjacentLines = true;
-    }
-  }
-  
-  return hasAdjacentLines;
-}
-
-export function selectEntireParagraph(node) {
-  const editableTranscript = get(editableTranscriptStore);
-  
-  // Remove selected class from all lines first
-  if (editableTranscript) {
-    const allLines = editableTranscript.querySelectorAll('.lyric-line');
-    allLines.forEach(line => line.classList.remove('selected'));
-  }
-  
-  // Find the lyric-line element containing this node
-  let lineElement = node;
-  while (lineElement && !lineElement.classList?.contains('lyric-line') && lineElement !== editableTranscript) {
-    lineElement = lineElement.parentNode;
-  }
-  
-  if (!lineElement || !lineElement.classList?.contains('lyric-line')) {
-    // Fallback to single line selection
-    selectEntireLine(node);
-    return;
-  }
-  
-  // Find the paragraph boundaries (consecutive non-empty lines)
-  const allLines = Array.from(editableTranscript.querySelectorAll('.lyric-line'));
-  const currentIndex = allLines.indexOf(lineElement);
-  
-  if (currentIndex === -1) {
-    selectEntireLine(node);
-    return;
-  }
-  
-  // Find paragraph start - go backwards until we hit an empty line or start
-  let paragraphStart = currentIndex;
-  while (paragraphStart > 0) {
-    const prevLine = allLines[paragraphStart - 1];
-    const prevText = prevLine.textContent.trim();
-    
-    // If previous line is empty or just whitespace, stop here
-    if (prevText === '' || prevText === ' ') {
-      break;
-    }
-    paragraphStart--;
-  }
-  
-  // Find paragraph end - go forwards until we hit an empty line or end
-  let paragraphEnd = currentIndex;
-  while (paragraphEnd < allLines.length - 1) {
-    const nextLine = allLines[paragraphEnd + 1];
-    const nextText = nextLine.textContent.trim();
-    
-    // If next line is empty or just whitespace, stop here
-    if (nextText === '' || nextText === ' ') {
-      break;
-    }
-    paragraphEnd++;
-  }
-  
-  // Select all lines in the paragraph
-  const paragraphLines = allLines.slice(paragraphStart, paragraphEnd + 1);
-  paragraphLines.forEach(line => line.classList.add('selected'));
-  
-  // Create a range that encompasses all paragraph lines
-  if (paragraphLines.length > 0) {
-    const range = document.createRange();
-    range.setStartBefore(paragraphLines[0]);
-    range.setEndAfter(paragraphLines[paragraphLines.length - 1]);
-    
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-  }
-}
 
 export function selectElementContents(element) {
   if (!element) return;

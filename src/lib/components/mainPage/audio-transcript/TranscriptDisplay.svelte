@@ -52,7 +52,6 @@
   // Create local props from store values
   export let transcript;
   export let showCopyTooltip;
-  export let responsiveFontSize;
   export let parentContainer;
   
   // DOM references that need binding
@@ -75,18 +74,12 @@
   // Debug log for monitoring transcript updates
   $: if (transcript) console.log('[DEBUG] TranscriptDisplay has transcript:', transcript.substring(0, 30));
   
-  // Mark chunk lines when transcript changes
-  $: if (transcript && editableTranscript) {
-    setTimeout(() => markChunkLines(), 100); // Small delay to ensure DOM is updated
-  }
-  
   // Set the dispatch in the store for other modules to use
   dispatchStore.set(dispatch);
   
   // Subscribe to stores for local use - FIXED: Removed the transcript subscription that was causing feedback loop
   // The transcriptStore is now updated directly from TranscriptDisplay_Core.js
   showCopyTooltipStore.subscribe(value => (showCopyTooltip = value));
-  responsiveFontSizeStore.subscribe(value => (responsiveFontSize = value));
   parentContainerStore.subscribe(value => (parentContainer = value));
   notificationStore.subscribe(value => (notification = value));
   selectionActiveStore.subscribe(value => (selectionActive = value));
@@ -98,7 +91,6 @@
   // Set the store values when props change - FIXED: Removed bidirectional binding for transcript
   // We now only allow one-way updates from global transcriptionText to local transcriptStore
   $: showCopyTooltipStore.set(showCopyTooltip);
-  $: responsiveFontSizeStore.set(responsiveFontSize);
   $: parentContainerStore.set(parentContainer);
   
   // Sync DOM refs with stores when they update
@@ -108,8 +100,7 @@
   
   import {
     handleTextSelection,
-    hideSelectionButton,
-    markChunkLines
+    hideSelectionButton
   } from './TranscriptDisplay_Selection.js';
   
   import {
@@ -177,7 +168,7 @@
   
   <div class="wrapper-container flex w-full justify-center">
     <div
-      class="transcript-box-container relative mx-auto w-[95%] max-w-[600px] px-0 sm:w-full"
+      class="transcript-box-container relative mx-auto w-full max-w-[600px] px-4"
     >
       <!-- Toast Notification for Lyrics Collection positioned relative to this container -->
       {#if notification}
@@ -222,16 +213,16 @@
         class="transcript-box animate-shadow-appear relative mx-auto mb-4 box-border 
                rounded-[2rem] border border-purple-100/70 bg-white/95
                shadow-sm transition-all duration-500 ease-in-out contain-layout
-               w-full min-w-[300px]"
+               w-full"
       >
         
         <!-- Content Area - scrollable with increased height and smooth transitions -->
         <div 
-          class="transcript-content-area w-full max-h-[600px] overflow-y-auto overflow-x-hidden px-7 pt-6 pb-8 sm:px-10 sm:pt-7 sm:pb-10 relative z-5 transition-all duration-500 ease-in-out"
+          class="transcript-content-area w-full max-h-[600px] overflow-y-auto overflow-x-hidden px-8 pt-6 pb-8 relative z-5 transition-all duration-500 ease-in-out"
           bind:this={transcriptBoxRef}
         >
           <div
-            class={`transcript-text ${responsiveFontSize} text-left custom-transcript-text animate-text-appear font-mono mb-3 lyric-display font-medium max-w-full break-words`}
+            class="transcript-text text-base text-left custom-transcript-text animate-text-appear font-mono mb-3 lyric-display font-medium max-w-full break-words"
             contenteditable="true"
             role="textbox"
             aria-label="Transcript editor"
@@ -484,17 +475,6 @@
     width: 100%; /* Full width to match selection */
     transition: background-color 0.2s ease;
     transform: none; /* Prevent transforms on hover */
-  }
-  
-  /* Chunk hover effect - show subtle chunk boundaries when hovering */
-  .lyric-line:hover.part-of-chunk {
-    box-shadow: 0 0 0 1px rgba(197, 163, 255, 0.4);
-  }
-  
-  /* Visual indicator for chunk boundaries */
-  .lyric-line.part-of-chunk {
-    border-left: 2px solid rgba(197, 163, 255, 0.15);
-    padding-left: calc(0.5rem - 2px);
   }
   
   /* Line focus/selection effect - solid chunk highlight */
