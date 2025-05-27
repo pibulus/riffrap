@@ -15,9 +15,7 @@ import {
 
 import { get } from 'svelte/store';
 
-// Track double-click timing for paragraph selection
-let lastClickTime = 0;
-let lastClickTarget = null;
+// Smart selection system - automatically detects chunks vs individual lines
 
 // Export selection-related functions
 export function handleTextSelection(event) {
@@ -35,22 +33,16 @@ export function handleTextSelection(event) {
     // Check if we have a click (rather than a drag selection)
     // We can determine this by checking if the selection is empty
     if (selectionText.length === 0 && event.type === 'mouseup' && event.target.nodeName !== 'BUTTON') {
+      // Smart selection: check if the clicked line is part of a chunk (paragraph)
+      // If it is, select the whole chunk; otherwise, select just the line
+      const shouldSelectChunk = isPartOfChunk(event.target);
       
-      // Check for double-click to select paragraph
-      const currentTime = Date.now();
-      const timeDiff = currentTime - lastClickTime;
-      const isSameTarget = event.target === lastClickTarget || event.target.closest('.lyric-line') === lastClickTarget?.closest('.lyric-line');
-      
-      if (timeDiff < 500 && isSameTarget) {
-        // Double-click detected - select the entire paragraph
+      if (shouldSelectChunk) {
+        // Select the entire chunk/paragraph
         selectEntireParagraph(event.target);
-        lastClickTime = 0; // Reset to prevent triple-click issues
-        lastClickTarget = null;
       } else {
-        // Single click - select the entire line
+        // Select just the single line
         selectEntireLine(event.target);
-        lastClickTime = currentTime;
-        lastClickTarget = event.target;
       }
       
       // After selecting the line, get the new selection
@@ -317,6 +309,87 @@ export function selectEntireLine(node) {
   const selection = window.getSelection();
   selection.removeAllRanges();
   selection.addRange(range);
+}
+
+export function markChunkLines() {
+  const editableTranscript = get(editableTranscriptStore);
+  if (!editableTranscript) return;
+  
+  const allLines = editableTranscript.querySelectorAll('.lyric-line');
+  
+  allLines.forEach((line, index) => {
+    const allLinesArray = Array.from(allLines);
+    let isPartOfChunk = false;
+    
+    // Check if there are adjacent non-empty lines
+    // Check previous line
+    if (index > 0) {
+      const prevText = allLinesArray[index - 1].textContent.trim();
+      if (prevText !== '' && prevText !== ' ') {
+        isPartOfChunk = true;
+      }
+    }
+    
+    // Check next line
+    if (index < allLinesArray.length - 1) {
+      const nextText = allLinesArray[index + 1].textContent.trim();
+      if (nextText !== '' && nextText !== ' ') {
+        isPartOfChunk = true;
+      }
+    }
+    
+    // Apply or remove the class
+    if (isPartOfChunk) {
+      line.classList.add('part-of-chunk');
+    } else {
+      line.classList.remove('part-of-chunk');
+    }
+  });
+}
+
+export function isPartOfChunk(node) {
+  const editableTranscript = get(editableTranscriptStore);
+  
+  // Find the lyric-line element containing this node
+  let lineElement = node;
+  while (lineElement && !lineElement.classList?.contains('lyric-line') && lineElement !== editableTranscript) {
+    lineElement = lineElement.parentNode;
+  }
+  
+  if (!lineElement || !lineElement.classList?.contains('lyric-line')) {
+    return false;
+  }
+  
+  // Get all lines
+  const allLines = Array.from(editableTranscript.querySelectorAll('.lyric-line'));
+  const currentIndex = allLines.indexOf(lineElement);
+  
+  if (currentIndex === -1) {
+    return false;
+  }
+  
+  // Check if there are adjacent non-empty lines (indicating this line is part of a chunk)
+  let hasAdjacentLines = false;
+  
+  // Check previous line
+  if (currentIndex > 0) {
+    const prevLine = allLines[currentIndex - 1];
+    const prevText = prevLine.textContent.trim();
+    if (prevText !== '' && prevText !== ' ') {
+      hasAdjacentLines = true;
+    }
+  }
+  
+  // Check next line  
+  if (currentIndex < allLines.length - 1) {
+    const nextLine = allLines[currentIndex + 1];
+    const nextText = nextLine.textContent.trim();
+    if (nextText !== '' && nextText !== ' ') {
+      hasAdjacentLines = true;
+    }
+  }
+  
+  return hasAdjacentLines;
 }
 
 export function selectEntireParagraph(node) {

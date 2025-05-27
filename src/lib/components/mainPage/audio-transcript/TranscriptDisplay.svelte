@@ -75,6 +75,11 @@
   // Debug log for monitoring transcript updates
   $: if (transcript) console.log('[DEBUG] TranscriptDisplay has transcript:', transcript.substring(0, 30));
   
+  // Mark chunk lines when transcript changes
+  $: if (transcript && editableTranscript) {
+    setTimeout(() => markChunkLines(), 100); // Small delay to ensure DOM is updated
+  }
+  
   // Set the dispatch in the store for other modules to use
   dispatchStore.set(dispatch);
   
@@ -103,7 +108,8 @@
   
   import {
     handleTextSelection,
-    hideSelectionButton
+    hideSelectionButton,
+    markChunkLines
   } from './TranscriptDisplay_Selection.js';
   
   import {
@@ -171,7 +177,7 @@
   
   <div class="wrapper-container flex w-full justify-center">
     <div
-      class="transcript-box-container relative mx-auto w-[95%] max-w-[580px] px-0 sm:w-full"
+      class="transcript-box-container relative mx-auto w-[95%] max-w-[600px] px-0 sm:w-full"
     >
       <!-- Toast Notification for Lyrics Collection positioned relative to this container -->
       {#if notification}
@@ -189,7 +195,7 @@
       {/if}
       
       <!-- Re-roll button positioned outside and to the top-right of transcript box -->
-      <div class="absolute -top-2 -right-2 z-20">
+      <div class="absolute -top-6 -right-4 z-20">
         <button
           class="reroll-btn rounded-full px-4 py-3 hover:scale-105 transform transition-all duration-300 bg-gradient-to-br from-pink-400 to-rose-400 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-rose-300 focus:ring-offset-2 active:scale-95 flex items-center gap-2"
           on:click|preventDefault={handleReroll}
@@ -478,6 +484,17 @@
     width: 100%; /* Full width to match selection */
     transition: background-color 0.2s ease;
     transform: none; /* Prevent transforms on hover */
+  }
+  
+  /* Chunk hover effect - show subtle chunk boundaries when hovering */
+  .lyric-line:hover.part-of-chunk {
+    box-shadow: 0 0 0 1px rgba(197, 163, 255, 0.4);
+  }
+  
+  /* Visual indicator for chunk boundaries */
+  .lyric-line.part-of-chunk {
+    border-left: 2px solid rgba(197, 163, 255, 0.15);
+    padding-left: calc(0.5rem - 2px);
   }
   
   /* Line focus/selection effect - solid chunk highlight */
