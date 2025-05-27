@@ -158,7 +158,7 @@
   OMG REF (App Glam-Up): Could be split into smaller, focused sub-components
 -->
 <div
-  class="transcript-wrapper w-full animate-fadeIn-from-top relative"
+  class="transcript-wrapper w-full relative"
   on:animationend={() => {
     // No page scrolling needed anymore with fixed layout
     checkScrollable();
@@ -168,7 +168,8 @@
   
   <div class="wrapper-container flex w-full justify-center overflow-visible">
     <div
-      class="transcript-box-container relative mx-auto w-[600px] px-4 overflow-visible"
+      class="transcript-box-container relative w-[600px] overflow-visible"
+      style="margin: 0 auto;"
     >
       <!-- Toast Notification for Lyrics Collection positioned relative to this container -->
       {#if notification}
