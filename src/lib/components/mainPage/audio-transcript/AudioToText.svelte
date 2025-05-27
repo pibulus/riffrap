@@ -532,9 +532,8 @@
 
 				<!-- Transcript output - show whenever we have non-empty transcript, regardless of recording state -->
 				{#if $transcriptionText && $transcriptionText !== ''}
-					<div class="transcript-container transition-all duration-500 ease-in-out" 
-					     style="transform-origin: top center; min-width: 280px;" 
-					     class:animate-height-bloopy={$transcriptionState.rerolling}>
+					<div class="transcript-container" 
+					     style="min-width: 280px;">
 						<TranscriptDisplay
 							transcript={$transcriptionText || ''}
 							{showCopyTooltip}
@@ -688,17 +687,6 @@
 	border-width: 0;
 }
 
-/* Bloopy height animation for the transcript container */
-.animate-height-bloopy {
-	animation: heightBloopy 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-@keyframes heightBloopy {
-	0% { transform: scaleY(0.98); }
-	50% { transform: scaleY(1.02); }
-	70% { transform: scaleY(0.99); }
-	100% { transform: scaleY(1); }
-}
 
 
 /* Improved focus styles for keyboard navigation */

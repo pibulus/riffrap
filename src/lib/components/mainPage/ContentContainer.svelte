@@ -208,7 +208,7 @@
 />
 
 <!-- Content area with transcript and collection panel -->
-<div class="main-content-area relative w-full overflow-visible">
+<div class="main-content-area relative w-full">
   {#if isMobile}
     <!-- Mobile tab-based layout -->
     <div class="mobile-container w-full flex flex-col">
@@ -265,7 +265,7 @@
 <style>
   .main-content-area {
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     min-height: auto; /* Remove fixed height to prevent layout flash */
   }
   
