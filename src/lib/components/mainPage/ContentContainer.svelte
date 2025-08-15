@@ -235,7 +235,7 @@
     </div>
   {:else}
     <!-- Desktop layout with vertical stacking -->
-    <div class="desktop-container w-full max-w-xl sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto flex flex-col">
+    <div class="desktop-container w-full mx-auto flex flex-col" style="max-width: 700px;">
       <!-- Transcript takes full width -->
       <div class="transcript-container w-full mb-6">
         <AudioToText
@@ -253,7 +253,7 @@
       </div>
       
       <!-- Collection panel below the transcript - always visible -->
-      <div class="collection-container w-full mt-10 mb-6" style="height: auto; max-width: 680px; margin: 0 auto;">
+      <div class="collection-container w-full mt-10 mb-6" style="height: auto; max-width: 600px; margin: 0 auto;">
         <LyricsPanel bind:this={collectionPanelComponent} />
       </div>
       
