@@ -4,12 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build & Development
 
-- `npm run dev` - Start development server
+- `npm run dev` - Start development server (runs on port 3002)
 - `npm run dev -- --open` - Start development server and open in browser
-- `npm run build` - Create production build
+- `npm run build` - Create production build (outputs to `/build`)
 - `npm run preview` - Preview production build
 - `npm run format` - Run Prettier formatter
 - `npm run lint` - Check code formatting and run ESLint
+
+## Environment Setup
+
+Create a `.env` file in the project root with:
+
+```
+VITE_GEMINI_API_KEY=your_api_key_here
+```
+
+Get a free API key at [Google AI Studio](https://aistudio.google.com/app/apikey)
 
 ## Core Architecture
 
@@ -122,8 +132,39 @@ When implementing animations in the UI:
    - CSS containment where appropriate
    - Throttling/debouncing for high-frequency events
 
+## Deployment
+
+RiffRap uses `@sveltejs/adapter-static` for flexible deployment to any static hosting provider.
+
+### Deploy to Cloudflare Pages (Recommended)
+
+1. Connect GitHub repo to Cloudflare Pages
+2. Build command: `npm run build`
+3. Output directory: `build`
+4. Add environment variable: `VITE_GEMINI_API_KEY=your_key`
+
+### Deploy to Netlify
+
+1. Connect GitHub repo to Netlify
+2. Build command: `npm run build`
+3. Publish directory: `build`
+4. Add environment variable: `VITE_GEMINI_API_KEY=your_key`
+
+### Other Static Hosts
+
+The `/build` directory works on GitHub Pages, Surge, Vercel (static), or any CDN.
+
+## SEO & Accessibility
+
+The app includes comprehensive production features:
+
+- **SEO**: Open Graph tags, Twitter cards, structured data (JSON-LD), sitemap, robots.txt
+- **Accessibility**: ARIA labels, skip-to-main link, keyboard navigation, focus indicators, screen reader support
+- **Mobile**: Responsive breakpoints (sm/md/lg/xl), pinch-to-zoom enabled, PWA-ready with manifest
+- **Performance**: Hardware-accelerated animations, lazy loading, optimized assets
+
 ## Editor Configuration
 
-- Default branch: main
+- Default branch: master
 - Code width: 80 characters
 - Tab size: 2 spaces
