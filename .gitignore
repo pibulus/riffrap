@@ -30,4 +30,4 @@ pnpm-debug.log*
 
 # Local development
 /.vercel/
-/.netlify/
+/.netlify/.env
