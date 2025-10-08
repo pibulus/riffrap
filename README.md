@@ -58,33 +58,68 @@ The rougher, the better — Riff Rap thrives on turning vocal chaos into lyrical
 ## Built With
 
 - **SvelteKit** – Reactive UI with minimal overhead
-- **Tailwind CSS** – For the SoftStack™ design aesthetic
-- **WebSpeech API** – For local voice transcription with gibberish handling
+- **Tailwind CSS + DaisyUI** – For the SoftStack™ design aesthetic
+- **Google Gemini API** – AI-powered voice transcription that understands context
 - **Custom Audio Visualizer** – So you know when you're being heard
+- **PWA-ready** – Install as an app on any device
 - **Brain-friendly UX** – Designed for creative flow states
 
 ---
 
-## Developing
+## Setup
 
-Once you've cloned the repository and installed dependencies with `npm install`, start a development server:
+1. **Clone and install dependencies:**
+   ```bash
+   git clone https://github.com/pibulus/riffrap.git
+   cd riffrap
+   npm install
+   ```
 
-```bash
-npm run dev
+2. **Add your Gemini API key:**
+   Create a `.env` file in the project root:
+   ```bash
+   VITE_GEMINI_API_KEY=your_api_key_here
+   ```
+   Get a free API key at [Google AI Studio](https://aistudio.google.com/app/apikey)
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+3. **Start development server:**
+   ```bash
+   npm run dev
+   # or open in browser automatically
+   npm run dev -- --open
+   ```
 
-## Building
+## Building & Deployment
 
-To create a production version of the app:
+Riff Rap uses a static adapter and can be deployed to any static hosting provider:
 
 ```bash
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+The built app outputs to the `/build` directory.
+
+### Deploy to Cloudflare Pages (Recommended)
+
+1. Connect your GitHub repo to Cloudflare Pages
+2. Set build command: `npm run build`
+3. Set output directory: `build`
+4. Add environment variable: `VITE_GEMINI_API_KEY`
+
+### Deploy to Netlify
+
+1. Connect your GitHub repo to Netlify
+2. Build command: `npm run build`
+3. Publish directory: `build`
+4. Add environment variable: `VITE_GEMINI_API_KEY`
+
+### Other Static Hosts
+
+The `/build` directory contains a complete static site that works on:
+- GitHub Pages
+- Surge
+- Vercel (as static)
+- Any CDN or static file server
 
 ---
 
