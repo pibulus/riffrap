@@ -1,9 +1,13 @@
 /**
  * SvelteKit layout load function
- * 
+ *
  * This file implements modern SvelteKit routing features to enhance SEO and improve page metadata.
  * It provides consistent handling of page titles, descriptions, and OpenGraph data across routes.
  */
+
+// Enable prerendering for static export
+export const prerender = true;
+export const ssr = false;
 
 // Function that runs on the server and provides data to the layout
 export function load() {
