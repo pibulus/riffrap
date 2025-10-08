@@ -16,7 +16,7 @@ export function load() {
       openGraph: {
         title: 'RiffRap | Voice to Lyrics Converter',
         description: 'Turn your voice recordings into killer lyrics with RiffRap',
-        image: '/og-image.png',
+        image: 'https://riffrap.app/og-image.png',
         type: 'website',
         url: 'https://riffrap.app'
       }

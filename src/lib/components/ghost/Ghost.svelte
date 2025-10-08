@@ -468,6 +468,10 @@
 		class:waking-up={$ghostStateStore.current === ANIMATION_STATES.WAKING_UP}
 		class:ready={isGhostReady}
 		class:debug-animation={debugAnim}
+		role="img"
+		aria-label={$ghostStateStore.isRecording ? 'Ghost character - recording' : $ghostStateStore.isProcessing ? 'Ghost character - processing' : 'Ghost character - idle'}
+		aria-live="polite"
+		focusable="false"
 	>
 		<defs>
 			<linearGradient id="peachGradient" x1="0%" y1="0%" x2="100%" y2="100%">

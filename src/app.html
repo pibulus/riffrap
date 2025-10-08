@@ -2,6 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
+		<title>RiffRap | Turn Your Voice Into Song Lyrics</title>
 		<!-- Enhanced favicon tags -->
 		<link rel="icon" href="%sveltekit.assets%/favicon.ico" sizes="any" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" type="image/png" />
@@ -116,7 +117,8 @@
 			property="og:description"
 			content="Gibberish in. Killer lines out. You riff the bars — we fill the gaps with RiffRap."
 		/>
-		<meta property="og:image" content="%sveltekit.assets%/og-image.png" />
+		<meta property="og:image" content="https://riffrap.app/og-image.png" />
+		<meta property="og:image:alt" content="RiffRap - Turn your voice into song lyrics" />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
 		<meta property="og:site_name" content="RiffRap" />
@@ -130,7 +132,8 @@
 			name="twitter:description"
 			content="Gibberish in. Killer lines out. You riff the bars — we fill the gaps with RiffRap."
 		/>
-		<meta name="twitter:image" content="%sveltekit.assets%/og-image.png" />
+		<meta name="twitter:image" content="https://riffrap.app/og-image.png" />
+		<meta name="twitter:image:alt" content="RiffRap - Turn your voice into song lyrics" />
 		<meta name="twitter:creator" content="@RiffRapApp" />
 
 		<script>
@@ -220,6 +223,28 @@
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
+		<!-- Skip to main content link for accessibility -->
+		<a href="#main-content" class="skip-to-main">Skip to main content</a>
 		<div style="display: contents">%sveltekit.body%</div>
+
+		<style>
+			/* Skip to main content link - hidden until focused */
+			.skip-to-main {
+				position: absolute;
+				top: -40px;
+				left: 0;
+				background: #000;
+				color: #fff;
+				padding: 8px 16px;
+				text-decoration: none;
+				border-radius: 0 0 4px 0;
+				z-index: 9999;
+				font-weight: 600;
+			}
+
+			.skip-to-main:focus {
+				top: 0;
+			}
+		</style>
 	</body>
 </html>
