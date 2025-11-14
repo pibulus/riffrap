@@ -1,24 +1,32 @@
 <script>
-  import { onMount, createEventDispatcher } from 'svelte';
+  import { onMount, onDestroy, createEventDispatcher } from 'svelte';
   import confetti from 'canvas-confetti';
   import { ANIMATION } from '$lib/constants';
-  
+
   // Props with defaults
   export let targetSelector = null;
   export let duration = ANIMATION.CONFETTI.ANIMATION_DURATION;
   export let colors = ANIMATION.CONFETTI.COLORS;
   export let particleCount = ANIMATION.CONFETTI.PIECE_COUNT;
-  
+
   const dispatch = createEventDispatcher();
-  
+  let timeoutIds = []; // Track all timeouts for cleanup
+
   onMount(() => {
     // Fire confetti effect
     fireConfetti();
-    
+
     // Dispatch complete event after animation duration
-    setTimeout(() => {
+    const completeTimeoutId = setTimeout(() => {
       dispatch('complete');
     }, duration);
+    timeoutIds.push(completeTimeoutId);
+  });
+
+  onDestroy(() => {
+    // Clear all pending timeouts
+    timeoutIds.forEach(clearTimeout);
+    timeoutIds = [];
   });
   
   function fireConfetti() {
@@ -56,7 +64,7 @@
     });
     
     // Add a second burst from the other side of ghost for a more balanced effect
-    setTimeout(() => {
+    const secondBurstTimeoutId = setTimeout(() => {
       confetti({
         particleCount: Math.floor(particleCount * 0.25), // Fewer particles in second burst
         spread: 100, // Wider spread
@@ -71,6 +79,7 @@
         disableForReducedMotion: true
       });
     }, 50); // Very quick follow-up for cohesive effect
+    timeoutIds.push(secondBurstTimeoutId);
   }
 </script>
 

@@ -11,6 +11,7 @@
 	let analyser;
 	let audioContext;
 	let recording = false; // Track recording state within the component
+	let resumeAudioHandler = null; // Track click handler for cleanup
 	
 	// Reactive animation state
 	$: animationsEnabled = $appActive;
@@ -68,15 +69,12 @@
 
 			// Explicitly handle user gesture for Safari
 			if (typeof window !== 'undefined' && window.document) {
-				window.document.addEventListener(
-					'click',
-					() => {
-						if (audioContext && audioContext.state === 'suspended') {
-							audioContext.resume();
-						}
-					},
-					{ once: true }
-				);
+				resumeAudioHandler = () => {
+					if (audioContext && audioContext.state === 'suspended') {
+						audioContext.resume();
+					}
+				};
+				window.document.addEventListener('click', resumeAudioHandler, { once: true });
 			}
 
 			audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -89,7 +87,6 @@
 			startVisualizer();
 		} catch (error) {
 			console.error('Error accessing microphone for visualizer:', error);
-			console.log('Falling back to simulated visualizer...');
 			recording = false;
 
 			// Fallback to the simulated visualizer if standard fails
@@ -105,9 +102,9 @@
 	let trend = 0;
 	let peakCountdown = 0;
 	let silenceCountdown = 0;
+	let inactiveFrameCounter = 0; // For throttling when inactive
 
 	function initFallbackVisualizer() {
-		console.log('Using fallback visualizer for Safari/iOS');
 		history = Array(historyLength).fill(0);
 		fallbackAnimating = true;
 		recording = true;
@@ -121,13 +118,15 @@
 
 	function updateFallbackVisualizer() {
 		if (!fallbackAnimating) return;
-		
+
 		if (!$appActive) {
-			// If app is inactive, schedule less frequent updates with reactive store value
-			animationFrameId = setTimeout(() => {
+			// If app is inactive, skip frames to reduce CPU usage (~1 update per second at 60fps)
+			inactiveFrameCounter++;
+			if (inactiveFrameCounter < 60) {
 				animationFrameId = requestAnimationFrame(updateFallbackVisualizer);
-			}, 1000); // Check back in 1 second when inactive
-			return;
+				return;
+			}
+			inactiveFrameCounter = 0;
 		}
 
 		// Only animate when recording is true
@@ -219,13 +218,15 @@
 
 	function updateVisualizer() {
 		if (!recording || !analyser) return;
-		
+
 		if (!$appActive) {
-			// If app is inactive, schedule less frequent updates with reactive store value
-			animationFrameId = setTimeout(() => {
+			// If app is inactive, skip frames to reduce CPU usage (~1 update per second at 60fps)
+			inactiveFrameCounter++;
+			if (inactiveFrameCounter < 60) {
 				animationFrameId = requestAnimationFrame(updateVisualizer);
-			}, 1000); // Check back in 1 second when inactive
-			return;
+				return;
+			}
+			inactiveFrameCounter = 0;
 		}
 
 		// Skip frames to slow down the animation
@@ -285,9 +286,9 @@
 			// The fadeout and stop is handled in updateFallbackVisualizer
 		} else {
 			// Standard cleanup
-			if (typeof animationFrameId === 'number') {
+			if (animationFrameId !== undefined) {
 				cancelAnimationFrame(animationFrameId);
-				clearTimeout(animationFrameId);
+				animationFrameId = undefined;
 			}
 			audioLevel = 0;
 			history = [];
@@ -296,6 +297,12 @@
 				audioContext = null;
 				analyser = null;
 			}
+		}
+
+		// Clean up event listener if it exists
+		if (resumeAudioHandler && typeof window !== 'undefined' && window.document) {
+			window.document.removeEventListener('click', resumeAudioHandler);
+			resumeAudioHandler = null;
 		}
 	}
 
@@ -327,11 +334,17 @@
 	onDestroy(() => {
 		fallbackAnimating = false;
 		stopVisualizer();
-		
-		// Extra cleanup for any potential timeout/animation frame
-		if (typeof animationFrameId === 'number') {
+
+		// Extra cleanup for any potential animation frame
+		if (animationFrameId !== undefined) {
 			cancelAnimationFrame(animationFrameId);
-			clearTimeout(animationFrameId);
+			animationFrameId = undefined;
+		}
+
+		// Clean up event listener if it still exists
+		if (resumeAudioHandler && typeof window !== 'undefined' && window.document) {
+			window.document.removeEventListener('click', resumeAudioHandler);
+			resumeAudioHandler = null;
 		}
 	});
 </script>

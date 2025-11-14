@@ -16,16 +16,8 @@ import { get, writable, derived } from 'svelte/store';
 // We'll export a function that creates it instead
 
 // Props and state as Svelte stores
-export const transcriptStore = writable('');
-
-// FIXED: Create a derived store that syncs with the app's transcription state
-// This ensures transcriptStore always reflects the current transcript text
-transcriptionText.subscribe(text => {
-  if (text && text !== get(transcriptStore)) {
-    console.log('[DEBUG] TranscriptDisplay_Core: Updating transcriptStore from transcriptionText', text.substring(0, 30));
-    transcriptStore.set(text);
-  }
-});
+// Use derived store to sync with transcriptionText - this auto-unsubscribes
+export const transcriptStore = derived(transcriptionText, $text => $text || '');
 
 export const showCopyTooltipStore = writable(false);
 export const responsiveFontSizeStore = writable('text-base');
@@ -89,15 +81,10 @@ export function handleTooltipMouseEnter() {
 
 export function checkScrollable() {
   const transcriptBoxRef = get(transcriptBoxRefStore);
-  
+
   if (transcriptBoxRef) {
     const hasOverflow = transcriptBoxRef.scrollHeight > transcriptBoxRef.clientHeight + 20; // Add buffer for more reliable detection
     isScrollableStore.set(hasOverflow);
-    const isScrollable = hasOverflow;
-    
-    // We could also check if we're near the bottom to hide the indicator
-    // but for simplicity, we'll just show it whenever there's overflow
-    console.log(`Transcript scrollable: ${isScrollable}, height: ${transcriptBoxRef.scrollHeight}, visible: ${transcriptBoxRef.clientHeight}`);
   }
 }
 
@@ -205,8 +192,6 @@ export function setupLifecycleHooks(handlers) {
           };
         }
       };
-      
-      console.log('TranscriptDisplay debug functions available at window.transcriptDebug');
     }
     
     // Watch for content changes to update scrollable state

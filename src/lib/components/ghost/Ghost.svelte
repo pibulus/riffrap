@@ -82,6 +82,7 @@
 	let manualStateChange = false;
 	let wakeUpBlinkTriggered = false; // Flag to ensure blink only triggers once per wake-up
 	let eyeTracker; // Variable to hold the eye tracking instance
+	let timeoutIds = []; // Track all setTimeout calls for cleanup
 	
 	// Animation control with reactive state
 	$: animationsEnabled = $appActive;
@@ -209,6 +210,10 @@
 
 	// Clean up on destroy - ensure all animation resources are cleared
 	onDestroy(() => {
+		// Clear all pending timeouts
+		timeoutIds.forEach(clearTimeout);
+		timeoutIds = [];
+
 		// Clean up theme store subscription
 		if (unsubscribeTheme) unsubscribeTheme();
 
@@ -402,13 +407,14 @@
 	) {
 		wakeUpBlinkTriggered = true; // Set the flag immediately
 		// Use a minimal timeout to ensure the state change has settled and CSS is potentially updated
-		setTimeout(() => {
+		const blinkTimeoutId = setTimeout(() => {
 			// No need to double-check state if we trust the flag
 			if (debug) console.log('[Ghost.svelte] Triggering post-wake-up double blink.');
 			blinkService.performDoubleBlink({ leftEye, rightEye });
 			// The regular IDLE blink timer will start after this double blink completes
 			// or based on its own logic within blinkService.
 		}, 50); // Small delay (50ms)
+		timeoutIds.push(blinkTimeoutId);
 	}
 
 	// Reset the flag when the ghost is no longer IDLE (meaning it went to sleep, started recording, etc.)
