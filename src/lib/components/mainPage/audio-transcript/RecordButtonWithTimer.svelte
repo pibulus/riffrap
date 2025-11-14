@@ -145,14 +145,16 @@
   $: if (showLyricMessage || clipboardSuccess) {
     tick().then(() => {
       // Small delay to ensure DOM is updated
-      setTimeout(() => {
+      const outerTimeoutId = setTimeout(() => {
         if (recordButtonElement) {
           recordButtonElement.classList.add('force-repaint');
-          setTimeout(() => {
+          const innerTimeoutId = setTimeout(() => {
             recordButtonElement?.classList.remove('force-repaint');
           }, 0);
+          timeoutReferences.push(innerTimeoutId);
         }
       }, 0);
+      timeoutReferences.push(outerTimeoutId);
     });
   }
 </script>

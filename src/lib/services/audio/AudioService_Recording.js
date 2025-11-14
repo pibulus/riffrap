@@ -430,7 +430,7 @@ async function doCleanup(context) {
         try {
           mediaRecorderRef.current.stop();
         } catch (stopError) {
-          console.warn('Error stopping MediaRecorder:', stopError.message);
+          logger.warn('Error stopping MediaRecorder:', stopError.message);
           resolve();
         }
       });
@@ -455,7 +455,7 @@ async function doCleanup(context) {
         try {
           analyserRef.current.disconnect();
         } catch (analyserError) {
-          console.warn('Error disconnecting analyser:', analyserError.message);
+          logger.warn('Error disconnecting analyser:', analyserError.message);
         }
         analyserRef.current = null;
       }
@@ -465,14 +465,14 @@ async function doCleanup(context) {
           await audioContextRef.current.suspend();
           await new Promise((resolve) => setTimeout(resolve, 100));
         } catch (suspendError) {
-          console.warn('Error suspending iOS audio context:', suspendError.message);
+          logger.warn('Error suspending iOS audio context:', suspendError.message);
         }
       }
 
       try {
         await audioContextRef.current.close();
       } catch (closeError) {
-        console.warn('Error closing audio context:', closeError.message);
+        logger.warn('Error closing audio context:', closeError.message);
       }
       audioContextRef.current = null;
     }

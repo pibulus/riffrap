@@ -68,6 +68,7 @@
 	// Service instances
 	let services;
 	let unsubscribers = [];
+	let timeoutIds = []; // Track all setTimeout calls for cleanup
 
 	// DOM element references
 	let progressContainerElement;
@@ -233,7 +234,6 @@
 
 			// Update ghost UI for user feedback
 			if (ghostComponent) {
-				ghostComponent.forceWobble?.();
 				ghostComponent.startThinking?.();
 			}
 
@@ -317,7 +317,8 @@
 		
 		// Increment transcription count for PWA prompt
 		if (browser) {
-			setTimeout(incrementTranscriptionCount, 100);
+			const timeoutId = setTimeout(incrementTranscriptionCount, 100);
+			timeoutIds.push(timeoutId);
 		}
 	}
 
@@ -415,15 +416,17 @@
 			if (Math.floor(Math.random() * 7) === 0) {
 				confettiColors = getThemeConfettiColors();
 				showConfetti = true;
-				setTimeout(() => {
+				const confettiTimeoutId = setTimeout(() => {
 					showConfetti = false;
 				}, ANIMATION.CONFETTI.ANIMATION_DURATION + 500);
+				timeoutIds.push(confettiTimeoutId);
 			}
-			
+
 			// Auto-copy to clipboard
-			setTimeout(() => {
+			const copyTimeoutId = setTimeout(() => {
 				transcriptionService.copyToClipboard(textToProcess);
 			}, 100);
+			timeoutIds.push(copyTimeoutId);
 		}
 	}
 
@@ -456,9 +459,10 @@
 				// Auto-stop recording when time limit is reached
 				if (get(isRecording)) {
 					// Small timeout to let the UI update first
-					setTimeout(() => {
+					const stopTimeoutId = setTimeout(() => {
 						stopRecording();
 					}, 100);
+					timeoutIds.push(stopTimeoutId);
 				}
 			}
 		});
@@ -470,6 +474,10 @@
 
 	// Clean up subscriptions and services
 	onDestroy(() => {
+		// Clear all pending timeouts
+		timeoutIds.forEach(clearTimeout);
+		timeoutIds = [];
+
 		// Unsubscribe from all subscriptions
 		unsubscribers.forEach((unsub) => unsub());
 

@@ -124,17 +124,9 @@
 		}, ANIMATION.RECORDING.SCROLL_DELAY);
 
 		try {
-			// Make ghost wobble to indicate recording start
-			if (ghostComponent) {
-				// Use forceWobble with isStartRecording=true for proper animation
-				if (typeof ghostComponent.forceWobble === 'function') {
-					console.log('🎬 Triggering recording start wobble animation');
-					ghostComponent.forceWobble('', true); // Use random direction with recording start flag
-				} 
-				// As fallback, at least pulse the ghost icon if wobble not available
-				else if (typeof ghostComponent.pulse === 'function') {
-					ghostComponent.pulse();
-				}
+			// Make ghost pulse to indicate recording start
+			if (ghostComponent && typeof ghostComponent.pulse === 'function') {
+				ghostComponent.pulse();
 			}
 
 			// Start recording using the AudioService
@@ -154,13 +146,9 @@
 				return;
 			}
 
-			// Add wobble animation to ghost when recording stops
-			if (ghostComponent && typeof ghostComponent.forceWobble === 'function') {
-				ghostComponent.forceWobble();
-				// Make the ghost look like it's thinking hard
-				if (typeof ghostComponent.startThinking === 'function') {
-					ghostComponent.startThinking();
-				}
+			// Make the ghost look like it's thinking hard
+			if (ghostComponent && typeof ghostComponent.startThinking === 'function') {
+				ghostComponent.startThinking();
 			}
 
 			// Stop recording and get the audio blob
