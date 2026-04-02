@@ -7,17 +7,18 @@
 
 export function load() {
   return {
-    // Default metadata that can be overridden by individual pages
     metadata: {
       title: 'RiffRap | Turn Your Voice Into Song Lyrics',
       description: 'RiffRap turns your singing or riffing into actual lyrics. Gibberish in. Killer lines out. You riff the bars — we fill the gaps.',
-      // Default OpenGraph data for social sharing
+      canonical: 'https://riffrap.app/',
+      robots: 'index, follow',
       openGraph: {
-        title: 'RiffRap | Voice to Lyrics Converter',
-        description: 'Turn your voice recordings into killer lyrics with RiffRap',
+        title: 'RiffRap - From Gibberish to Gold',
+        description: 'Gibberish in. Killer lines out. You riff the bars — we fill the gaps with RiffRap.',
         image: 'https://riffrap.app/og-image.png',
         type: 'website',
-        url: 'https://riffrap.app'
+        url: 'https://riffrap.app/',
+        imageAlt: 'RiffRap - Turn your voice into song lyrics'
       }
     }
   };

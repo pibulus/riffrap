@@ -2,6 +2,7 @@
 # Allow all crawlers
 User-agent: *
 Allow: /
+Disallow: /ghost-test
 
 # Sitemap
 Sitemap: https://riffrap.app/sitemap.xml

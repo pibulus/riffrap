@@ -12,9 +12,12 @@ export function load() {
       openGraph: {
         title: 'RiffRap Ghost Test | Animation Development',
         description: 'Ghost animation development environment for RiffRap',
-        image: '/static/ghost-template.svg',
-        type: 'website'
-      }
+        image: 'https://riffrap.app/ghost-template.svg',
+        type: 'website',
+        url: 'https://riffrap.app/ghost-test'
+      },
+      canonical: 'https://riffrap.app/ghost-test',
+      robots: 'noindex, nofollow'
     }
   };
 }
