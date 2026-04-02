@@ -9,10 +9,6 @@ export const geminiService = {
   // Expose the preload function for hover-based preloading
   preloadModel,
   
-  // API key management
-  updateApiKey: geminiApiService.updateApiKey,
-  hasApiKey: () => geminiApiService.getModelStatus().hasApiKey,
-  
   // Get/set prompt style functions
   getPromptStyle: promptManager.getCurrentStyle,
   setPromptStyle: promptManager.setStyle,
@@ -46,13 +42,7 @@ export const geminiService = {
       return response.text();
     } catch (error) {
       console.error('❌ Error transcribing audio:', error);
-      
-      // Check if API key is missing
-      if (!geminiApiService.getModelStatus().hasApiKey) {
-        throw new Error('Failed to transcribe audio with Gemini: API key required');
-      } else {
-        throw new Error('Failed to transcribe audio with Gemini: ' + (error.message || 'Unknown error'));
-      }
+      throw new Error('Failed to transcribe audio with Gemini: ' + (error.message || 'Unknown error'));
     }
   }
 };

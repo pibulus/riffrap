@@ -68,14 +68,10 @@ export function handleLyricsCollectionAnimation(element, state, { setShowMessage
 /**
  * Calculates time remaining for recording
  * @param {Number} recordingDuration - Current duration of recording in seconds
- * @param {Boolean} isPremiumUser - Whether user is premium
  * @returns {Number} Time remaining in seconds
  */
-export function getTimeRemaining(recordingDuration, isPremiumUser) {
-  const timeLimit = isPremiumUser 
-    ? ANIMATION.RECORDING.PREMIUM_LIMIT 
-    : ANIMATION.RECORDING.FREE_LIMIT;
-  return timeLimit - recordingDuration;
+export function getTimeRemaining(recordingDuration) {
+  return ANIMATION.RECORDING.LIMIT - recordingDuration;
 }
 
 /**

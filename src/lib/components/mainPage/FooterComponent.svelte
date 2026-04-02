@@ -59,7 +59,7 @@
       <span 
         class="font-medium text-neutral-700 creators ml-1 relative"
       >
-        Dennis & Pablo
+        Pablo
       </span>
     </div>
     
@@ -321,4 +321,3 @@
     }
   }
 </style>
-

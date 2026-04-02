@@ -207,48 +207,6 @@ export function toggleSounds(currentValue) {
   return newValue;
 }
 
-/**
- * Handle API key saving
- * @param {string} apiKey - The API key to save
- * @param {boolean} soundsEnabled - Whether sounds are enabled
- */
-export function saveApiKey(apiKey, soundsEnabled) {
-  if (typeof localStorage !== 'undefined' && apiKey) {
-    try {
-      // Save API key to localStorage (both old and new keys for backward compatibility)
-      localStorage.setItem('riffRap-gemini-api-key', apiKey);
-      localStorage.setItem('lineSnap-gemini-api-key', apiKey); // Maintain backward compatibility
-      
-      // Set environment variable
-      if (typeof window !== 'undefined') {
-        window.VITE_GEMINI_API_KEY = apiKey;
-      }
-      
-      // Update the API service with the new key
-      geminiService.updateApiKey(apiKey).then(() => {
-        logger.info('API key updated and model preloaded successfully');
-      }).catch(error => {
-        logger.error('Error updating API key:', error);
-      });
-      
-      // Play a sound for feedback if sounds are enabled
-      if (soundsEnabled) {
-        soundService.playReadySound();
-      }
-      
-      // Dispatch event using eventBridge
-      // This will dispatch both 'riffrap-setting-changed' (new) and 'linesnap-setting-changed' (legacy) events
-      eventBridge.dispatchSettingChanged('geminiApiKey', apiKey);
-    } catch (error) {
-      logger.error('Error saving API key:', error);
-      
-      // Play error sound if sounds are enabled
-      if (soundsEnabled) {
-        soundService.playErrorSound();
-      }
-    }
-  }
-}
 // === END PROCESSING ZONE: SETTINGS HANDLERS ===
 
 // TRAIL MARKER (Unit Cleanup): This module contains all feature-specific handlers from SettingsModal.svelte

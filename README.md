@@ -78,7 +78,7 @@ The rougher, the better — Riff Rap thrives on turning vocal chaos into lyrical
 2. **Add your Gemini API key:**
    Create a `.env` file in the project root:
    ```bash
-   VITE_GEMINI_API_KEY=your_api_key_here
+   GEMINI_API_KEY=your_api_key_here
    ```
    Get a free API key at [Google AI Studio](https://aistudio.google.com/app/apikey)
 
@@ -91,35 +91,20 @@ The rougher, the better — Riff Rap thrives on turning vocal chaos into lyrical
 
 ## Building & Deployment
 
-Riff Rap uses a static adapter and can be deployed to any static hosting provider:
+Riff Rap now runs as a Node-backed SvelteKit app:
 
 ```bash
 npm run build
 ```
 
-The built app outputs to the `/build` directory.
+The built app outputs to the `/build` directory and should be run with a server process plus:
 
-### Deploy to Cloudflare Pages (Recommended)
-
-1. Connect your GitHub repo to Cloudflare Pages
-2. Set build command: `npm run build`
-3. Set output directory: `build`
-4. Add environment variable: `VITE_GEMINI_API_KEY`
-
-### Deploy to Netlify
-
-1. Connect your GitHub repo to Netlify
-2. Build command: `npm run build`
-3. Publish directory: `build`
-4. Add environment variable: `VITE_GEMINI_API_KEY`
-
-### Other Static Hosts
-
-The `/build` directory contains a complete static site that works on:
-- GitHub Pages
-- Surge
-- Vercel (as static)
-- Any CDN or static file server
+```bash
+PORT=3002
+HOST=0.0.0.0
+ORIGIN=https://riffrap.app
+GEMINI_API_KEY=your_api_key_here
+```
 
 ---
 

@@ -10,7 +10,6 @@
   export const selectedPromptStyle = null;
   export const exportAsTextEnabled = false;
   export let soundsEnabled;
-  export let apiKey;
   
   // Event handlers from core
   export let handleModalClose;
@@ -20,7 +19,6 @@
   export let handleToggleAutoRecord;
   export const handleToggleExportAsText = () => {};
   export let handleToggleSounds;
-  export let handleSaveApiKey;
   // === END PROCESSING ZONE: TEMPLATE PROPS ===
 </script>
 
@@ -80,42 +78,6 @@
               ></div>
             </div>
           </label>
-        </div>
-        
-        <!-- Gemini API Key Setting -->
-        <div
-          class="mb-2 rounded-xl border border-purple-200 bg-purple-50/50 p-3 shadow-sm transition-all duration-200 hover:border-purple-300"
-        >
-          <div>
-            <span class="text-sm font-medium text-gray-700">Gemini API Key</span>
-            <p class="mt-0.5 text-xs text-gray-500 mb-2">
-              Required for transcription. <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline">Get a free API key here</a>
-            </p>
-            
-            <div class="flex items-center gap-2">
-              <input 
-                type="password"
-                bind:value={apiKey}
-                placeholder="Enter your Gemini API key"
-                class="w-full rounded-lg border border-gray-300 p-1.5 text-sm shadow-sm focus:border-purple-300 focus:outline-none focus:ring-1 focus:ring-purple-300"
-              />
-              <button
-                on:click={handleSaveApiKey}
-                class="flex-shrink-0 rounded-lg bg-purple-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-300"
-              >
-                Save
-              </button>
-            </div>
-            {#if apiKey}
-              <p class="mt-1 text-xs text-green-600">
-                ✓ API key saved
-              </p>
-            {:else}
-              <p class="mt-1 text-xs text-amber-600">
-                ⚠️ No API key set - transcription will not work
-              </p>
-            {/if}
-          </div>
         </div>
         
         <!-- Export as Text Toggle removed as it's available on main page -->
@@ -182,56 +144,8 @@
         </div>
       </div>
 
-      <!-- Premium Features Section -->
-      <div
-        class="space-y-2 rounded-lg border border-pink-100/60 bg-gradient-to-r from-pink-50/50 to-amber-50/50 p-3 shadow-sm"
-      >
-        <div class="flex items-center justify-between">
-          <h4 class="text-sm font-bold text-gray-700">
-            Premium Features <span class="text-xs font-normal text-pink-500">(Beta Preview)</span>
-          </h4>
-          <span
-            class="badge badge-sm gap-1 border-amber-200 bg-amber-100 font-medium text-amber-700"
-          >
-            <span class="text-[10px]">✧</span> Premium
-          </span>
-        </div>
-
-        <div class="space-y-2 pt-1">
-          <!-- Toggle items -->
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-gray-600">Extended Recording Time (2 min)</span>
-            <input type="checkbox" disabled class="toggle toggle-primary toggle-xs bg-gray-200" />
-          </div>
-
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-gray-600">Song Slots (Unlock 3+ slots)</span>
-            <input type="checkbox" disabled class="toggle toggle-primary toggle-xs bg-gray-200" />
-          </div>
-
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-gray-600">Download Your Audio</span>
-            <input type="checkbox" disabled class="toggle toggle-primary toggle-xs bg-gray-200" />
-          </div>
-
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-gray-600">Export as Markdown</span>
-            <input type="checkbox" disabled class="toggle toggle-primary toggle-xs bg-gray-200" />
-          </div>
-          
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-gray-600">Share Online</span>
-            <input type="checkbox" disabled class="toggle toggle-primary toggle-xs bg-gray-200" />
-          </div>
-        </div>
-
-        <div class="flex justify-end">
-          <span class="text-xs italic text-gray-500">Coming soon to RiffRap!</span>
-        </div>
-      </div>
-
       <div class="border-t border-pink-100 pt-2 text-center">
-        <p class="text-xs text-gray-500">RiffRap • Made with 💜 by Dennis & Pablo</p>
+        <p class="text-xs text-gray-500">RiffRap • Made with 💜 by Pablo</p>
       </div>
     </div>
   </div>

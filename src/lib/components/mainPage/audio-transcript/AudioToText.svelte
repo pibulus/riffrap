@@ -76,8 +76,6 @@
 	// Local component state
 	let showCopyTooltip = false;
 	let screenReaderStatus = ''; // For ARIA announcements
-	let isPremiumUser = false; // Change this to true to enable premium features
-
 	// These will be set from the parent component
 	export const isModelPreloaded = false;
 	export let onPreloadRequest = null;
@@ -508,7 +506,6 @@
 					lyricsCollected={$uiState.lyricsCollected}
 					recordingDuration={$recordingDuration}
 					progress={progressValue}
-					{isPremiumUser}
 					{buttonLabel}
 					on:click={toggleRecording}
 					on:preload={preloadSpeechModel}
@@ -557,33 +554,9 @@
 			<!-- Error message -->
 			{#if $errorMessage}
 				<div class="error-message mt-6 text-center mx-auto max-w-md">
-					{#if $errorMessage.includes('Failed to transcribe audio with Gemini')}
-						<div class="bg-purple-50 border-2 border-purple-200 rounded-xl p-4 shadow-md mx-auto w-[90%]"
-						     style="box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15), 0 2px 4px rgba(139, 92, 246, 0.1);">
-							<div class="flex items-center justify-center mb-3">
-								<div class="bg-purple-100 p-2 rounded-full">
-									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600" viewBox="0 0 20 20" fill="currentColor">
-										<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-									</svg>
-								</div>
-							</div>
-							<p class="font-semibold text-purple-800 mb-2">API Key Required</p>
-							<p class="text-sm text-purple-700 mb-4 leading-relaxed">
-								Please add your Gemini API key in Settings to enable transcription.
-							</p>
-							<button 
-								type="button"
-								on:click={() => window.dispatchEvent(new CustomEvent('show-settings'))}
-								class="inline-block px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg hover:from-purple-600 hover:to-pink-600 shadow-sm hover:shadow transition-all duration-200 transform hover:-translate-y-px focus:outline-none focus:ring-2 focus:ring-purple-300 border-0 cursor-pointer"
-							>
-								✨ Open Settings
-							</button>
-						</div>
-					{:else}
-						<p class="font-medium text-red-500 px-4 py-2 bg-red-50 border border-red-200 rounded-lg shadow-sm">
-							{$errorMessage}
-						</p>
-					{/if}
+					<p class="font-medium text-red-500 px-4 py-2 bg-red-50 border border-red-200 rounded-lg shadow-sm">
+						{$errorMessage}
+					</p>
 				</div>
 			{/if}
 		</div>

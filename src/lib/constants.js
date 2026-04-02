@@ -1,5 +1,5 @@
 /**
- * TalkType Constants
+ * RiffRap Constants
  *
  * Central configuration for app-wide constants to maintain DRY principles
  * and make future adjustments easier.
@@ -52,7 +52,7 @@ export const APP_CONFIG = {
 	NAME: 'Riff Rap',
 	VERSION: '1.0.0',
 	DESCRIPTION: 'Freestyle-ready lyric scrapbook. You riff the bars — we fill the gaps.',
-	AUTHORS: 'Dennis & Pabs'
+	AUTHORS: 'Pablo'
 };
 
 // Animation Timing (in ms)
@@ -78,8 +78,7 @@ export const ANIMATION = {
 
 	// Recording time limits
 	RECORDING: {
-		FREE_LIMIT: 60, // Maximum recording time in seconds for free users
-		PREMIUM_LIMIT: 600, // Maximum recording time in seconds for premium users
+		LIMIT: 600, // Maximum recording time in seconds
 		WARNING_THRESHOLD: 15, // Seconds remaining when to start showing warning
 		DANGER_THRESHOLD: 8, // Seconds remaining when to start showing danger state
 		ALMOST_DONE_THRESHOLD: 3, // Seconds remaining for final warning flash

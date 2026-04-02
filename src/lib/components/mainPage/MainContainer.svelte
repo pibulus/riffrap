@@ -305,16 +305,6 @@
 			});
 			removeListeners.push(removePromptStyleListener);
 			
-			// Listen for geminiApiKey setting changes
-			const removeApiKeyListener = eventBridge.addSettingChangeListener('geminiApiKey', (value) => {
-				debug('Gemini API key updated:', value ? 'Key provided' : 'No key');
-				// Refresh the page to apply the new API key
-				if (value && confirm('API key saved! Refresh the page to apply changes?')) {
-					window.location.reload();
-				}
-			});
-			removeListeners.push(removeApiKeyListener);
-			
 			// Listen for API key error that needs to show settings
 			// This is an application event, not a setting change
 			const removeShowSettingsListener = eventBridge.addAppEventListener('show-settings', () => {

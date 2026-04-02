@@ -32,9 +32,6 @@
   /** @type {number} Current recording duration in seconds */
   export let recordingDuration = 0;
   
-  /** @type {boolean} Whether the user has premium status (affects time limits) */
-  export let isPremiumUser = false;
-  
   /** @type {string} Text label for the button */
   export let buttonLabel = CTA_PHRASES[0];
   
@@ -131,13 +128,13 @@
   ].filter(Boolean).join(' ');
   
   // Timer and warning state calculations
-  $: timeRemaining = getTimeRemainingUtil(recordingDuration, isPremiumUser);
+  $: timeRemaining = getTimeRemainingUtil(recordingDuration);
   $: isWarning = timeRemaining <= ANIMATION.RECORDING.WARNING_THRESHOLD;
   $: isDanger = timeRemaining <= ANIMATION.RECORDING.DANGER_THRESHOLD;
   
   // Calculate progress percentage for recording visualization
   $: progressPercentage = Math.min(
-    recordingDuration / (isPremiumUser ? ANIMATION.RECORDING.PREMIUM_LIMIT : ANIMATION.RECORDING.FREE_LIMIT) * 100, 
+    recordingDuration / ANIMATION.RECORDING.LIMIT * 100, 
     100
   );
   
@@ -283,7 +280,7 @@
               <!-- Screen reader text -->
               <span class="sr-only">
                 {#if recording}
-                  Recording in progress. {formatTime(recordingDuration)} of {formatTime(isPremiumUser ? ANIMATION.RECORDING.PREMIUM_LIMIT : ANIMATION.RECORDING.FREE_LIMIT)} time used.
+                  Recording in progress. {formatTime(recordingDuration)} of {formatTime(ANIMATION.RECORDING.LIMIT)} time used.
                   {#if isWarning}
                     Warning: recording time is getting low.
                   {:else if isDanger}

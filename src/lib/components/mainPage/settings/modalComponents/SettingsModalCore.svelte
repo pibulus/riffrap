@@ -33,7 +33,6 @@
   // Feature toggles
   let exportAsTextEnabled = false;
   let soundsEnabled = false;
-  let apiKey = '';
   // === END PROCESSING ZONE: COMPONENT STATE AND PROPS ===
   
   // === PROCESSING ZONE: STORE SUBSCRIPTIONS ===
@@ -68,9 +67,6 @@
       soundsEnabled = localStorage.getItem('riffRap-sounds-enabled') !== 'false' && 
                      localStorage.getItem('lineSnap-sounds-enabled') !== 'false';
       
-      // Load API key if saved (supporting both old and new keys)
-      apiKey = localStorage.getItem('riffRap-gemini-api-key') || 
-              localStorage.getItem('lineSnap-gemini-api-key') || '';
     }
   }
 
@@ -200,9 +196,6 @@
     soundsEnabled = handlers.toggleSounds(soundsEnabled);
   }
 
-  function handleSaveApiKey() {
-    handlers.saveApiKey(apiKey, soundsEnabled);
-  }
 </script>
 
 <!-- Render the template component with all required props -->
@@ -221,8 +214,6 @@
   {handleToggleAutoRecord}
   {handleToggleExportAsText}
   {handleToggleSounds}
-  {handleSaveApiKey}
-  bind:apiKey
 >
   <svelte:fragment slot="close-button">
     <ModalCloseButton 

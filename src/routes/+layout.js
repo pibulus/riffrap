@@ -5,11 +5,6 @@
  * It provides consistent handling of page titles, descriptions, and OpenGraph data across routes.
  */
 
-// Enable prerendering for static export
-export const prerender = true;
-export const ssr = false;
-
-// Function that runs on the server and provides data to the layout
 export function load() {
   return {
     // Default metadata that can be overridden by individual pages
