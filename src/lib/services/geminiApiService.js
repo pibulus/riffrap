@@ -50,8 +50,8 @@ function blobToGenerativePart(blob) {
 
 const generateContent = errorHandler.wrapAsync(
   async (promptData) => {
-    try {
-      const [prompt, audioPart] = promptData;
+	    try {
+	      const [prompt, audioPart] = promptData;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
@@ -69,12 +69,16 @@ const generateContent = errorHandler.wrapAsync(
           signal: controller.signal
         });
 
-        const data = await response.json();
-        if (!response.ok) {
-          throw new ApiError(data.error || 'Failed to generate content with Gemini', {
-            code: 'ERR_API_GENERATION'
-          });
-        }
+	        const data = await response.json();
+	        if (!response.ok) {
+	          throw new ApiError(data.error || 'Failed to generate content with Gemini', {
+	            code: getApiErrorCode(response.status),
+	            statusCode: response.status,
+	            context: {
+	              responseStatus: response.status
+	            }
+	          });
+	        }
 
         return {
           text: () => data.text
@@ -82,20 +86,24 @@ const generateContent = errorHandler.wrapAsync(
       } finally {
         clearTimeout(timeoutId);
       }
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        throw new ApiError('Transcription timed out. Check your connection and try again.', {
+	    } catch (error) {
+	      if (error.name === 'AbortError') {
+	        throw new ApiError('Transcription timed out. Check your connection and try again.', {
           code: 'ERR_API_TIMEOUT'
         });
       }
 
-      throw new ApiError('Failed to generate content with Gemini', {
-        code: 'ERR_API_GENERATION',
-        context: { 
-          originalError: error.message
-        }
-      });
-    }
+	      if (error instanceof ApiError) {
+	        throw error;
+	      }
+
+	      throw new ApiError(error.message || 'Failed to generate content with Gemini', {
+	        code: 'ERR_API_GENERATION',
+	        context: {
+	          originalError: error.message
+	        }
+	      });
+	    }
   },
   {
     notify: true,
@@ -114,5 +122,22 @@ export const geminiApiService = {
       initialized: true,
       initializing: false
     };
-  }
-};
+	  }
+	};
+
+function getApiErrorCode(status) {
+	switch (status) {
+		case 400:
+			return 'ERR_API_BAD_REQUEST';
+		case 403:
+			return 'ERR_API_ORIGIN';
+		case 413:
+			return 'ERR_API_PAYLOAD_TOO_LARGE';
+		case 429:
+			return 'ERR_API_RATE_LIMIT';
+		case 500:
+			return 'ERR_API_SERVER';
+		default:
+			return 'ERR_API_GENERATION';
+	}
+}

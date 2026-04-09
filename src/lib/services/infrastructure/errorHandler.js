@@ -85,6 +85,11 @@ class ErrorHandlerService {
       'ERR_STORAGE': 'There was a problem saving your data. Please try again.',
       'ERR_AUTH': 'Authentication error. Please log in again.',
       'ERR_API': 'There was a problem communicating with the service. Please try again later.',
+      'ERR_API_BAD_REQUEST': 'The audio request was invalid. Try recording again.',
+      'ERR_API_ORIGIN': 'This request came from an unexpected origin.',
+      'ERR_API_PAYLOAD_TOO_LARGE': 'That recording is too large. Try a shorter take.',
+      'ERR_API_RATE_LIMIT': 'Too many transcription attempts. Give it a moment and try again.',
+      'ERR_API_SERVER': 'The server hit a Gemini configuration problem.',
       'ERR_UI': 'The application encountered an unexpected error. Please try again.',
       'ERR_UNKNOWN': 'Something went wrong. Please try again or refresh the page.'
     };

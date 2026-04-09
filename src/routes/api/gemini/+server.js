@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { env } from '$env/dynamic/private';
 import { json } from '@sveltejs/kit';
+import { getGeminiModel, getMaxUploadBytes, guardRequest } from '$lib/server/apiGuard';
 
 let genAI = null;
 let model = null;
@@ -8,14 +9,20 @@ let model = null;
 function getModel() {
 	if (!model) {
 		genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-		model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+		model = genAI.getGenerativeModel({ model: getGeminiModel() });
 	}
 
 	return model;
 }
 
-export async function POST({ request }) {
+export async function POST(event) {
 	try {
+		const guardResponse = guardRequest(event);
+		if (guardResponse) {
+			return guardResponse;
+		}
+
+		const { request } = event;
 		if (!env.GEMINI_API_KEY) {
 			return json({ error: 'GEMINI_API_KEY is not set' }, { status: 500 });
 		}
@@ -32,6 +39,13 @@ export async function POST({ request }) {
 			return json({ error: 'Invalid transcription payload' }, { status: 400 });
 		}
 
+		const maxUploadBytes = getMaxUploadBytes();
+		const estimatedBytes = Math.ceil((audioData.length * 3) / 4);
+		if (estimatedBytes > maxUploadBytes) {
+			const mb = (maxUploadBytes / 1024 / 1024).toFixed(0);
+			return json({ error: `Audio payload too large. Maximum size is ${mb}MB.` }, { status: 413 });
+		}
+
 		const result = await getModel().generateContent([
 			prompt,
 			{
@@ -46,6 +60,17 @@ export async function POST({ request }) {
 		return json({ text: response.text() });
 	} catch (error) {
 		console.error('Error in Gemini API route:', error);
-		return json({ error: 'Transcription failed. Please try again.' }, { status: 500 });
+		const message = error?.message?.toLowerCase?.() || '';
+		let friendlyMessage = 'Transcription failed. Please try again.';
+
+		if (message.includes('quota')) {
+			friendlyMessage = 'API quota exceeded. Please try again later.';
+		} else if (message.includes('api key')) {
+			friendlyMessage = 'Server configuration error: Gemini API key not set.';
+		} else if (message.includes('origin')) {
+			friendlyMessage = 'This request is coming from an unexpected origin.';
+		}
+
+		return json({ error: friendlyMessage }, { status: error?.status || 500 });
 	}
 }

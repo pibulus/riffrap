@@ -59,7 +59,7 @@ The rougher, the better — Riff Rap thrives on turning vocal chaos into lyrical
 
 - **SvelteKit** – Reactive UI with minimal overhead
 - **Tailwind CSS + DaisyUI** – For the SoftStack™ design aesthetic
-- **Google Gemini API** – AI-powered voice transcription that understands context
+- **Google Gemini 3.1 Flash-Lite** – AI-powered voice transcription that understands context
 - **Custom Audio Visualizer** – So you know when you're being heard
 - **PWA-ready** – Install as an app on any device
 - **Brain-friendly UX** – Designed for creative flow states
@@ -104,6 +104,11 @@ PORT=3002
 HOST=0.0.0.0
 ORIGIN=https://riffrap.app
 GEMINI_API_KEY=your_api_key_here
+GEMINI_MODEL=gemini-3.1-flash-lite-preview
+ALLOWED_ORIGINS=https://riffrap.app
+API_RATE_LIMIT=10
+API_RATE_WINDOW_MS=60000
+MAX_UPLOAD_BYTES=15728640
 ```
 
 ---

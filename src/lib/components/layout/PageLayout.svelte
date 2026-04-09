@@ -17,7 +17,6 @@
 	<main
 		id="main-content"
 		class="mx-auto flex w-full max-w-md flex-col items-center justify-center pt-16 sm:pt-20 md:pt-24 pb-20 sm:pb-24 min-h-[calc(100dvh-180px)] sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-[900px] overflow-visible"
-		role="main"
 		aria-label="Main content"
 	>
 		<slot />

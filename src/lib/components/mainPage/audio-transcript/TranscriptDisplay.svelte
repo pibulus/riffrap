@@ -736,13 +736,6 @@
                 transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   
-  .transcript-box:focus-within .transcript-button-area {
-    background-color: rgba(253, 242, 248, 0.9);
-    backdrop-filter: blur(5px);
-    transform: translateY(-0.5px);
-  }
-  
-
   /* Content area scrolling - more refined */
   .transcript-content-area {
     scrollbar-width: thin;
