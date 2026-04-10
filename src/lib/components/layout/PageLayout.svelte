@@ -12,11 +12,11 @@
 </svelte:head>
 
 <section
-	class="bg-gradient-mesh main center hero grid min-h-[100dvh] gap-5 px-4 pt-4 pb-6 font-sans text-black antialiased sm:px-6 md:px-8 overflow-visible"
+	class="bg-gradient-mesh main center hero min-h-[100dvh] gap-5 px-4 pt-4 pb-28 sm:pb-20 font-sans text-black antialiased sm:px-6 md:px-8"
 >
 	<main
 		id="main-content"
-		class="mx-auto flex w-full max-w-md flex-col items-center justify-center pt-16 sm:pt-20 md:pt-24 pb-20 sm:pb-24 min-h-[calc(100dvh-180px)] sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-[900px] overflow-visible"
+		class="mx-auto flex w-full max-w-md flex-col items-center pt-16 sm:pt-20 md:pt-24 pb-8 sm:pb-12 sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-[900px]"
 		aria-label="Main content"
 	>
 		<slot />
@@ -51,9 +51,6 @@
 	section {
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
-		padding-top: 0;
-		padding-bottom: 0;
 		min-height: 100dvh;
 	}
 
@@ -62,23 +59,12 @@
 		footer {
 			padding: 0.75rem 0;
 		}
-		
-		section {
-			padding-top: 0;
-			padding-bottom: 0;
-			gap: 3;
-		}
 	}
-	
+
 	/* Safari viewport height fix */
 	@supports (-webkit-touch-callout: none) {
 		section {
 			min-height: -webkit-fill-available;
-		}
-		
-		.min-h-\[calc\(100dvh-180px\)\] {
-			min-height: calc(100vh - 180px);
-			min-height: calc(-webkit-fill-available - 180px);
 		}
 	}
 </style>

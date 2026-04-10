@@ -45,7 +45,7 @@
         </p>
 
         <p class="text-sm sm:text-base md:text-lg font-medium text-gray-700 leading-relaxed">
-          Sing into your mic — we transform your ramblings into actual lyrics.
+          Sing into your mic — RiffRap transforms your ramblings into actual lyrics.
         </p>
 
         <p class="text-sm sm:text-base md:text-lg font-medium text-gray-700 leading-relaxed">
@@ -58,7 +58,7 @@
         class="w-full bg-gradient-to-r from-amber-100 to-amber-200 px-4 py-3 sm:px-5 sm:py-4 rounded-xl text-center text-sm sm:text-base md:text-lg text-gray-800 font-bold shadow-md border border-amber-300/50 hover:shadow-lg hover:bg-gradient-to-r hover:from-amber-200 hover:to-amber-300 hover:text-gray-900 active:scale-[0.98] transition-all duration-300 cursor-pointer relative"
         on:click={handleActionButton}
       >
-        You sing the gibberish, we do the magic.
+        You sing the gibberish, RiffRap does the magic.
       </button>
 
       <p class="text-center text-pink-600 font-bold text-base sm:text-lg md:text-xl py-2">
@@ -70,7 +70,7 @@
           class="w-full text-base sm:text-lg font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-full bg-gradient-to-r from-yellow-400 to-pink-400 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
           on:click={markIntroAsSeen}
         >
-          Let's Make Hits! 🎵
+          Pen Ya Tunes 🎵
         </button>
       </form>
     </div>

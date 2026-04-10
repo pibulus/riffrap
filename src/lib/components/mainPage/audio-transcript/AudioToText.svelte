@@ -721,9 +721,6 @@
 		margin-top: max(0.5rem, 2vh); /* Responsive top margin */
 		margin-bottom: max(1.5rem, 4vh); /* Responsive bottom margin */
 		padding: 0 max(8px, 2vw) max(24px, 5vh); /* Responsive padding */
-		max-height: min(calc(100vh - 180px), 550px); /* Better height control for various devices */
-		overflow-y: auto; /* Allow vertical scrolling if needed */
-		-webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
 	}
 
 	/* Make the visualizer more compact on mobile */
@@ -748,8 +745,6 @@
 		margin-top: 0.5rem;
 		margin-bottom: 2rem;
 		padding: 0 4px 24px;
-		max-height: calc(100vh - 190px); /* More compact on very small screens */
-		overflow: hidden;
 	}
 }
 </style>

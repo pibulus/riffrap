@@ -169,7 +169,7 @@
   <div class="wrapper-container flex w-full justify-center overflow-visible">
     <div
       class="transcript-box-container relative overflow-visible"
-      style="width: 700px; margin: 0 auto;"
+      style="width: min(700px, 100%); margin: 0 auto;"
     >
       <!-- Toast Notification for Lyrics Collection positioned relative to this container -->
       {#if notification}
@@ -214,7 +214,7 @@
         class="transcript-box animate-shadow-appear relative mb-4 box-border 
                rounded-[2rem] border border-purple-100/70 bg-white/95
                shadow-sm contain-layout"
-        style="width: 600px; margin: 0 auto; min-height: 300px; height: auto;"
+        style="width: min(600px, 100%); margin: 0 auto; min-height: 300px; height: auto;"
       >
         
         <!-- Content Area - scrollable with increased height and smooth transitions -->
@@ -927,7 +927,7 @@
   /* Toast Notification Styling */
   .lyrics-collected-toast {
     position: fixed;
-    top: 110px;
+    top: max(80px, 12vh);
     left: 50%;
     transform: translateX(-50%);
     background-color: white;

@@ -27,7 +27,7 @@
 
       <div class="bg-gradient-to-r from-pink-50/90 to-amber-50/90 p-4 rounded-lg border border-pink-200/60 shadow-sm">
         <p class="text-sm leading-relaxed text-gray-700">
-          Use TalkType everywhere on the web! Our Chrome extension lets you transcribe directly into any text field.
+          Use TalkType everywhere on the web! The Chrome extension lets you transcribe directly into any text field.
           Perfect for emails, social media, messaging apps, or anywhere else you need to type.
         </p>
       </div>
