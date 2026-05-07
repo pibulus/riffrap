@@ -1,6 +1,5 @@
 <script>
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
-  import confetti from 'canvas-confetti';
   import { ANIMATION } from '$lib/constants';
 
   // Props with defaults
@@ -29,7 +28,8 @@
     timeoutIds = [];
   });
   
-  function fireConfetti() {
+  async function fireConfetti() {
+    const { default: confetti } = await import('canvas-confetti');
     let originX = 0.5; // Center of screen by default
     let originY = 0.1; // Near the top by default
     
