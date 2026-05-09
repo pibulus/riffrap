@@ -322,8 +322,9 @@
 			debug('Added listeners for settings changes and show-settings events');
 		}
 
-		// Check if first visit to show intro
-		firstVisitService.showIntroModal();
+		// Keep the first-visit state current without auto-opening a native
+		// dialog, because showModal() hides the root scrollbar while it is open.
+		firstVisitService.checkFirstVisit();
 	});
 </script>
 

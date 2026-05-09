@@ -97,13 +97,20 @@ const THEME_STORAGE_KEY = 'lineSnap-lyrics-theme';
  */
 const DEFAULT_THEME = 'purple';
 
+function getBrowserStorage() {
+  if (typeof window === 'undefined') return null;
+  return window.localStorage || null;
+}
+
 /**
  * Load saved theme from localStorage if available
  * 
  * @returns {Object} The loaded theme configuration
  */
 export function loadSavedTheme() {
-  if (typeof localStorage === 'undefined') {
+  const storage = getBrowserStorage();
+
+  if (!storage || typeof storage.getItem !== 'function') {
     console.log('Using default purple theme (localStorage not available)');
     return { 
       id: DEFAULT_THEME, 
@@ -112,7 +119,7 @@ export function loadSavedTheme() {
   }
 
   // Try to get saved theme ID from localStorage
-  const savedThemeId = localStorage.getItem(THEME_STORAGE_KEY) || DEFAULT_THEME;
+  const savedThemeId = storage.getItem(THEME_STORAGE_KEY) || DEFAULT_THEME;
 
   // Apply the theme if it exists, otherwise use default
   if (themes[savedThemeId]) {
@@ -143,8 +150,9 @@ export function applyTheme(themeId) {
   }
 
   // Store theme in localStorage if available
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem(THEME_STORAGE_KEY, themeId);
+  const storage = getBrowserStorage();
+  if (storage && typeof storage.setItem === 'function') {
+    storage.setItem(THEME_STORAGE_KEY, themeId);
   }
   
   // Return the theme data

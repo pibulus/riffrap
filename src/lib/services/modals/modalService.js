@@ -5,6 +5,8 @@ export class ModalService {
   constructor() {
     this.modalOpen = false;
     this.scrollPosition = 0;
+    this.activeModal = null;
+    this.handleNativeClose = null;
   }
 
   openModal(modalId) {
@@ -17,11 +19,19 @@ export class ModalService {
     this.scrollPosition = window.scrollY;
     const width = document.body.clientWidth;
     this.modalOpen = true;
+    this.activeModal = modal;
 
+    document.documentElement.classList.add('modal-active');
+    document.body.classList.add('modal-active');
     document.body.style.position = 'fixed';
     document.body.style.top = `-${this.scrollPosition}px`;
     document.body.style.width = `${width}px`;
     document.body.style.overflow = 'hidden';
+
+    this.handleNativeClose = () => {
+      this.unlockScroll();
+    };
+    modal.addEventListener('close', this.handleNativeClose, { once: true });
 
     // Play popup sound
     soundService.playPopupSound();
@@ -37,6 +47,8 @@ export class ModalService {
   closeModal() {
     if (!browser || !this.modalOpen) return;
 
+    this.detachNativeCloseHandler();
+
     // Close any open dialogs
     document.querySelectorAll('dialog[open]').forEach(dialog => {
       if (dialog && typeof dialog.close === 'function') {
@@ -44,7 +56,24 @@ export class ModalService {
       }
     });
 
+    this.unlockScroll();
+  }
+
+  detachNativeCloseHandler() {
+    if (this.activeModal && this.handleNativeClose) {
+      this.activeModal.removeEventListener('close', this.handleNativeClose);
+    }
+    this.handleNativeClose = null;
+  }
+
+  unlockScroll() {
+    if (!browser || !this.modalOpen) return;
+
+    this.detachNativeCloseHandler();
+
     // Restore body styles
+    document.documentElement.classList.remove('modal-active');
+    document.body.classList.remove('modal-active');
     document.body.style.position = '';
     document.body.style.top = '';
     document.body.style.width = '';
@@ -55,6 +84,7 @@ export class ModalService {
     window.scrollTo(0, this.scrollPosition);
     
     this.modalOpen = false;
+    this.activeModal = null;
   }
 
   isModalOpen() {
