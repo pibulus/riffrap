@@ -1,0 +1,36 @@
+# Launch hints for Launch Arsenal.
+# Project-facing launch metadata. Keep it sharp and human.
+name: riffrap
+slug: riffrap
+app_type: web-app
+audience: songwriters, rappers, and producers who find the flow before they find the words
+problem: voice memos capture the rhythm, but the usable lyric ideas stay buried inside mumbles, filler, and half-words
+promise: Freestyle-ready lyric scrapbook. You riff the rhythm; RiffRap turns rough sounds into lines worth keeping.
+cta: Try RiffRap.
+differentiators:
+  - Built for vocal sketching, gibberish, flow tests, and messy first takes
+  - Turns rough audio into lyric candidates instead of plain transcript cleanup
+  - Keep the lines that land and rework the ones that do not
+  - Browser-based SvelteKit app with a playful, music-first feel
+proof_points:
+  - Gemini-backed generation path deployed behind the Pi service
+  - Mobile scrolling issue fixed and deployed on riffrap.app
+  - Staged Pi deploy now smoke-tests before swapping the live app
+  - App-local production env file is preserved during deploy with locked-down perms
+objections:
+  - Needs a real songwriter pass on output quality before claiming it writes finished lyrics
+  - Keep copy away from "AI writes your song" overclaiming
+keywords:
+  seed:
+    - riffrap
+    - lyric ideas
+    - rap writing app
+    - freestyle lyrics
+  audience: songwriters and rappers turning rough vocal sketches into lines
+  intent:
+    - turn gibberish into lyrics
+    - capture freestyle ideas
+    - write from a voice memo
+manual_notes:
+  - Lean into playful studio energy.
+  - Avoid generic transcription positioning.
