@@ -1,57 +1,92 @@
-<section
-	class="bg-gradient-mesh main center hero min-h-[100dvh] gap-5 px-4 pt-4 pb-28 sm:pb-20 font-sans text-black antialiased sm:px-6 md:px-8"
->
-	<main
-		id="main-content"
-		class="mx-auto flex w-full max-w-md flex-col items-center pt-16 sm:pt-20 md:pt-24 pb-8 sm:pb-12 sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-[900px]"
-		aria-label="Main content"
-	>
-		<slot />
-	</main>
+<script>
+  export let footerYear = new Date().getFullYear();
+</script>
 
-	<!-- Footer section with attribution and Chrome extension info -->
-	<footer
-		class="fixed bottom-0 left-0 right-0 z-10 box-border bg-transparent pb-0 pt-2 text-center text-xs text-gray-600 sm:pb-0 sm:pt-3 overflow-hidden"
-	>
-		<div
-			class="w-full mx-auto px-4 flex flex-col flex-wrap items-center justify-center gap-2 sm:flex-row sm:gap-4"
-		>
-			<slot name="footer-buttons" />
-		</div>
-	</footer>
+<section
+  class="bg-gradient-mesh main center hero page-shell min-h-[100dvh] px-4 font-sans text-black antialiased sm:px-6 md:px-8"
+>
+  <main
+    id="main-content"
+    class="mx-auto flex w-full max-w-md flex-1 flex-col items-center pb-8 sm:max-w-lg sm:pb-10 md:max-w-2xl lg:max-w-3xl xl:max-w-[900px]"
+    aria-label="Main content"
+  >
+    <slot />
+  </main>
+
+  <footer
+    class="footer-component fixed bottom-0 left-0 right-0 z-10 box-border border-t border-pink-200/70 bg-gradient-to-r from-[#fff6e6]/90 via-[#ffead8]/90 to-[#fff1df]/90 pb-2 pt-2 text-center text-xs text-gray-600 shadow-[0_-4px_15px_rgba(249,168,212,0.22)] backdrop-blur-[8px] sm:pb-3 sm:pt-3"
+  >
+    <div
+      class="container mx-auto flex flex-row items-center justify-center gap-1 sm:justify-between sm:gap-3"
+    >
+      <div
+        class="copyright ml-4 hidden flex-wrap items-center justify-center sm:ml-6 sm:flex md:ml-8"
+      >
+        <span class="mr-1 text-sm font-medium tracking-tight text-gray-500">
+          &copy; {footerYear} RiffRap
+        </span>
+        <span class="mx-2 text-pink-300">&bull;</span>
+        <span class="text-sm font-light text-gray-600">
+          Made with
+          <span
+            class="mx-0.5 inline-block transform animate-pulse text-pink-500 transition-transform duration-300 hover:scale-110"
+            aria-label="love">&hearts;</span
+          >
+          in Melbourne
+        </span>
+      </div>
+      <div class="flex items-center sm:mr-6 md:mr-8">
+        <slot name="footer-buttons" />
+      </div>
+    </div>
+  </footer>
 </section>
 
 <style>
-	:global(.bg-gradient-mesh) {
-		background-color: #fff6e6;
-		background-image: radial-gradient(
-			circle at center,
-			#fff6e6 0%,
-			#fff6e6 50%,
-			#fff3df 85%,
-			#ffefda 100%
-		);
-		background-attachment: fixed;
-	}
+  :global(.bg-gradient-mesh) {
+    background-color: #fff6e6;
+    background-image: radial-gradient(
+      circle at center,
+      #fff6e6 0%,
+      #fff6e6 50%,
+      #fff3df 85%,
+      #ffefda 100%
+    );
+  }
 
-	/* Unified responsive layout with modern CSS */
-	section {
-		display: flex;
-		flex-direction: column;
-		min-height: 100dvh;
-	}
+  .page-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    padding-top: clamp(2.75rem, 6vh, 5rem);
+    padding-bottom: calc(5.25rem + env(safe-area-inset-bottom));
+  }
 
-	/* Mobile-specific adjustments */
-	@media (max-width: 640px) {
-		footer {
-			padding: 0.75rem 0;
-		}
-	}
+  footer {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  }
 
-	/* Safari viewport height fix */
-	@supports (-webkit-touch-callout: none) {
-		section {
-			min-height: -webkit-fill-available;
-		}
-	}
+  @media (max-width: 640px) {
+    .page-shell {
+      min-height: 100vh;
+      padding-top: 6vh;
+      padding-bottom: calc(5.25rem + env(safe-area-inset-bottom));
+    }
+
+    footer {
+      padding-top: 0.5rem;
+      padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    }
+
+    footer .container {
+      gap: 0.75rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .page-shell {
+      padding-top: clamp(4rem, 10vh, 7rem);
+      padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+    }
+  }
 </style>

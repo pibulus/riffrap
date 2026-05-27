@@ -19,10 +19,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Global scroll behavior improvement - more subtle */
+/* Keep normal page scrolling on touch devices. */
 html,
 body {
-  overscroll-behavior: none; /* Disable bounce/glow on over-scroll for the main page */
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: auto;
   -webkit-overflow-scrolling: touch; /* Smoother scrolling on iOS */
 }
 
@@ -130,16 +131,6 @@ dialog.modal::backdrop {
 
 .animate-fadeUp {
   animation: fadeUp 0.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-}
-
-/* 80/20 Fix for footer gap issue */
-footer.fixed {
-  height: auto !important;
-  margin-bottom: 0 !important; /* Reset margin */
-  position: fixed !important;
-  bottom: -1px !important; /* Push footer down slightly */
-  padding-bottom: 1px !important; /* Extra padding to ensure content visibility */
-  transform: translateY(1px) !important; /* Additional nudge down */
 }
 
 @media (prefers-reduced-motion: reduce) {

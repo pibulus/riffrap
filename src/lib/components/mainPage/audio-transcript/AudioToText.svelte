@@ -3,773 +3,800 @@
   It handles recording, transcription, clipboard operations, and UI feedback.
 -->
 <script>
-	import { theme } from '$lib/index.js';
-	import { AudioStates } from '$lib/services/audio/audioStates';
-	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-	import { fade } from 'svelte/transition';
-	import { quintOut } from 'svelte/easing';
-	import AudioVisualizer from './AudioVisualizer.svelte';
-	import RecordButtonWithTimer from './RecordButtonWithTimer.svelte';
-	import TranscriptDisplay from './TranscriptDisplay.svelte';
-	import PermissionError from './PermissionError.svelte';
-	import { ANIMATION, CTA_PHRASES } from '$lib/constants';
-	import { Confetti } from '$lib/components/ui';
-	
-	// State for confetti animation
-	let showConfetti = false;
-	let confettiTarget = '.ghost-icon-wrapper'; // Target the ghost icon so confetti explodes from behind it
-	let confettiColors = ANIMATION.CONFETTI.COLORS; // Default colors
-	
-	// Function to get theme-specific confetti colors
-	function getThemeConfettiColors() {
-		// Get current theme from the store
-		let currentTheme;
-		const unsubscribe = theme.subscribe(value => {
-			currentTheme = value;
-		});
-		unsubscribe();
-		
-		// Use theme-specific colors if available
-		if (currentTheme && ANIMATION.CONFETTI.THEME_COLORS[currentTheme]) {
-			return ANIMATION.CONFETTI.THEME_COLORS[currentTheme];
-		}
-		
-		// Fallback to default colors
-		return ANIMATION.CONFETTI.COLORS;
-	}
-	
-	import {
-		initializeServices,
-		audioService,
-		transcriptionService,
-		pwaService,
-		// Stores
-		isRecording,
-		isTranscribing,
-		transcriptionProgress,
-		transcriptionText, // Kept for display and general debug, but not for completion trigger
-		transcriptionState, // Added parent store to update text directly
-		recordingDuration,
-		errorMessage,
-		uiState,
-		audioState,
-		hasPermissionError,
-		// Actions
-		audioActions,
-		transcriptionActions,
-		uiActions
-	} from '$lib/services';
-	import { get } from 'svelte/store';
+  import { theme } from "$lib/index.js";
+  import { AudioStates } from "$lib/services/audio/audioStates";
+  import { createEventDispatcher, onMount, onDestroy } from "svelte";
+  import { fade } from "svelte/transition";
+  import { quintOut } from "svelte/easing";
+  import AudioVisualizer from "./AudioVisualizer.svelte";
+  import RecordButtonWithTimer from "./RecordButtonWithTimer.svelte";
+  import TranscriptDisplay from "./TranscriptDisplay.svelte";
+  import PermissionError from "./PermissionError.svelte";
+  import { ANIMATION, CTA_PHRASES } from "$lib/constants";
+  import { Confetti } from "$lib/components/ui";
 
-	// Helper variable to check if we're in a browser environment
-	const browser = typeof window !== 'undefined';
-	const dispatch = createEventDispatcher();
-	const lockedAudioStates = new Set([
-		AudioStates.INITIALIZING,
-		AudioStates.REQUESTING_PERMISSIONS,
-		AudioStates.READY,
-		AudioStates.STOPPING,
-		AudioStates.CLEANING
-	]);
+  // State for confetti animation
+  let showConfetti = false;
+  let confettiTarget = ".ghost-icon-wrapper"; // Target the ghost icon so confetti explodes from behind it
+  let confettiColors = ANIMATION.CONFETTI.COLORS; // Default colors
 
-	// Service instances
-	let services;
-	let unsubscribers = [];
-	let timeoutIds = []; // Track all setTimeout calls for cleanup
-	let recordingCommandPending = false;
+  // Function to get theme-specific confetti colors
+  function getThemeConfettiColors() {
+    // Get current theme from the store
+    let currentTheme;
+    const unsubscribe = theme.subscribe((value) => {
+      currentTheme = value;
+    });
+    unsubscribe();
 
-	// Local component state
-	let showCopyTooltip = false;
-	// These will be set from the parent component
-	export const isModelPreloaded = false;
-	export let onPreloadRequest = null;
+    // Use theme-specific colors if available
+    if (currentTheme && ANIMATION.CONFETTI.THEME_COLORS[currentTheme]) {
+      return ANIMATION.CONFETTI.THEME_COLORS[currentTheme];
+    }
 
-	// Ghost component reference
-	export let ghostComponent = null;
-	
-	// Parent ContentContainer reference
-	export let parentContainer = null;
+    // Fallback to default colors
+    return ANIMATION.CONFETTI.COLORS;
+  }
 
-	// Export recording state and functions for external components
-	export const recording = isRecording; // Export the isRecording store
-	export { stopRecording, startRecording };
-	
-	// Store the last successful audio blob for re-rolling
-	let lastAudioBlob = null;
-	
-	// Handle re-roll request from transcript display
-	async function handleReroll() {
-		const previousTranscript = get(transcriptionText);
+  import {
+    initializeServices,
+    audioService,
+    transcriptionService,
+    pwaService,
+    // Stores
+    isRecording,
+    isTranscribing,
+    transcriptionProgress,
+    transcriptionText, // Kept for display and general debug, but not for completion trigger
+    transcriptionState, // Added parent store to update text directly
+    recordingDuration,
+    errorMessage,
+    uiState,
+    audioState,
+    hasPermissionError,
+    // Actions
+    audioActions,
+    transcriptionActions,
+    uiActions,
+  } from "$lib/services";
+  import { get } from "svelte/store";
 
-		try {
-			if (!lastAudioBlob) {
-				uiActions.setErrorMessage('No audio data available for re-roll');
-				return;
-			}
-			
-			// Clear any previous error messages
-			uiActions.clearErrorMessage();
-			
-			// Set re-rolling state and UI feedback
-			const reRollingMessage = "✨ Re-rolling lyrics... ⏳";
-			transcriptionState.update(current => ({
-				...current,
-				inProgress: true,
-				text: reRollingMessage,
-				rerolling: true
-			}));
-			
-			// Ghost animations
-			ghostComponent?.pulse?.();
-			ghostComponent?.startThinking?.();
-			
-			// Re-transcribe the audio
-			const newTranscript = await transcriptionService.transcribeAudio(lastAudioBlob);
-			
-			// Update with new transcript - single state update path
-			if (newTranscript) {
-				await updateUIWithTranscription(newTranscript);
-			} else {
-				throw new Error('Empty transcript received');
-			}
-			
-		} catch (err) {
-			console.error('❌ Error re-rolling transcript:', err);
-			uiActions.setErrorMessage(`Re-roll error: ${err.message || 'Unknown error'}`);
-			
-				// Reset state on error
-				transcriptionState.update(current => ({
-					...current,
-					inProgress: false,
-					rerolling: false,
-					text: previousTranscript
-				}));
-			
-			ghostComponent?.stopThinking?.();
-		}
-	}
+  // Helper variable to check if we're in a browser environment
+  const browser = typeof window !== "undefined";
+  const dispatch = createEventDispatcher();
+  const lockedAudioStates = new Set([
+    AudioStates.INITIALIZING,
+    AudioStates.REQUESTING_PERMISSIONS,
+    AudioStates.READY,
+    AudioStates.STOPPING,
+    AudioStates.CLEANING,
+  ]);
 
-	// PWA Installation State Tracking - now using pwaService
+  // Service instances
+  let services;
+  let unsubscribers = [];
+  let timeoutIds = []; // Track all setTimeout calls for cleanup
+  let recordingCommandPending = false;
 
-	// Export PWA installation state functions through the service
-	const shouldShowPWAPrompt = () => pwaService.shouldShowPwaPrompt();
-	const recordPWAPromptShown = () => pwaService.recordPromptShown();
-	const markPWAAsInstalled = () => pwaService.markAsInstalled();
-	const isRunningAsPWA = () => pwaService.checkIfRunningAsPwa();
+  // Local component state
+  let showCopyTooltip = false;
+  // These will be set from the parent component
+  export const isModelPreloaded = false;
+  export let onPreloadRequest = null;
 
-	export { shouldShowPWAPrompt, recordPWAPromptShown, markPWAAsInstalled, isRunningAsPWA };
+  // Ghost component reference
+  export let ghostComponent = null;
 
-	/**
-	 * Increment transcription count and dispatch an event.
-	 * Delegates to PWA service for actual storage.
-	 */
-	function incrementTranscriptionCount() {
-		if (!browser) return;
+  // Parent ContentContainer reference
+  export let parentContainer = null;
 
-		try {
-				const newCount = pwaService.incrementTranscriptionCount();
+  // Export recording state and functions for external components
+  export const recording = isRecording; // Export the isRecording store
+  export { stopRecording, startRecording };
 
-				// Dispatch event to parent
-				dispatch('transcriptionCompleted', { count: newCount });
-		} catch (error) {
-			console.error('Error incrementing transcription count:', error);
-		}
-	}
-	// End of PWA tracking
+  // Store the last successful audio blob for re-rolling
+  let lastAudioBlob = null;
 
-	// Function to preload the speech model before recording starts
-	function preloadSpeechModel() {
-		if (onPreloadRequest) {
-			onPreloadRequest();
-		}
-	}
+  // Handle re-roll request from transcript display
+  async function handleReroll() {
+    const previousTranscript = get(transcriptionText);
 
-	async function startRecording() {
-		// Don't start if we're already recording
-		if (
-			recordingCommandPending ||
-			$isRecording ||
-			$isTranscribing ||
-			lockedAudioStates.has($audioState.state)
-		) {
-			return;
-		}
+    try {
+      if (!lastAudioBlob) {
+        uiActions.setErrorMessage("No audio data available for re-roll");
+        return;
+      }
 
-		// Try to preload the speech model if not already done
-		preloadSpeechModel();
+      // Clear any previous error messages
+      uiActions.clearErrorMessage();
 
-		// Reset UI state
-		uiActions.clearErrorMessage();
+      // Set re-rolling state and UI feedback
+      const reRollingMessage = "✨ Re-rolling lyrics... ⏳";
+      transcriptionState.update((current) => ({
+        ...current,
+        inProgress: true,
+        text: reRollingMessage,
+        rerolling: true,
+      }));
 
-		try {
-			recordingCommandPending = true;
+      // Ghost animations
+      ghostComponent?.pulse?.();
+      ghostComponent?.startThinking?.();
 
-			// Subtle pulse ghost icon when starting recording
-			if (ghostComponent && typeof ghostComponent.pulse === 'function') {
-				ghostComponent.pulse();
-			}
+      // Re-transcribe the audio
+      const newTranscript =
+        await transcriptionService.transcribeAudio(lastAudioBlob);
 
-			// Start recording using the AudioService
-			await audioService.startRecording();
-			dispatch('recordingstart');
+      // Update with new transcript - single state update path
+      if (newTranscript) {
+        await updateUIWithTranscription(newTranscript);
+      } else {
+        throw new Error("Empty transcript received");
+      }
+    } catch (err) {
+      console.error("❌ Error re-rolling transcript:", err);
+      uiActions.setErrorMessage(
+        `Re-roll error: ${err.message || "Unknown error"}`,
+      );
 
-			// State is tracked through stores now
-		} catch (err) {
-			console.error('❌ Error in startRecording:', err);
-			uiActions.setErrorMessage(`Recording error: ${err.message || 'Unknown error'}`);
-		} finally {
-			recordingCommandPending = false;
-		}
-	}
+      // Reset state on error
+      transcriptionState.update((current) => ({
+        ...current,
+        inProgress: false,
+        rerolling: false,
+        text: previousTranscript,
+      }));
 
-	/**
-	 * Stops the current recording and initiates the transcription process
-	 * @returns {Promise<void>}
-	 */
-	async function stopRecording() {
-		// Timing metadata for debugging
-		const timeMarkers = {
-			start: Date.now(),
-			audioBlob: 0,
-			transcriptionStart: 0,
-			transcriptionEnd: 0,
-			uiUpdate: 0
-		};
-		
-			try {
-				// Verify that we're actually recording
-				if (recordingCommandPending || !$isRecording) {
-					return;
-				}
+      ghostComponent?.stopThinking?.();
+    }
+  }
 
-				recordingCommandPending = true;
+  // PWA Installation State Tracking - now using pwaService
 
-				// Update ghost UI for user feedback
-				if (ghostComponent) {
-					ghostComponent.startThinking?.();
-				}
+  // Export PWA installation state functions through the service
+  const shouldShowPWAPrompt = () => pwaService.shouldShowPwaPrompt();
+  const recordPWAPromptShown = () => pwaService.recordPromptShown();
+  const markPWAAsInstalled = () => pwaService.markAsInstalled();
+  const isRunningAsPWA = () => pwaService.checkIfRunningAsPwa();
 
-			// Get audio blob from recording service
-				timeMarkers.audioBlob = Date.now();
-				const audioBlob = await audioService.stopRecording();
-				dispatch('recordingstop');
+  export {
+    shouldShowPWAPrompt,
+    recordPWAPromptShown,
+    markPWAAsInstalled,
+    isRunningAsPWA,
+  };
 
-				// Validate audio blob
-				if (!audioBlob || audioBlob.size === 0) {
-					transcriptionActions.updateProgress(0);
-					uiActions.setErrorMessage('No audio recorded. Please try again.');
-					ghostComponent?.stopThinking?.();
-					audioActions.updateState(AudioStates.IDLE);
-					return;
-				}
-			
-			lastAudioBlob = audioBlob; // Store for re-roll feature
+  /**
+   * Increment transcription count and dispatch an event.
+   * Delegates to PWA service for actual storage.
+   */
+  function incrementTranscriptionCount() {
+    if (!browser) return;
 
-				// Begin transcription process
-				timeMarkers.transcriptionStart = Date.now();
-				dispatch('processingstart');
-			
-			try {
-				// Direct transcription call with minimal intermediate layers
-				const transcriptText = await transcriptionService.transcribeAudio(audioBlob);
-				timeMarkers.transcriptionEnd = Date.now();
-				
-				// Validate transcription result
-				if (!transcriptText || transcriptText.trim() === '') {
-					throw new Error('Empty transcription result');
-				}
-				
-				
-				// Synchronized UI update with clear order of operations
-				await updateUIWithTranscription(transcriptText);
-				timeMarkers.uiUpdate = Date.now();
-				
-				
-			} catch (transcribeError) {
-				console.error('[ERROR] Transcription failed:', transcribeError);
-				
-				// Reset UI state on error
-				ghostComponent?.stopThinking?.();
-				audioActions.updateState(AudioStates.IDLE);
-				
-				// Show user-friendly error message
-				uiActions.setErrorMessage(`Transcription error: ${transcribeError.message}`);
-			}
-			} catch (err) {
-				console.error('[ERROR] Recording process failed:', err);
-				uiActions.setErrorMessage(`Recording error: ${err.message}`);
-			
-			// Reset UI state
-			if (ghostComponent?.stopThinking) {
-				ghostComponent.stopThinking();
-				}
-				audioActions.updateState(AudioStates.IDLE);
-			} finally {
-				recordingCommandPending = false;
-				dispatch('processingend');
-			}
-		}
+    try {
+      const newCount = pwaService.incrementTranscriptionCount();
 
-	/**
-	 * Updates UI with transcription text
-	 * @param {string} transcriptText - The transcription text
-	 * @returns {Promise<void>}
-	 */
-	async function updateUIWithTranscription(transcriptText) {
-		// Update transcription state
-		transcriptionState.update(current => ({
-			...current,
-			inProgress: false,
-			progress: 100,
-			text: transcriptText,
-			rerolling: false
-		}));
-		
-		// Process completion (confetti, clipboard, ghost reactions)
-		handleTranscriptCompletion(transcriptText);
-		
-		// Clean up UI state
-		if ($isRecording) {
-			audioActions.updateState(AudioStates.IDLE);
-		}
-		ghostComponent?.stopThinking?.();
-		
-		// Increment transcription count for PWA prompt
-		if (browser) {
-			const timeoutId = setTimeout(incrementTranscriptionCount, 100);
-			timeoutIds.push(timeoutId);
-		}
-	}
+      // Dispatch event to parent
+      dispatch("transcriptionCompleted", { count: newCount });
+    } catch (error) {
+      console.error("Error incrementing transcription count:", error);
+    }
+  }
+  // End of PWA tracking
 
-	async function toggleRecording() {
-		if (recordingCommandPending || lockedAudioStates.has($audioState.state)) {
-			return;
-		}
+  // Function to preload the speech model before recording starts
+  function preloadSpeechModel() {
+    if (onPreloadRequest) {
+      onPreloadRequest();
+    }
+  }
 
-		try {
-			// Prioritize the store state for more consistent behavior
-			const currentlyRecording = get(isRecording);
+  async function startRecording() {
+    // Don't start if we're already recording
+    if (
+      recordingCommandPending ||
+      $isRecording ||
+      $isTranscribing ||
+      lockedAudioStates.has($audioState.state)
+    ) {
+      return;
+    }
 
-			if (currentlyRecording) {
-				// Haptic feedback for stop - single pulse
-				if (services && services.hapticService) {
-					services.hapticService.stopRecording();
-				}
+    // Try to preload the speech model if not already done
+    preloadSpeechModel();
 
-				await stopRecording();
-				// Screen reader announcement
-				uiActions.setScreenReaderMessage('Recording stopped.');
-			} else {
-				// Haptic feedback for start - double pulse
-				if (services && services.hapticService) {
-					services.hapticService.startRecording();
-				}
+    // Reset UI state
+    uiActions.clearErrorMessage();
 
-				// When using "New Recording" button, rotate to next phrase immediately
-				if ($transcriptionText) {
+    try {
+      recordingCommandPending = true;
 
-					// Pick a random CTA phrase that's not the current one
-					let newIndex;
-					do {
-						newIndex = Math.floor(Math.random() * (CTA_PHRASES.length - 1)) + 1; // Skip first one (Start Recording)
-					} while (newIndex === currentCtaIndex);
+      // Subtle pulse ghost icon when starting recording
+      if (ghostComponent && typeof ghostComponent.pulse === "function") {
+        ghostComponent.pulse();
+      }
 
-					currentCtaIndex = newIndex;
-					currentCta = CTA_PHRASES[currentCtaIndex];
+      // Start recording using the AudioService
+      await audioService.startRecording();
+      dispatch("recordingstart");
 
-					// Then clear transcript
-					transcriptionActions.completeTranscription('');
-				}
+      // State is tracked through stores now
+    } catch (err) {
+      console.error("❌ Error in startRecording:", err);
+      uiActions.setErrorMessage(
+        `Recording error: ${err.message || "Unknown error"}`,
+      );
+    } finally {
+      recordingCommandPending = false;
+    }
+  }
 
-				await startRecording();
-				// Screen reader announcement
-				uiActions.setScreenReaderMessage('Recording started. Speak now.');
-			}
-		} catch (err) {
-			console.error('Recording operation failed:', err);
+  /**
+   * Stops the current recording and initiates the transcription process
+   * @returns {Promise<void>}
+   */
+  async function stopRecording() {
+    // Timing metadata for debugging
+    const timeMarkers = {
+      start: Date.now(),
+      audioBlob: 0,
+      transcriptionStart: 0,
+      transcriptionEnd: 0,
+      uiUpdate: 0,
+    };
 
-			// Show error message using existing toast system
-			uiActions.setErrorMessage(`Recording error: ${err.message || 'Unknown error'}`);
+    try {
+      // Verify that we're actually recording
+      if (recordingCommandPending || !$isRecording) {
+        return;
+      }
 
-			// Haptic feedback for error - with null check
-			if (services && services.hapticService) {
-				services.hapticService.error();
-			}
+      recordingCommandPending = true;
 
-			// Update screen reader status
-			uiActions.setScreenReaderMessage('Recording failed. Please try again.');
-		}
-	}
+      // Update ghost UI for user feedback
+      if (ghostComponent) {
+        ghostComponent.startThinking?.();
+      }
 
+      // Get audio blob from recording service
+      timeMarkers.audioBlob = Date.now();
+      const audioBlob = await audioService.stopRecording();
+      dispatch("recordingstop");
 
-	// CTA rotation
-	let currentCtaIndex = 0;
-	let currentCta = CTA_PHRASES[currentCtaIndex];
+      // Validate audio blob
+      if (!audioBlob || audioBlob.size === 0) {
+        transcriptionActions.updateProgress(0);
+        uiActions.setErrorMessage("No audio recorded. Please try again.");
+        ghostComponent?.stopThinking?.();
+        audioActions.updateState(AudioStates.IDLE);
+        return;
+      }
 
-	// Button label computation - fixed to show CTA phrases
-	$: buttonLabel = $isRecording ? 'Stop Recording' : $transcriptionText ? currentCta : currentCta;
-	$: buttonDisabled = recordingCommandPending || lockedAudioStates.has($audioState.state);
+      lastAudioBlob = audioBlob; // Store for re-roll feature
 
-	// Handler for transcript component events
-	function handleTranscriptEvent(event) {
-		const { type, detail } = event;
+      // Begin transcription process
+      timeMarkers.transcriptionStart = Date.now();
+      dispatch("processingstart");
 
-		if (type === 'copy') {
-			// Use the transcript text from the detail property instead of calling a method on event.target
-			const transcriptText = detail?.text || $transcriptionText;
-			transcriptionService.copyToClipboard(transcriptText);
-		} else if (type === 'share') {
-			const transcriptText = detail?.text || $transcriptionText;
-			transcriptionService.shareTranscript(transcriptText);
-		} else if (type === 'focus') {
-			uiActions.setScreenReaderMessage(detail.message);
-		}
-	}
+      try {
+        // Direct transcription call with minimal intermediate layers
+        const transcriptText =
+          await transcriptionService.transcribeAudio(audioBlob);
+        timeMarkers.transcriptionEnd = Date.now();
 
-	// State changes for transcript completion
-	function handleTranscriptCompletion(textToProcess) {
+        // Validate transcription result
+        if (!transcriptText || transcriptText.trim() === "") {
+          throw new Error("Empty transcription result");
+        }
 
-		// Ghost reactions
-		if (ghostComponent?.reactToTranscript) {
-			ghostComponent.reactToTranscript(textToProcess?.length || 0);
-		}
+        // Synchronized UI update with clear order of operations
+        await updateUIWithTranscription(transcriptText);
+        timeMarkers.uiUpdate = Date.now();
+      } catch (transcribeError) {
+        console.error("[ERROR] Transcription failed:", transcribeError);
 
-		// Process completion effects if we have text
-		if (textToProcess) {
-			// Show confetti celebration as a random Easter egg (1/7 chance)
-			if (Math.floor(Math.random() * 7) === 0) {
-				confettiColors = getThemeConfettiColors();
-				showConfetti = true;
-				const confettiTimeoutId = setTimeout(() => {
-					showConfetti = false;
-				}, ANIMATION.CONFETTI.ANIMATION_DURATION + 500);
-				timeoutIds.push(confettiTimeoutId);
-			}
+        // Reset UI state on error
+        ghostComponent?.stopThinking?.();
+        audioActions.updateState(AudioStates.IDLE);
 
-			// Auto-copy to clipboard
-			const copyTimeoutId = setTimeout(() => {
-				transcriptionService.copyToClipboard(textToProcess);
-			}, 100);
-			timeoutIds.push(copyTimeoutId);
-		}
-	}
+        // Show user-friendly error message
+        uiActions.setErrorMessage(
+          `Transcription error: ${transcribeError.message}`,
+        );
+      }
+    } catch (err) {
+      console.error("[ERROR] Recording process failed:", err);
+      uiActions.setErrorMessage(`Recording error: ${err.message}`);
 
-	// Lifecycle hooks
-	onMount(() => {
-		// Initialize services
-		services = initializeServices({ debug: false });
+      // Reset UI state
+      if (ghostComponent?.stopThinking) {
+        ghostComponent.stopThinking();
+      }
+      audioActions.updateState(AudioStates.IDLE);
+    } finally {
+      recordingCommandPending = false;
+      dispatch("processingend");
+    }
+  }
 
-		// Ghost element is now handled through the component reference
+  /**
+   * Updates UI with transcription text
+   * @param {string} transcriptText - The transcription text
+   * @returns {Promise<void>}
+   */
+  async function updateUIWithTranscription(transcriptText) {
+    // Update transcription state
+    transcriptionState.update((current) => ({
+      ...current,
+      inProgress: false,
+      progress: 100,
+      text: transcriptText,
+      rerolling: false,
+    }));
 
+    // Process completion (confetti, clipboard, ghost reactions)
+    handleTranscriptCompletion(transcriptText);
 
+    // Clean up UI state
+    if ($isRecording) {
+      audioActions.updateState(AudioStates.IDLE);
+    }
+    ghostComponent?.stopThinking?.();
 
-		// Subscribe to permission denied state to show error modal
-		const permissionUnsub = hasPermissionError.subscribe((denied) => {
-			if (denied) {
-				// Show permission error modal
-				uiActions.setPermissionError(true);
+    // Increment transcription count for PWA prompt
+    if (browser) {
+      const timeoutId = setTimeout(incrementTranscriptionCount, 100);
+      timeoutIds.push(timeoutId);
+    }
+  }
 
-				// Add sad eyes animation through the Ghost component
-				if (ghostComponent) {
-					// We could add a sadEyes() method to the Ghost component
-					// but we'll keep it simple for now
-				}
-			}
-		});
+  async function toggleRecording() {
+    if (recordingCommandPending || lockedAudioStates.has($audioState.state)) {
+      return;
+    }
 
-		// Subscribe to time limit reached event
-		const audioStateUnsub = audioState.subscribe((state) => {
-			if (state.timeLimit === true) {
-				// Auto-stop recording when time limit is reached
-				if (get(isRecording)) {
-					// Small timeout to let the UI update first
-					const stopTimeoutId = setTimeout(() => {
-						stopRecording();
-					}, 100);
-					timeoutIds.push(stopTimeoutId);
-				}
-			}
-		});
+    try {
+      // Prioritize the store state for more consistent behavior
+      const currentlyRecording = get(isRecording);
 
-		// Add to unsubscribe list
-		unsubscribers.push(permissionUnsub, audioStateUnsub);
+      if (currentlyRecording) {
+        // Haptic feedback for stop - single pulse
+        if (services && services.hapticService) {
+          services.hapticService.stopRecording();
+        }
 
-	});
+        await stopRecording();
+        // Screen reader announcement
+        uiActions.setScreenReaderMessage("Recording stopped.");
+      } else {
+        // Haptic feedback for start - double pulse
+        if (services && services.hapticService) {
+          services.hapticService.startRecording();
+        }
 
-	// Clean up subscriptions and services
-	onDestroy(() => {
-		// Clear all pending timeouts
-		timeoutIds.forEach(clearTimeout);
-		timeoutIds = [];
+        // When using "New Recording" button, rotate to next phrase immediately
+        if ($transcriptionText) {
+          // Pick a random CTA phrase that's not the current one
+          let newIndex;
+          do {
+            newIndex = Math.floor(Math.random() * (CTA_PHRASES.length - 1)) + 1; // Skip first one (Start Recording)
+          } while (newIndex === currentCtaIndex);
 
-		// Unsubscribe from all subscriptions
-		unsubscribers.forEach((unsub) => unsub());
+          currentCtaIndex = newIndex;
+          currentCta = CTA_PHRASES[currentCtaIndex];
 
-		// Ensure audio resources are released
-		audioService.cleanup();
+          // Then clear transcript
+          transcriptionActions.completeTranscription("");
+        }
 
-	});
+        await startRecording();
+        // Screen reader announcement
+        uiActions.setScreenReaderMessage("Recording started. Speak now.");
+      }
+    } catch (err) {
+      console.error("Recording operation failed:", err);
 
+      // Show error message using existing toast system
+      uiActions.setErrorMessage(
+        `Recording error: ${err.message || "Unknown error"}`,
+      );
 
-	$: progressValue = $transcriptionProgress;
+      // Haptic feedback for error - with null check
+      if (services && services.hapticService) {
+        services.hapticService.error();
+      }
+
+      // Update screen reader status
+      uiActions.setScreenReaderMessage("Recording failed. Please try again.");
+    }
+  }
+
+  // CTA rotation
+  let currentCtaIndex = 0;
+  let currentCta = CTA_PHRASES[currentCtaIndex];
+
+  // Button label computation - fixed to show CTA phrases
+  $: buttonLabel = $isRecording
+    ? "Stop Recording"
+    : $transcriptionText
+      ? currentCta
+      : currentCta;
+  $: buttonDisabled =
+    recordingCommandPending || lockedAudioStates.has($audioState.state);
+
+  // Handler for transcript component events
+  function handleTranscriptEvent(event) {
+    const { type, detail } = event;
+
+    if (type === "copy") {
+      // Use the transcript text from the detail property instead of calling a method on event.target
+      const transcriptText = detail?.text || $transcriptionText;
+      transcriptionService.copyToClipboard(transcriptText);
+    } else if (type === "share") {
+      const transcriptText = detail?.text || $transcriptionText;
+      transcriptionService.shareTranscript(transcriptText);
+    } else if (type === "focus") {
+      uiActions.setScreenReaderMessage(detail.message);
+    }
+  }
+
+  // State changes for transcript completion
+  function handleTranscriptCompletion(textToProcess) {
+    // Ghost reactions
+    if (ghostComponent?.reactToTranscript) {
+      ghostComponent.reactToTranscript(textToProcess?.length || 0);
+    }
+
+    // Process completion effects if we have text
+    if (textToProcess) {
+      // Show confetti celebration as a random Easter egg (1/7 chance)
+      if (Math.floor(Math.random() * 7) === 0) {
+        confettiColors = getThemeConfettiColors();
+        showConfetti = true;
+        const confettiTimeoutId = setTimeout(() => {
+          showConfetti = false;
+        }, ANIMATION.CONFETTI.ANIMATION_DURATION + 500);
+        timeoutIds.push(confettiTimeoutId);
+      }
+
+      // Auto-copy to clipboard
+      const copyTimeoutId = setTimeout(() => {
+        transcriptionService.copyToClipboard(textToProcess);
+      }, 100);
+      timeoutIds.push(copyTimeoutId);
+    }
+  }
+
+  // Lifecycle hooks
+  onMount(() => {
+    // Initialize services
+    services = initializeServices({ debug: false });
+
+    // Ghost element is now handled through the component reference
+
+    // Subscribe to permission denied state to show error modal
+    const permissionUnsub = hasPermissionError.subscribe((denied) => {
+      if (denied) {
+        // Show permission error modal
+        uiActions.setPermissionError(true);
+
+        // Add sad eyes animation through the Ghost component
+        if (ghostComponent) {
+          // We could add a sadEyes() method to the Ghost component
+          // but we'll keep it simple for now
+        }
+      }
+    });
+
+    // Subscribe to time limit reached event
+    const audioStateUnsub = audioState.subscribe((state) => {
+      if (state.timeLimit === true) {
+        // Auto-stop recording when time limit is reached
+        if (get(isRecording)) {
+          // Small timeout to let the UI update first
+          const stopTimeoutId = setTimeout(() => {
+            stopRecording();
+          }, 100);
+          timeoutIds.push(stopTimeoutId);
+        }
+      }
+    });
+
+    // Add to unsubscribe list
+    unsubscribers.push(permissionUnsub, audioStateUnsub);
+  });
+
+  // Clean up subscriptions and services
+  onDestroy(() => {
+    // Clear all pending timeouts
+    timeoutIds.forEach(clearTimeout);
+    timeoutIds = [];
+
+    // Unsubscribe from all subscriptions
+    unsubscribers.forEach((unsub) => unsub());
+
+    // Ensure audio resources are released
+    audioService.cleanup();
+  });
+
+  $: progressValue = $transcriptionProgress;
 </script>
 
 <!-- Main wrapper with proper containment to prevent layout issues -->
 <div class="main-wrapper mx-auto box-border w-full">
-	<!-- Shared container with proper centering for mobile -->
-	<div class="mobile-centered-container flex w-full flex-col items-center justify-center">
-		<!-- Recording button/progress bar section - sticky positioned for stability -->
-		<div
-			class="button-section relative sticky top-0 z-20 flex w-full justify-center text-center bg-transparent pb-2 pt-2 sm:pt-3 md:pt-4 sm:pb-2 md:pb-2 mt-2 sm:mt-3"
-		>
-			<div class="button-container flex items-center justify-center w-full" style="margin-left: auto; margin-right: auto; position: relative; left: 0; right: 0; text-align: center;">
-					<RecordButtonWithTimer
-						recording={$isRecording}
-						transcribing={$isTranscribing}
-						disabled={buttonDisabled}
-					clipboardSuccess={$uiState.clipboardSuccess}
-					lyricsCollected={$uiState.lyricsCollected}
-					recordingDuration={$recordingDuration}
-					progress={progressValue}
-					{buttonLabel}
-					on:click={toggleRecording}
-					on:preload={preloadSpeechModel}
-				/>
-			</div>
-		</div>
+  <!-- Shared container with proper centering for mobile -->
+  <div
+    class="mobile-centered-container flex w-full flex-col items-center justify-center"
+  >
+    <!-- Recording button/progress bar section - sticky positioned for stability -->
+    <div
+      class="button-section relative sticky top-0 z-20 flex w-full justify-center text-center bg-transparent pb-2 pt-2 sm:pt-3 md:pt-4 sm:pb-2 md:pb-2 mt-2 sm:mt-3"
+    >
+      <div
+        class="button-container flex items-center justify-center w-full"
+        style="margin-left: auto; margin-right: auto; position: relative; left: 0; right: 0; text-align: center;"
+      >
+        <RecordButtonWithTimer
+          recording={$isRecording}
+          transcribing={$isTranscribing}
+          disabled={buttonDisabled}
+          clipboardSuccess={$uiState.clipboardSuccess}
+          lyricsCollected={$uiState.lyricsCollected}
+          recordingDuration={$recordingDuration}
+          progress={progressValue}
+          {buttonLabel}
+          on:click={toggleRecording}
+          on:preload={preloadSpeechModel}
+        />
+      </div>
+    </div>
 
-		<!-- Dynamic content area with smooth animation and proper containment -->
-		<div
-			class="position-wrapper relative mb-0 mt-0 flex w-full flex-col items-center transition-all duration-300 ease-in-out"
-		>
-			<!-- Content container with controlled overflow -->
-			<div class="content-container flex w-full flex-col items-center gap-2">
-				<!-- Audio visualizer - only visible when recording -->
-				<div class="visualizer-space" class:active={$isRecording}>
-					{#if $isRecording}
-						<div class="visualizer-container flex w-full justify-center" 
-							transition:fade={{ duration: 400, delay: 100, easing: quintOut }}>
-							<div class="wrapper-container flex w-full justify-center">
-								<div
-									class="visualizer-wrapper mx-auto w-[90%] max-w-[500px] rounded-[2rem] border-[1.5px] border-pink-100 bg-white/80 p-4 backdrop-blur-md sm:w-full"
-								>
-									<AudioVisualizer />
-								</div>
-							</div>
-						</div>
-					{/if}
-				</div>
+    <!-- Dynamic content area with smooth animation and proper containment -->
+    <div
+      class="position-wrapper relative mb-0 mt-0 flex w-full flex-col items-center transition-all duration-300 ease-in-out"
+      class:hasOutput={$isRecording ||
+        ($transcriptionText && $transcriptionText !== "") ||
+        $errorMessage}
+    >
+      <!-- Content container with controlled overflow -->
+      <div class="content-container flex w-full flex-col items-center gap-2">
+        <!-- Audio visualizer - only visible when recording -->
+        <div class="visualizer-space" class:active={$isRecording}>
+          {#if $isRecording}
+            <div
+              class="visualizer-container flex w-full justify-center"
+              transition:fade={{ duration: 400, delay: 100, easing: quintOut }}
+            >
+              <div class="wrapper-container flex w-full justify-center">
+                <div
+                  class="visualizer-wrapper mx-auto w-[90%] max-w-[500px] rounded-[2rem] border-[1.5px] border-pink-100 bg-white/80 p-4 backdrop-blur-md sm:w-full"
+                >
+                  <AudioVisualizer />
+                </div>
+              </div>
+            </div>
+          {/if}
+        </div>
 
-				<!-- Transcript output - show whenever we have non-empty transcript, regardless of recording state -->
-				{#if $transcriptionText && $transcriptionText !== ''}
-					<div class="transcript-container" 
-					     style="min-width: 280px;">
-						<TranscriptDisplay
-							transcript={$transcriptionText || ''}
-							{showCopyTooltip}
-							{parentContainer}
-							on:copy={handleTranscriptEvent}
-							on:reroll={handleReroll}
-							on:focus={handleTranscriptEvent}
-						/>
-					</div>
-				{/if}
-			</div>
+        <!-- Transcript output - show whenever we have non-empty transcript, regardless of recording state -->
+        {#if $transcriptionText && $transcriptionText !== ""}
+          <div class="transcript-container" style="min-width: 280px;">
+            <TranscriptDisplay
+              transcript={$transcriptionText || ""}
+              {showCopyTooltip}
+              {parentContainer}
+              on:copy={handleTranscriptEvent}
+              on:reroll={handleReroll}
+              on:focus={handleTranscriptEvent}
+            />
+          </div>
+        {/if}
+      </div>
 
-			<!-- Error message -->
-			{#if $errorMessage}
-				<div class="error-message mt-6 text-center mx-auto max-w-md">
-					<p class="font-medium text-red-500 px-4 py-2 bg-red-50 border border-red-200 rounded-lg shadow-sm">
-						{$errorMessage}
-					</p>
-				</div>
-			{/if}
-		</div>
-	</div>
+      <!-- Error message -->
+      {#if $errorMessage}
+        <div class="error-message mt-6 text-center mx-auto max-w-md">
+          <p
+            class="font-medium text-red-500 px-4 py-2 bg-red-50 border border-red-200 rounded-lg shadow-sm"
+          >
+            {$errorMessage}
+          </p>
+        </div>
+      {/if}
+    </div>
+  </div>
 </div>
 
 <!-- Confetti component - display centered to the transcript box when triggered -->
 {#if showConfetti}
-  <Confetti 
-    targetSelector={confettiTarget} 
+  <Confetti
+    targetSelector={confettiTarget}
     colors={confettiColors}
-    on:complete={() => showConfetti = false} 
+    on:complete={() => (showConfetti = false)}
   />
 {/if}
 
 <!-- Screen reader only status announcements -->
 <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
-	{#if $uiState.screenReaderMessage}
-		{$uiState.screenReaderMessage}
-	{/if}
+  {#if $uiState.screenReaderMessage}
+    {$uiState.screenReaderMessage}
+  {/if}
 </div>
 
 <!-- Permission error modal -->
 {#if $uiState.showPermissionError}
-	<PermissionError on:close={() => uiActions.setPermissionError(false)} />
+  <PermissionError on:close={() => uiActions.setPermissionError(false)} />
 {/if}
 
 <style>
-	/* Main wrapper to ensure proper positioning */
-.main-wrapper {
-	position: relative;
-	z-index: 1;
-	width: 100%;
-	box-sizing: border-box;
-}
+  /* Main wrapper to ensure proper positioning */
+  .main-wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    box-sizing: border-box;
+  }
 
-/* Position wrapper to create a stable layout without shifts */
-.position-wrapper {
-	min-height: clamp(60px, 10vh, 80px); /* Responsive min-height using clamp */
-	height: auto; /* Use auto height instead of max-height to prevent scrollbar */
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	position: relative; /* Ensure proper positioning context */
-	overflow: visible; /* Allow content to be visible outside the container */
-	transition: all 0.3s ease-in-out; /* Smooth transition when content changes */
-	contain: content; /* Use content containment instead of paint layout for better scrolling behavior */
-	padding: 0 clamp(4px, 1vw, 8px); /* Responsive horizontal padding */
-	margin-bottom: clamp(0px, 2vh, 16px); /* Responsive bottom margin */
-}
+  /* Position wrapper to create a stable layout without shifts */
+  .position-wrapper {
+    min-height: 0;
+    height: auto; /* Use auto height instead of max-height to prevent scrollbar */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative; /* Ensure proper positioning context */
+    overflow: visible; /* Allow content to be visible outside the container */
+    transition: all 0.3s ease-in-out; /* Smooth transition when content changes */
+    contain: content; /* Use content containment instead of paint layout for better scrolling behavior */
+    padding: 0 clamp(4px, 1vw, 8px); /* Responsive horizontal padding */
+    margin-bottom: 0;
+  }
 
-/* Content container for transcripts and visualizers */
-.content-container {
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	position: relative; /* For absolute positioned children */
-}
+  .position-wrapper.hasOutput {
+    min-height: clamp(32px, 6vh, 56px); /* Responsive min-height using clamp */
+    margin-bottom: clamp(0px, 1vh, 8px); /* Responsive bottom margin */
+  }
 
-/* Wrapper container for consistent max-width across components */
-.wrapper-container {
-	width: 100%;
-}
+  /* Content container for transcripts and visualizers */
+  .content-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative; /* For absolute positioned children */
+  }
 
-/* Visualizer space that expands/contracts smoothly */
-.visualizer-space {
+  /* Wrapper container for consistent max-width across components */
+  .wrapper-container {
+    width: 100%;
+  }
+
+  /* Visualizer space that expands/contracts smoothly */
+  .visualizer-space {
     height: 0;
     overflow: hidden;
     transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     width: 100%;
     margin-bottom: 0;
-}
+  }
 
-.visualizer-space.active {
+  .visualizer-space.active {
     height: 140px; /* Adjust this value based on your visualizer's size */
     margin-bottom: 16px;
     margin-top: 16px; /* Add top margin to create space between recording button and visualizer */
-}
+  }
 
-/* Visualizer container for absolute positioning */
-.visualizer-container {
-	z-index: 10;
+  /* Visualizer container for absolute positioning */
+  .visualizer-container {
+    z-index: 10;
     height: 100%;
-}
+  }
 
-/* Visualizer wrapper with consistent styling */
-.visualizer-wrapper {
+  /* Visualizer wrapper with consistent styling */
+  .visualizer-wrapper {
     --shadow-color1: rgba(249, 168, 212, 0.3);
     --shadow-color2: rgba(249, 168, 212, 0.2);
     --shadow-color3: rgba(249, 168, 212, 0.15);
-    box-shadow: 
-        0 10px 25px -5px var(--shadow-color1), 
-        0 8px 10px -6px var(--shadow-color2), 
-        0 0 15px var(--shadow-color3);
-}
+    box-shadow:
+      0 10px 25px -5px var(--shadow-color1),
+      0 8px 10px -6px var(--shadow-color2),
+      0 0 15px var(--shadow-color3);
+  }
 
+  /* Screen reader only class */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
 
-/* Screen reader only class */
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border-width: 0;
-}
+  /* Improved focus styles for keyboard navigation */
+  :focus-visible {
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+  }
 
+  /* Apply box-sizing to all elements for consistent layout */
+  * {
+    box-sizing: border-box;
+  }
 
+  /* Mobile-centered container */
+  .mobile-centered-container {
+    width: 100%;
+    max-width: 100vw;
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0; /* Remove gap between elements for tighter spacing */
+  }
 
-/* Improved focus styles for keyboard navigation */
-:focus-visible {
-	outline: 2px solid #f59e0b;
-	outline-offset: 2px;
-}
+  /* Make the button section sticky to prevent jumping */
+  .button-section {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding-bottom: 8px; /* Add a small amount of padding */
+    margin-bottom: 8px; /* Add some margin to ensure separation */
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
 
-/* Apply box-sizing to all elements for consistent layout */
-* {
-	box-sizing: border-box;
-}
+  /* Media queries for mobile responsiveness - simplified and modernized */
+  @media (max-width: 768px) {
+    .button-container {
+      width: 90%;
+      max-width: min(90vw, 420px); /* Prevent overflow and set reasonable max */
+      margin: 0 auto; /* Center horizontally */
+    }
 
-/* Mobile-centered container */
-.mobile-centered-container {
-	width: 100%;
-	max-width: 100vw;
-	margin: 0 auto;
-	text-align: center;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 0; /* Remove gap between elements for tighter spacing */
-}
+    /* Adjust spacing for mobile */
+    .position-wrapper {
+      margin-top: 0.25rem;
+      margin-bottom: 0.75rem;
+      padding: 0 max(8px, 2vw) max(8px, 1.5vh);
+    }
 
-/* Make the button section sticky to prevent jumping */
-.button-section {
-	position: sticky;
-	top: 0;
-	z-index: 20;
-	padding-bottom: 8px; /* Add a small amount of padding */
-	margin-bottom: 8px; /* Add some margin to ensure separation */
-	background: transparent;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 100%;
-}
+    .position-wrapper.hasOutput {
+      margin-top: 0.5rem;
+      margin-bottom: max(0.75rem, 2vh); /* Responsive bottom margin */
+      padding: 0 max(8px, 2vw) max(12px, 2.5vh); /* Responsive padding */
+    }
 
-/* Media queries for mobile responsiveness - simplified and modernized */
-@media (max-width: 768px) {
-	.button-container {
-		width: 90%;
-		max-width: min(90vw, 420px); /* Prevent overflow and set reasonable max */
-		margin: 0 auto; /* Center horizontally */
-	}
+    /* Make the visualizer more compact on mobile */
+    .visualizer-container {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
 
-	/* Adjust spacing for mobile */
-	.position-wrapper {
-		margin-top: max(0.5rem, 2vh); /* Responsive top margin */
-		margin-bottom: max(1.5rem, 4vh); /* Responsive bottom margin */
-		padding: 0 max(8px, 2vw) max(24px, 5vh); /* Responsive padding */
-	}
+    /* Ensure minimum width even on very small screens */
+    .wrapper-container {
+      min-width: min(280px, 95vw); /* Prevent overflow on tiny screens */
+      display: flex;
+      justify-content: center;
+    }
+  }
 
-	/* Make the visualizer more compact on mobile */
-	.visualizer-container {
-		display: flex;
-		justify-content: center;
-		width: 100%;
-	}
-
-	/* Ensure minimum width even on very small screens */
-	.wrapper-container {
-		min-width: min(280px, 95vw); /* Prevent overflow on tiny screens */
-		display: flex;
-		justify-content: center;
-	}
-}
-
-/* Even smaller screens */
-@media (max-width: 380px) {
-	/* Ensure proper spacing on tiny screens */
-	.position-wrapper {
-		margin-top: 0.5rem;
-		margin-bottom: 2rem;
-		padding: 0 4px 24px;
-	}
-}
+  /* Even smaller screens */
+  @media (max-width: 380px) {
+    /* Ensure proper spacing on tiny screens */
+    .position-wrapper {
+      margin-top: 0.5rem;
+      margin-bottom: 2rem;
+      padding: 0 4px 24px;
+    }
+  }
 </style>
