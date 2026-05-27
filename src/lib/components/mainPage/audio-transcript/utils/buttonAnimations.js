@@ -2,7 +2,7 @@
  * Animation utilities for RecordButtonWithTimer component
  */
 
-import { ANIMATION } from '$lib/constants';
+import { ANIMATION } from "$lib/constants";
 
 /**
  * Handles animation for button press effect
@@ -10,14 +10,14 @@ import { ANIMATION } from '$lib/constants';
  */
 export function animateButtonPress(element) {
   if (!element) return;
-  
-  element.classList.remove('button-press');
+
+  element.classList.remove("button-press");
   void element.offsetWidth; // Force reflow
-  element.classList.add('button-press');
-  
+  element.classList.add("button-press");
+
   setTimeout(() => {
     if (element) {
-      element.classList.remove('button-press');
+      element.classList.remove("button-press");
     }
   }, ANIMATION.BUTTON.PRESS_DURATION);
 }
@@ -33,35 +33,40 @@ export function animateButtonPress(element) {
  * @param {Number|null} state.lyricMessageTimeout - Current timeout ID if any
  * @returns {Object} Updated state object
  */
-export function handleLyricsCollectionAnimation(element, state, { setShowMessage, clearExistingTimeout, setNewTimeout }) {
+export function handleLyricsCollectionAnimation(
+  element,
+  state,
+  { setShowMessage, clearExistingTimeout, setNewTimeout },
+) {
   // Show the message
   setShowMessage(true);
-  
+
   // Clear existing timeout if there is one
   if (state.lyricMessageTimeout) {
     clearExistingTimeout(state.lyricMessageTimeout);
   }
-  
+
   // Auto-hide after 2 seconds
   const newTimeout = setNewTimeout(() => {
     setShowMessage(false);
   }, 2000);
-  
+
   // Animate button for visual feedback
   if (element) {
-    element.classList.add('lyrics-collected-animation');
+    element.classList.add("lyrics-collected-animation");
     setTimeout(() => {
-      if (element) { // Check element still exists
-        element.classList.remove('lyrics-collected-animation');
+      if (element) {
+        // Check element still exists
+        element.classList.remove("lyrics-collected-animation");
       }
     }, 2000);
   }
-  
+
   // Return updated state
   return {
     ...state,
     showLyricMessage: true,
-    lyricMessageTimeout: newTimeout
+    lyricMessageTimeout: newTimeout,
   };
 }
 
@@ -82,5 +87,5 @@ export function getTimeRemaining(recordingDuration) {
 export function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
-  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }

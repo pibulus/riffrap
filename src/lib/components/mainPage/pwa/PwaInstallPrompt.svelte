@@ -95,7 +95,7 @@
 				console.log('📱 Showing native PWA install prompt');
 				
 				// This is a built-in browser API, not our custom UI
-				const result = await installPromptEvent.prompt();
+				await installPromptEvent.prompt();
 				
 				// Wait for the user to respond to the prompt
 				const choiceResult = await installPromptEvent.userChoice;
@@ -175,11 +175,11 @@
 				</div>
 			{:else}
 				<p>Add RiffRap to your home screen for:</p>
-				<ul class="benefits-list">
-					<li>Faster loading</li>
-					<li>Full-screen experience</li>
-					<li>Offline support</li>
-				</ul>
+					<ul class="benefits-list">
+						<li>Faster loading</li>
+						<li>Full-screen experience</li>
+						<li>Quick access from your home screen</li>
+					</ul>
 			{/if}
 		</div>
 		

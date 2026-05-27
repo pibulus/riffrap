@@ -3,17 +3,16 @@
   It handles recording, transcription, clipboard operations, and UI feedback.
 -->
 <script>
-	import { geminiService } from '$lib/services/geminiService';
-	import { promptStyle, theme } from '$lib/index.js';
+	import { theme } from '$lib/index.js';
 	import { AudioStates } from '$lib/services/audio/audioStates';
-	import { onMount, onDestroy } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import AudioVisualizer from './AudioVisualizer.svelte';
 	import RecordButtonWithTimer from './RecordButtonWithTimer.svelte';
 	import TranscriptDisplay from './TranscriptDisplay.svelte';
 	import PermissionError from './PermissionError.svelte';
-	import { ANIMATION, CTA_PHRASES, ATTRIBUTION, getRandomFromArray } from '$lib/constants';
+	import { ANIMATION, CTA_PHRASES } from '$lib/constants';
 	import { Confetti } from '$lib/components/ui';
 	
 	// State for confetti animation
@@ -64,18 +63,23 @@
 
 	// Helper variable to check if we're in a browser environment
 	const browser = typeof window !== 'undefined';
+	const dispatch = createEventDispatcher();
+	const lockedAudioStates = new Set([
+		AudioStates.INITIALIZING,
+		AudioStates.REQUESTING_PERMISSIONS,
+		AudioStates.READY,
+		AudioStates.STOPPING,
+		AudioStates.CLEANING
+	]);
 
 	// Service instances
 	let services;
 	let unsubscribers = [];
 	let timeoutIds = []; // Track all setTimeout calls for cleanup
-
-	// DOM element references
-	let progressContainerElement;
+	let recordingCommandPending = false;
 
 	// Local component state
 	let showCopyTooltip = false;
-	let screenReaderStatus = ''; // For ARIA announcements
 	// These will be set from the parent component
 	export const isModelPreloaded = false;
 	export let onPreloadRequest = null;
@@ -86,12 +90,6 @@
 	// Parent ContentContainer reference
 	export let parentContainer = null;
 
-	// Prompt style subscription
-	let currentPromptStyle;
-	const unsubscribePromptStyle = promptStyle.subscribe((value) => {
-		currentPromptStyle = value;
-	});
-
 	// Export recording state and functions for external components
 	export const recording = isRecording; // Export the isRecording store
 	export { stopRecording, startRecording };
@@ -101,6 +99,8 @@
 	
 	// Handle re-roll request from transcript display
 	async function handleReroll() {
+		const previousTranscript = get(transcriptionText);
+
 		try {
 			if (!lastAudioBlob) {
 				uiActions.setErrorMessage('No audio data available for re-roll');
@@ -137,13 +137,13 @@
 			console.error('❌ Error re-rolling transcript:', err);
 			uiActions.setErrorMessage(`Re-roll error: ${err.message || 'Unknown error'}`);
 			
-			// Reset state on error
-			transcriptionState.update(current => ({
-				...current,
-				inProgress: false,
-				rerolling: false,
-				text: $transcriptionText // Restore previous text
-			}));
+				// Reset state on error
+				transcriptionState.update(current => ({
+					...current,
+					inProgress: false,
+					rerolling: false,
+					text: previousTranscript
+				}));
 			
 			ghostComponent?.stopThinking?.();
 		}
@@ -167,10 +167,10 @@
 		if (!browser) return;
 
 		try {
-			const newCount = pwaService.incrementTranscriptionCount();
+				const newCount = pwaService.incrementTranscriptionCount();
 
-			// Dispatch event to parent
-			dispatchEvent(new CustomEvent('transcriptionCompleted', { detail: { count: newCount } }));
+				// Dispatch event to parent
+				dispatch('transcriptionCompleted', { count: newCount });
 		} catch (error) {
 			console.error('Error incrementing transcription count:', error);
 		}
@@ -186,7 +186,14 @@
 
 	async function startRecording() {
 		// Don't start if we're already recording
-		if ($isRecording) return;
+		if (
+			recordingCommandPending ||
+			$isRecording ||
+			$isTranscribing ||
+			lockedAudioStates.has($audioState.state)
+		) {
+			return;
+		}
 
 		// Try to preload the speech model if not already done
 		preloadSpeechModel();
@@ -195,6 +202,8 @@
 		uiActions.clearErrorMessage();
 
 		try {
+			recordingCommandPending = true;
+
 			// Subtle pulse ghost icon when starting recording
 			if (ghostComponent && typeof ghostComponent.pulse === 'function') {
 				ghostComponent.pulse();
@@ -202,11 +211,14 @@
 
 			// Start recording using the AudioService
 			await audioService.startRecording();
+			dispatch('recordingstart');
 
 			// State is tracked through stores now
 		} catch (err) {
 			console.error('❌ Error in startRecording:', err);
 			uiActions.setErrorMessage(`Recording error: ${err.message || 'Unknown error'}`);
+		} finally {
+			recordingCommandPending = false;
 		}
 	}
 
@@ -224,32 +236,38 @@
 			uiUpdate: 0
 		};
 		
-		try {
-			// Verify that we're actually recording
-			if (!$isRecording) {
-				return;
-			}
+			try {
+				// Verify that we're actually recording
+				if (recordingCommandPending || !$isRecording) {
+					return;
+				}
 
-			// Update ghost UI for user feedback
-			if (ghostComponent) {
-				ghostComponent.startThinking?.();
-			}
+				recordingCommandPending = true;
+
+				// Update ghost UI for user feedback
+				if (ghostComponent) {
+					ghostComponent.startThinking?.();
+				}
 
 			// Get audio blob from recording service
-			timeMarkers.audioBlob = Date.now();
-			const audioBlob = await audioService.stopRecording();
+				timeMarkers.audioBlob = Date.now();
+				const audioBlob = await audioService.stopRecording();
+				dispatch('recordingstop');
 
-			// Validate audio blob
-			if (!audioBlob || audioBlob.size === 0) {
-				transcriptionActions.updateProgress(0);
-				uiActions.setErrorMessage('No audio recorded. Please try again.');
-				return;
-			}
+				// Validate audio blob
+				if (!audioBlob || audioBlob.size === 0) {
+					transcriptionActions.updateProgress(0);
+					uiActions.setErrorMessage('No audio recorded. Please try again.');
+					ghostComponent?.stopThinking?.();
+					audioActions.updateState(AudioStates.IDLE);
+					return;
+				}
 			
 			lastAudioBlob = audioBlob; // Store for re-roll feature
 
-			// Begin transcription process
-			timeMarkers.transcriptionStart = Date.now();
+				// Begin transcription process
+				timeMarkers.transcriptionStart = Date.now();
+				dispatch('processingstart');
 			
 			try {
 				// Direct transcription call with minimal intermediate layers
@@ -277,17 +295,20 @@
 				// Show user-friendly error message
 				uiActions.setErrorMessage(`Transcription error: ${transcribeError.message}`);
 			}
-		} catch (err) {
-			console.error('[ERROR] Recording process failed:', err);
-			uiActions.setErrorMessage(`Recording error: ${err.message}`);
+			} catch (err) {
+				console.error('[ERROR] Recording process failed:', err);
+				uiActions.setErrorMessage(`Recording error: ${err.message}`);
 			
 			// Reset UI state
 			if (ghostComponent?.stopThinking) {
 				ghostComponent.stopThinking();
+				}
+				audioActions.updateState(AudioStates.IDLE);
+			} finally {
+				recordingCommandPending = false;
+				dispatch('processingend');
 			}
-			audioActions.updateState(AudioStates.IDLE);
 		}
-	}
 
 	/**
 	 * Updates UI with transcription text
@@ -320,7 +341,11 @@
 		}
 	}
 
-	function toggleRecording() {
+	async function toggleRecording() {
+		if (recordingCommandPending || lockedAudioStates.has($audioState.state)) {
+			return;
+		}
+
 		try {
 			// Prioritize the store state for more consistent behavior
 			const currentlyRecording = get(isRecording);
@@ -331,7 +356,7 @@
 					services.hapticService.stopRecording();
 				}
 
-				stopRecording();
+				await stopRecording();
 				// Screen reader announcement
 				uiActions.setScreenReaderMessage('Recording stopped.');
 			} else {
@@ -356,7 +381,7 @@
 					transcriptionActions.completeTranscription('');
 				}
 
-				startRecording();
+				await startRecording();
 				// Screen reader announcement
 				uiActions.setScreenReaderMessage('Recording started. Speak now.');
 			}
@@ -383,6 +408,7 @@
 
 	// Button label computation - fixed to show CTA phrases
 	$: buttonLabel = $isRecording ? 'Stop Recording' : $transcriptionText ? currentCta : currentCta;
+	$: buttonDisabled = recordingCommandPending || lockedAudioStates.has($audioState.state);
 
 	// Handler for transcript component events
 	function handleTranscriptEvent(event) {
@@ -482,8 +508,6 @@
 		// Ensure audio resources are released
 		audioService.cleanup();
 
-		// Unsubscribe from prompt style
-		if (unsubscribePromptStyle) unsubscribePromptStyle();
 	});
 
 
@@ -499,9 +523,10 @@
 			class="button-section relative sticky top-0 z-20 flex w-full justify-center text-center bg-transparent pb-2 pt-2 sm:pt-3 md:pt-4 sm:pb-2 md:pb-2 mt-2 sm:mt-3"
 		>
 			<div class="button-container flex items-center justify-center w-full" style="margin-left: auto; margin-right: auto; position: relative; left: 0; right: 0; text-align: center;">
-				<RecordButtonWithTimer
-					recording={$isRecording}
-					transcribing={$isTranscribing}
+					<RecordButtonWithTimer
+						recording={$isRecording}
+						transcribing={$isTranscribing}
+						disabled={buttonDisabled}
 					clipboardSuccess={$uiState.clipboardSuccess}
 					lyricsCollected={$uiState.lyricsCollected}
 					recordingDuration={$recordingDuration}

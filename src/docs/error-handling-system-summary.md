@@ -18,6 +18,7 @@ RiffRapError (base class)
 ```
 
 Each error type includes:
+
 - Unique error code (e.g., `ERR_API`, `ERR_TRANSCRIPTION`)
 - Context object for additional error details
 - "Operational" flag to distinguish expected vs. unexpected errors
@@ -52,15 +53,18 @@ The error handler dispatches events through the event bridge when errors occur, 
 ### 1. Handling Errors in Services
 
 ```javascript
-import { errorHandler, ApiError } from '$lib/services/infrastructure/errorHandler';
+import {
+  errorHandler,
+  ApiError,
+} from "$lib/services/infrastructure/errorHandler";
 
 try {
   // Risky operation
   await apiRequest();
 } catch (error) {
-  errorHandler.handleError(error, { 
-    notify: true,   // Show notification to user
-    rethrow: false  // Don't rethrow the error
+  errorHandler.handleError(error, {
+    notify: true, // Show notification to user
+    rethrow: false, // Don't rethrow the error
   });
   return null; // Fallback value
 }
@@ -76,8 +80,8 @@ const processData = errorHandler.wrapAsync(
   },
   {
     notify: true,
-    fallbackValue: { success: false, data: null }
-  }
+    fallbackValue: { success: false, data: null },
+  },
 );
 
 // Later use:
@@ -96,9 +100,9 @@ const result = await processData(inputData);
 
 ```javascript
 if (!apiKey) {
-  throw new ApiError('Missing API key', {
-    code: 'ERR_API_KEY',
-    context: { component: 'GeminiService' }
+  throw new ApiError("Missing API key", {
+    code: "ERR_API_KEY",
+    context: { component: "GeminiService" },
   });
 }
 ```

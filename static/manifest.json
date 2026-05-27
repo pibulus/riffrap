@@ -60,24 +60,8 @@
     {
       "src": "/icons/icon-maskable-512x512.png",
       "sizes": "512x512",
-      "type": "image/png", 
+      "type": "image/png",
       "purpose": "maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshots/screenshot-1.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "RiffRap in action"
-    },
-    {
-      "src": "/screenshots/screenshot-mobile.png",
-      "sizes": "720x1280",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "RiffRap on mobile"
     }
   ],
   "theme_icons": [

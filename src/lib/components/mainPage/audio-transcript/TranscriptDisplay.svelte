@@ -22,30 +22,23 @@
   // Import stores from module
   import { 
     // State and props as stores
-    transcriptStore,
     showCopyTooltipStore,
-    responsiveFontSizeStore,
     parentContainerStore,
     editableTranscriptStore,
     copyButtonRefStore,
     transcriptBoxRefStore,
     notificationStore,
-    notificationTimeoutStore,
-    tooltipHoverCountStore,
-    hasUsedCopyButtonStore,
     isScrollableStore,
-    showRerollTooltipStore,
     isRerollingStore,
     selectionActiveStore,
     selectionLeftStore,
     selectionTopStore,
     selectedTextStore,
-    currentSelectionStore,
     dispatchStore,
     
     // Core functions
-    getEditedTranscript, handleTooltipMouseEnter, checkScrollable,
-    isWebShareSupported, handleRerollTooltipMouseEnter, handleReroll,
+    getEditedTranscript, checkScrollable,
+    isWebShareSupported, handleReroll,
     setupLifecycleHooks
   } from './TranscriptDisplay_Core.js';
   
@@ -71,22 +64,21 @@
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
   
-  // Debug log for monitoring transcript updates
-  $: if (transcript) console.log('[DEBUG] TranscriptDisplay has transcript:', transcript.substring(0, 30));
-  
   // Set the dispatch in the store for other modules to use
   dispatchStore.set(dispatch);
   
   // Subscribe to stores for local use - FIXED: Removed the transcript subscription that was causing feedback loop
   // The transcriptStore is now updated directly from TranscriptDisplay_Core.js
-  showCopyTooltipStore.subscribe(value => (showCopyTooltip = value));
-  parentContainerStore.subscribe(value => (parentContainer = value));
-  notificationStore.subscribe(value => (notification = value));
-  selectionActiveStore.subscribe(value => (selectionActive = value));
-  selectionLeftStore.subscribe(value => (selectionLeft = value));
-  selectionTopStore.subscribe(value => (selectionTop = value));
-  selectedTextStore.subscribe(value => (selectedText = value));
-  isScrollableStore.subscribe(value => (isScrollable = value));
+  const storeUnsubscribers = [
+    showCopyTooltipStore.subscribe(value => (showCopyTooltip = value)),
+    parentContainerStore.subscribe(value => (parentContainer = value)),
+    notificationStore.subscribe(value => (notification = value)),
+    selectionActiveStore.subscribe(value => (selectionActive = value)),
+    selectionLeftStore.subscribe(value => (selectionLeft = value)),
+    selectionTopStore.subscribe(value => (selectionTop = value)),
+    selectedTextStore.subscribe(value => (selectedText = value)),
+    isScrollableStore.subscribe(value => (isScrollable = value))
+  ];
   
   // Set the store values when props change - FIXED: Removed bidirectional binding for transcript
   // We now only allow one-way updates from global transcriptionText to local transcriptStore
@@ -98,10 +90,7 @@
   $: if (copyButtonRef) copyButtonRefStore.set(copyButtonRef);
   $: if (transcriptBoxRef) transcriptBoxRefStore.set(transcriptBoxRef);
   
-  import {
-    handleTextSelection,
-    hideSelectionButton
-  } from './TranscriptDisplay_Selection.js';
+  import { handleTextSelection } from './TranscriptDisplay_Selection.js';
   
   import {
     showNotification,
@@ -114,8 +103,8 @@
   
   // Import Svelte components and transitions
   import SelectionButton from './SelectionButton.svelte';
-  import { fade, fly } from 'svelte/transition';
-  import { onDestroy, onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
+  import { onDestroy } from 'svelte';
   
   // Handler for notification events from modules
   function handleNotification(event) {
@@ -135,6 +124,8 @@
   
   // Ensure cleanup on destroy
   onDestroy(() => {
+    storeUnsubscribers.forEach(unsubscribe => unsubscribe());
+
     if (typeof cleanup === 'function') {
       cleanup();
     }
@@ -265,6 +256,26 @@
           <!-- Remove the bottom controls area with the re-roll button -->
         </div>
         
+        <div class="transcript-actions flex flex-wrap items-center justify-end gap-2 px-6 pb-5">
+          <button
+            bind:this={copyButtonRef}
+            type="button"
+            class="min-h-[44px] rounded-full border border-amber-200 bg-amber-100 px-4 text-sm font-bold text-amber-950 shadow-sm transition-colors hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
+            on:click={() => dispatch('copy', { text: getEditedTranscript() })}
+          >
+            Copy
+          </button>
+          {#if isWebShareSupported()}
+            <button
+              type="button"
+              class="min-h-[44px] rounded-full border border-pink-200 bg-pink-100 px-4 text-sm font-bold text-pink-950 shadow-sm transition-colors hover:bg-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2"
+              on:click={() => dispatch('share', { text: getEditedTranscript() })}
+            >
+              Share
+            </button>
+          {/if}
+        </div>
+
         <!-- Footer area with scroll indicator only -->
         <div class="transcript-footer-area relative w-full">
           <!-- Scroll indicator - only visible when scrollable -->

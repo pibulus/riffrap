@@ -11,11 +11,13 @@ The ghost icon is central to the app's identity and user experience. It uses a l
 The ghost icon consists of three separate SVG files stacked in the following order (bottom to top):
 
 1. **Background Gradient** (`/icon-bg-gradient*.svg`)
+
    - The bottom layer containing the theme's gradient fill
    - Changes based on selected theme/vibe (peach, mint, bubblegum, rainbow)
    - Multiple variants exist for different themes (e.g., `/icon-bg-gradient-mint.svg`)
 
 2. **Outline** (`/assets/icon-base.svg`)
+
    - The middle layer with the ghost's outline/shape
    - Remains consistent across themes
    - Black outline with transparent interior to show gradient background
@@ -34,7 +36,12 @@ The ghost icon is implemented as three stacked `<img>` elements within a contain
   <!-- Gradient background (bottom layer) -->
   <img src="/icon-bg-gradient.svg" alt="" class="icon-bg" aria-hidden="true" />
   <!-- Outline without eyes (middle layer) -->
-  <img src="/assets/icon-base.svg" alt="" class="icon-base" aria-hidden="true" />
+  <img
+    src="/assets/icon-base.svg"
+    alt=""
+    class="icon-base"
+    aria-hidden="true"
+  />
   <!-- Just the eyes (top layer - for blinking) -->
   <img src="/assets/icon-eyes.svg" alt="Ghost Icon" class="icon-eyes" />
 </div>
@@ -85,14 +92,17 @@ The icon layers rely on proper CSS to ensure stacking and animations work correc
 The ghost icon supports multiple themes through different gradient SVG files:
 
 1. **Peach** (Default)
+
    - Gradient SVG: `/icon-bg-gradient.svg`
    - Colors: Pink/Purple (#ff9a84, #ff7eb3)
 
 2. **Mint**
+
    - Gradient SVG: `/icon-bg-gradient-mint.svg`
    - Colors: Blue/Green (#60a5fa, #34d399)
 
 3. **Bubblegum**
+
    - Gradient SVG: `/icon-bg-gradient-bubblegum.svg`
    - Colors: Pink/Purple (#f472b6, #a78bfa)
 
@@ -107,35 +117,35 @@ Theme switching is implemented by changing the `src` attribute of the background
 ```javascript
 function applyTheme(vibeId) {
   // Find the theme configuration
-  const vibe = vibeOptions.find(v => v.id === vibeId);
+  const vibe = vibeOptions.find((v) => v.id === vibeId);
   if (!vibe) return;
-  
+
   // Get the ghost background image element
-  const ghostBg = document.querySelector('.icon-bg');
-  
+  const ghostBg = document.querySelector(".icon-bg");
+
   if (ghostBg) {
-    if (vibe.animated && vibe.id === 'rainbow') {
+    if (vibe.animated && vibe.id === "rainbow") {
       // For rainbow theme, apply animation class
-      ghostBg.classList.add('rainbow-animated');
-      ghostBg.src = '/icon-bg-gradient-rainbow.svg';
+      ghostBg.classList.add("rainbow-animated");
+      ghostBg.src = "/icon-bg-gradient-rainbow.svg";
     } else {
       // Remove animation class for static themes
-      ghostBg.classList.remove('rainbow-animated');
-      
+      ghostBg.classList.remove("rainbow-animated");
+
       // Set the appropriate gradient SVG based on theme
-      switch(vibe.id) {
-        case 'mint':
-          ghostBg.src = '/icon-bg-gradient-mint.svg';
+      switch (vibe.id) {
+        case "mint":
+          ghostBg.src = "/icon-bg-gradient-mint.svg";
           break;
-        case 'bubblegum':
-          ghostBg.src = '/icon-bg-gradient-bubblegum.svg';
+        case "bubblegum":
+          ghostBg.src = "/icon-bg-gradient-bubblegum.svg";
           break;
         default: // Default to peach
-          ghostBg.src = '/icon-bg-gradient.svg';
+          ghostBg.src = "/icon-bg-gradient.svg";
           break;
       }
     }
-    
+
     // Force a reflow to ensure the gradient is visible
     void ghostBg.offsetWidth;
   }
@@ -156,7 +166,9 @@ The eyes use a combination of CSS and JavaScript to implement a Brian Eno-inspir
 }
 
 @keyframes blink {
-  0%, 96.5%, 100% {
+  0%,
+  96.5%,
+  100% {
     transform: scaleY(1);
   }
   97.5% {
@@ -173,9 +185,9 @@ The eyes use a combination of CSS and JavaScript to implement a Brian Eno-inspir
 ```javascript
 // Blink type probabilities
 const blinkTypes = [
-  { type: 'single', probability: 0.6 }, // 60%
-  { type: 'double', probability: 0.3 }, // 30%
-  { type: 'triple', probability: 0.1 }  // 10%
+  { type: "single", probability: 0.6 }, // 60%
+  { type: "double", probability: 0.3 }, // 30%
+  { type: "triple", probability: 0.1 }, // 10%
 ];
 
 // Parameters for generative system
@@ -186,13 +198,13 @@ const maxGap = 9000; // Maximum time between blinks (9s)
 function scheduleNextBlink() {
   // Random time interval with Brian Eno-like indeterminacy
   const nextInterval = Math.floor(minGap + Math.random() * (maxGap - minGap));
-  
+
   setTimeout(() => {
     // Choose blink type based on probability distribution
     const rand = Math.random();
     let cumulativeProbability = 0;
-    let selectedType = 'single'; // Default
-    
+    let selectedType = "single"; // Default
+
     for (const blink of blinkTypes) {
       cumulativeProbability += blink.probability;
       if (rand <= cumulativeProbability) {
@@ -200,16 +212,16 @@ function scheduleNextBlink() {
         break;
       }
     }
-    
+
     // Execute the selected blink pattern
-    if (selectedType === 'single') {
+    if (selectedType === "single") {
       performSingleBlink();
-    } else if (selectedType === 'double') {
+    } else if (selectedType === "double") {
       performDoubleBlink();
     } else {
       performTripleBlink();
     }
-    
+
     // Schedule the next blink
     scheduleNextBlink();
   }, nextInterval);
@@ -222,19 +234,39 @@ The ghost icon has wobble animations for various states and interactions:
 
 ```css
 @keyframes ghost-wobble-left {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(-5deg); }
-  50% { transform: rotate(3deg); }
-  75% { transform: rotate(-2deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 @keyframes ghost-wobble-right {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(5deg); }
-  50% { transform: rotate(-3deg); }
-  75% { transform: rotate(2deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(5deg);
+  }
+  50% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(2deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 .ghost-wobble-left {
@@ -284,12 +316,14 @@ The ghost icon uses DOM classes and event listeners to manage its state:
 Each SVG file in the ghost system has a specific structure:
 
 1. **Background Gradient SVG**
+
    - Contains a path with the ghost shape
    - Uses gradient fills for coloring
    - Path already confined to ghost shape (no rectangular background)
    - May include animation features for rainbow theme
 
 2. **Outline SVG**
+
    - Contains just the ghost outline path
    - Uses black fill with full opacity
    - Does not include the eyes
@@ -319,6 +353,7 @@ Critical path information:
 **Problem**: Ghost icon appears as broken image or "alt text" only.
 
 **Causes**:
+
 - Incorrect path referencing `/static/assets/...` instead of `/assets/...`
 - Mixing up paths between base outline (`/assets/icon-base.svg`) and legacy outline (`/icon.svg`)
 - Using `/assets/` prefix for gradient files (they should be `/icon-bg-gradient*.svg` with no `/assets/`)
@@ -326,6 +361,7 @@ Critical path information:
 - Case sensitivity issues in file paths
 
 **Solution**:
+
 - For gradient background images: Use `/icon-bg-gradient.svg` (NO `/assets/` prefix)
 - For outline and eyes: Use `/assets/icon-base.svg` and `/assets/icon-eyes.svg` (WITH `/assets/` prefix)
 - Never use file system paths with `/static/` prefix
@@ -337,11 +373,13 @@ Critical path information:
 **Problem**: The entire ghost blinks instead of just the eyes.
 
 **Causes**:
+
 - Eyes not separated into a separate SVG file
 - Animation applied to the wrong element
 - Using full ghost SVG for all layers
 
 **Solution**:
+
 - Ensure eyes are in a separate SVG file
 - Apply animation classes only to the eyes layer
 - Use the three-layer approach with separate SVGs
@@ -351,6 +389,7 @@ Critical path information:
 **Problem**: Theme doesn't change, flickers between themes, or shows rectangular background instead of ghost shape.
 
 **Causes**:
+
 - Multiple theme applications
 - Incorrect theme file paths
 - Missing force reflow
@@ -358,6 +397,7 @@ Critical path information:
 - Using `talktype-icon-bg-gradient-rainbow.svg` without the proper path constraints
 
 **Solution**:
+
 - Apply theme only once during initialization
 - Use correct file paths for theme SVGs
 - Force reflow with `void element.offsetWidth` after changing `src`
@@ -369,11 +409,13 @@ Critical path information:
 **Problem**: Animations behave erratically or stop working.
 
 **Causes**:
+
 - Multiple animation classes applied simultaneously
 - Timeouts not cleared between state changes
 - Missing force reflow between animation changes
 
 **Solution**:
+
 - Remove existing animation classes before adding new ones
 - Clear timeouts when changing states
 - Force reflow between animation changes with `void element.offsetWidth`
@@ -381,12 +423,14 @@ Critical path information:
 ## Browser Compatibility
 
 The ghost icon system has been tested and works well in:
+
 - Chrome (latest)
 - Firefox (latest)
 - Safari (latest)
 - Edge (latest)
 
 For older browsers, consider adding fallbacks for:
+
 - CSS animation support
 - SVG support
 - JavaScript animation frames
@@ -418,26 +462,26 @@ Potential enhancements to the ghost icon system:
 - Add subtle particle effects for special events
 - Implement seasonal variants (halloween, winter, etc.)
 
-## Quick Reference 
+## Quick Reference
 
 ### Correct File Paths
 
-| Layer | File System Location | Web Path to Use |
-|-------|----------------------|----------------|
-| Background (Default) | `/static/icon-bg-gradient.svg` | `/icon-bg-gradient.svg` |
-| Background (Mint) | `/static/icon-bg-gradient-mint.svg` | `/icon-bg-gradient-mint.svg` |
+| Layer                  | File System Location                     | Web Path to Use                   |
+| ---------------------- | ---------------------------------------- | --------------------------------- |
+| Background (Default)   | `/static/icon-bg-gradient.svg`           | `/icon-bg-gradient.svg`           |
+| Background (Mint)      | `/static/icon-bg-gradient-mint.svg`      | `/icon-bg-gradient-mint.svg`      |
 | Background (Bubblegum) | `/static/icon-bg-gradient-bubblegum.svg` | `/icon-bg-gradient-bubblegum.svg` |
-| Background (Rainbow) | `/static/icon-bg-gradient-rainbow.svg` | `/icon-bg-gradient-rainbow.svg` |
-| Outline | `/static/assets/icon-base.svg` | `/assets/icon-base.svg` |
-| Eyes | `/static/assets/icon-eyes.svg` | `/assets/icon-eyes.svg` |
+| Background (Rainbow)   | `/static/icon-bg-gradient-rainbow.svg`   | `/icon-bg-gradient-rainbow.svg`   |
+| Outline                | `/static/assets/icon-base.svg`           | `/assets/icon-base.svg`           |
+| Eyes                   | `/static/assets/icon-eyes.svg`           | `/assets/icon-eyes.svg`           |
 
 ### Important Notes
 
 1. **Never use** `/static/` in your image paths in HTML/CSS
-2. **Always use** `/assets/icon-base.svg` for the outline layer (middle) 
+2. **Always use** `/assets/icon-base.svg` for the outline layer (middle)
 3. The original `/icon.svg` path is now considered legacy and should not be used
 4. **Critical**: For theme gradients (`.svg` files), use paths like `/icon-bg-gradient.svg` (no `/assets/`)
-5. **Critical**: For outline and eyes, use paths like `/assets/icon-base.svg` (with `/assets/`) 
+5. **Critical**: For outline and eyes, use paths like `/assets/icon-base.svg` (with `/assets/`)
 6. SVG files already contain the ghost shape - no additional masking or clipping is required
 
 ### Implementation in Different Components
@@ -445,11 +489,17 @@ Potential enhancements to the ghost icon system:
 When implementing the ghost icon in different components:
 
 1. **Main App**: `/src/routes/+page.svelte`
+
    ```html
    <!-- Gradient background (bottom layer) -->
    <img src="/icon-bg-gradient.svg" class="icon-bg" alt="" aria-hidden="true" />
    <!-- Outline without eyes (middle layer) -->
-   <img src="/assets/icon-base.svg" class="icon-base" alt="" aria-hidden="true" />
+   <img
+     src="/assets/icon-base.svg"
+     class="icon-base"
+     alt=""
+     aria-hidden="true"
+   />
    <!-- Just the eyes (top layer - for blinking) -->
    <img src="/assets/icon-eyes.svg" class="icon-eyes" alt="Ghost Icon" />
    ```
@@ -457,9 +507,24 @@ When implementing the ghost icon in different components:
 2. **Settings Modal Preview**: `/src/lib/components/settings/SettingsModal.svelte`
    ```html
    <!-- Gradient background (bottom layer) -->
-   <img src="/icon-bg-gradient.svg" class="absolute inset-0 w-full h-full" alt="" aria-hidden="true" />
+   <img
+     src="/icon-bg-gradient.svg"
+     class="absolute inset-0 w-full h-full"
+     alt=""
+     aria-hidden="true"
+   />
    <!-- Outline without eyes (middle layer) -->
-   <img src="/assets/icon-base.svg" class="absolute inset-0 w-full h-full" alt="" aria-hidden="true" />
+   <img
+     src="/assets/icon-base.svg"
+     class="absolute inset-0 w-full h-full"
+     alt=""
+     aria-hidden="true"
+   />
    <!-- Just the eyes (top layer) -->
-   <img src="/assets/icon-eyes.svg" class="absolute inset-0 w-full h-full preview-eyes" alt="" aria-hidden="true" />
+   <img
+     src="/assets/icon-eyes.svg"
+     class="absolute inset-0 w-full h-full preview-eyes"
+     alt=""
+     aria-hidden="true"
+   />
    ```

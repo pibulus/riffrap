@@ -1,8 +1,4 @@
 <script>
-  // No theme imports needed - using fixed theme
-  import { THEMES } from '$lib/constants';
-  import { onMount } from 'svelte';
-  
   /**
    * AppSuffix Component
    * 

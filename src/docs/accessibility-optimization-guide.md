@@ -1,6 +1,6 @@
 # Accessibility Optimization Guide: Making Apps Inclusive
 
-*A practical manual for identifying and fixing accessibility issues, based on real-world experience optimizing RiffRap*
+_A practical manual for identifying and fixing accessibility issues, based on real-world experience optimizing RiffRap_
 
 ## Overview
 
@@ -9,9 +9,11 @@ This guide demonstrates the 80/20 approach to accessibility: focusing on high-im
 ## The 80/20 Accessibility Strategy
 
 ### Core Principle
+
 Target the accessibility issues that provide the biggest impact for the least effort. These typically fall into a few key categories that affect the largest number of users.
 
 ### Why This Approach Works
+
 - **High Impact**: Fixes core navigation and interaction issues
 - **Quick Wins**: Can be implemented in hours, not weeks
 - **Measurable**: Build warnings disappear, accessibility scores improve
@@ -20,6 +22,7 @@ Target the accessibility issues that provide the biggest impact for the least ef
 ## Step 1: Identify Accessibility Issues
 
 ### Using Build Warnings
+
 Modern frameworks like SvelteKit provide excellent accessibility linting out of the box. Run your build and look for `a11y_` warnings:
 
 ```bash
@@ -29,16 +32,19 @@ npm run build 2>&1 | grep "a11y"
 ### Common High-Impact Issues to Prioritize
 
 #### 🔴 Critical (Fix First)
+
 - `a11y_click_events_have_key_events` - Interactive elements missing keyboard support
 - `a11y_no_static_element_interactions` - Non-interactive elements with click handlers
 - `a11y_no_noninteractive_tabindex` - Inappropriate tabindex usage
 
-#### 🟡 Important (Fix Second)  
+#### 🟡 Important (Fix Second)
+
 - Missing ARIA labels and roles
 - Redundant or conflicting accessibility attributes
 - `href="#"` links without proper alternatives
 
 #### 🟢 Nice-to-Have (Fix Last)
+
 - Color contrast improvements
 - Focus indicators enhancement
 - Screen reader optimizations
@@ -48,8 +54,9 @@ npm run build 2>&1 | grep "a11y"
 ### Problem: Click Handlers on Non-Interactive Elements
 
 **❌ Before:**
+
 ```svelte
-<img 
+<img
   src="/logo.png"
   alt="App Logo"
   on:click={handleClick}
@@ -58,13 +65,14 @@ npm run build 2>&1 | grep "a11y"
 ```
 
 **✅ After:**
+
 ```svelte
-<button 
+<button
   class="bg-transparent border-0 p-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-400"
   on:click={handleClick}
   aria-label="Start recording"
 >
-  <img 
+  <img
     src="/logo.png"
     alt=""
     class="pointer-events-none"
@@ -74,6 +82,7 @@ npm run build 2>&1 | grep "a11y"
 ```
 
 **Key Changes:**
+
 - Wrapped in semantic `<button>` element
 - Added proper ARIA label
 - Image becomes decorative (`alt=""`, `aria-hidden="true"`)
@@ -83,6 +92,7 @@ npm run build 2>&1 | grep "a11y"
 ### Problem: Divs with Click Handlers
 
 **❌ Before:**
+
 ```svelte
 <div
   class="modal-backdrop"
@@ -92,6 +102,7 @@ npm run build 2>&1 | grep "a11y"
 ```
 
 **✅ After:**
+
 ```svelte
 <div
   class="modal-backdrop"
@@ -109,6 +120,7 @@ npm run build 2>&1 | grep "a11y"
 ```
 
 **Key Changes:**
+
 - Added keyboard event handler
 - Proper ARIA role and label
 - Supports Escape key (expected UX pattern)
@@ -138,6 +150,7 @@ npm run build 2>&1 | grep "a11y"
 ```
 
 **Key Patterns:**
+
 - Support both Enter and Space keys (standard for buttons)
 - Prevent default to avoid page scrolling on Space
 - Clear ARIA label explaining the action
@@ -164,6 +177,7 @@ function handleKeyDown(e) {
 ### Problem: Redundant ARIA Roles
 
 **❌ Before:**
+
 ```svelte
 <dialog role="dialog" aria-modal="true">
   <!-- Modal content -->
@@ -171,6 +185,7 @@ function handleKeyDown(e) {
 ```
 
 **✅ After:**
+
 ```svelte
 <dialog aria-modal="true">
   <!-- Modal content -->
@@ -182,6 +197,7 @@ function handleKeyDown(e) {
 ### Problem: Inappropriate href="#" Usage
 
 **❌ Before:**
+
 ```svelte
 <a href="#" on:click|preventDefault={handleAction}>
   Download
@@ -189,8 +205,9 @@ function handleKeyDown(e) {
 ```
 
 **✅ After:**
+
 ```svelte
-<button 
+<button
   type="button"
   on:click={handleAction}
   class="text-blue-600 underline bg-transparent border-0 p-0 cursor-pointer"
@@ -230,11 +247,13 @@ function handleKeyDown(e) {
 ### Problem: Inappropriate Tabindex
 
 **❌ Before:**
+
 ```svelte
 <span tabindex="0" on:focus={handleHover}>💜</span>
 ```
 
 **✅ After:**
+
 ```svelte
 <span role="img" aria-label="Purple heart">💜</span>
 ```
@@ -244,11 +263,13 @@ function handleKeyDown(e) {
 ### Problem: Autofocus Overuse
 
 **❌ Before:**
+
 ```svelte
 <textarea autofocus placeholder="Enter text..." />
 ```
 
 **✅ After:**
+
 ```svelte
 <textarea placeholder="Enter text..." />
 <!-- Focus programmatically when needed -->
@@ -264,6 +285,7 @@ function handleKeyDown(e) {
 ## Step 7: Testing Your Changes
 
 ### Automated Testing
+
 ```bash
 # Build should show zero a11y warnings
 npm run build
@@ -275,6 +297,7 @@ npm run build 2>&1 | grep "a11y"
 ### Manual Testing Checklist
 
 #### Keyboard Navigation
+
 - [ ] Tab through all interactive elements
 - [ ] Ensure logical tab order
 - [ ] All buttons respond to Enter/Space
@@ -282,12 +305,14 @@ npm run build 2>&1 | grep "a11y"
 - [ ] No keyboard traps
 
 #### Screen Reader Testing
+
 - [ ] All interactive elements have labels
 - [ ] Content structure makes sense when read aloud
 - [ ] Dynamic content announces changes
 - [ ] Form fields have proper labels
 
-#### Visual Testing  
+#### Visual Testing
+
 - [ ] Focus indicators are visible
 - [ ] Interactive elements look clickable
 - [ ] Color is not the only way to convey information
@@ -295,13 +320,15 @@ npm run build 2>&1 | grep "a11y"
 ## Real-World Results: RiffRap Case Study
 
 ### Before Optimization
+
 - 15+ accessibility warnings in build
 - Images with click handlers
 - Missing keyboard navigation
 - Redundant ARIA roles
 - href="#" links
 
-### After Optimization  
+### After Optimization
+
 - **Zero accessibility warnings**
 - All interactive elements keyboard accessible
 - Proper semantic HTML throughout
@@ -309,6 +336,7 @@ npm run build 2>&1 | grep "a11y"
 - Screen reader friendly
 
 ### Time Investment
+
 - **Total time:** ~2 hours
 - **Impact:** Massive improvement in usability for users with disabilities
 - **Maintenance:** Patterns established for future development
@@ -316,6 +344,7 @@ npm run build 2>&1 | grep "a11y"
 ## Quick Reference: Common Patterns
 
 ### Interactive Image
+
 ```svelte
 <button class="image-button" on:click={action} aria-label="Action description">
   <img src="..." alt="" aria-hidden="true" />
@@ -323,18 +352,20 @@ npm run build 2>&1 | grep "a11y"
 ```
 
 ### Modal Backdrop
+
 ```svelte
-<div 
-  class="backdrop" 
+<div
+  class="backdrop"
   on:click={close}
   on:keydown={(e) => e.key === 'Escape' && close()}
-  role="button" 
+  role="button"
   tabindex="0"
   aria-label="Close modal"
 ></div>
 ```
 
 ### Custom Interactive Element
+
 ```svelte
 <div
   on:click={action}
@@ -348,6 +379,7 @@ npm run build 2>&1 | grep "a11y"
 ```
 
 ### Dynamic Button Labels
+
 ```svelte
 <button aria-label={isActive ? "Stop action" : "Start action"}>
   {isActive ? "Stop" : "Start"}
@@ -357,21 +389,25 @@ npm run build 2>&1 | grep "a11y"
 ## Best Practices for Ongoing Development
 
 ### 1. Build Accessibility In From the Start
+
 - Use semantic HTML elements by default
 - Add ARIA labels when creating interactive elements
 - Test keyboard navigation as you develop
 
 ### 2. Establish Team Patterns
+
 - Create reusable accessible components
 - Document accessibility patterns in your style guide
 - Include accessibility in code review checklists
 
 ### 3. Monitor and Maintain
+
 - Run accessibility checks in CI/CD
 - Regular manual testing with keyboard and screen readers
 - Keep accessibility linting enabled in development
 
 ### 4. Progressive Enhancement
+
 - Start with accessible foundation
 - Add interactive features that maintain accessibility
 - Test with assistive technologies when possible
@@ -384,4 +420,4 @@ Remember: **Accessible apps are better apps for everyone**. The patterns that he
 
 ---
 
-*This guide is based on real-world optimization of RiffRap, where we eliminated all accessibility warnings and dramatically improved usability in approximately 2 hours of focused development.*
+_This guide is based on real-world optimization of RiffRap, where we eliminated all accessibility warnings and dramatically improved usability in approximately 2 hours of focused development._

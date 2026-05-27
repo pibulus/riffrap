@@ -92,18 +92,3 @@
 		<IconButton icon="trash" tooltip="🗑️ Clear all" onClick={clearLyrics} disabled={!hasSnippets} />
 	</div>
 </div>
-
-<style>
-	/* Add subtle animation for empty state */
-	button:disabled {
-		transform: none;
-		transition:
-			transform 0.3s ease,
-			opacity 0.3s ease;
-	}
-
-	button:disabled:hover {
-		transform: translateY(-2px);
-		opacity: 0.6;
-	}
-</style>

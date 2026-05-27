@@ -68,16 +68,6 @@
     dispatch('error', { error: err, errorInfo: info });
   }
   
-  // Default fallback if none provided
-  function DefaultFallback() {
-    return `
-      <div class="error-boundary-fallback">
-        <h3>Something went wrong</h3>
-        <p>The application encountered an unexpected error.</p>
-        <button on:click={() => window.location.reload()}>Reload page</button>
-      </div>
-    `;
-  }
 </script>
 
 <svelte:options accessors />

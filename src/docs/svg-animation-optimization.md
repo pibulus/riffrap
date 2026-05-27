@@ -5,6 +5,7 @@ This document outlines best practices and optimization techniques for improving 
 ## Current Animation Implementations
 
 LineSnap uses SVG animations in several key components:
+
 - Ghost animations (eyes, body movement)
 - Logo and icon transitions
 - UI element transitions and effects
@@ -14,17 +15,20 @@ LineSnap uses SVG animations in several key components:
 ### 1. SVG File Optimization
 
 #### Minimize SVG File Size
+
 - **Use SVGO**: Optimize all SVG files with SVGO to remove unnecessary metadata, comments, and attributes
 - **Simplify paths**: Reduce path complexity by removing unnecessary points and smoothing curves
 - **Remove unused elements**: Eliminate hidden elements, unused groups, and redundant definitions
 
 Example:
+
 ```bash
 # Using SVGO CLI to optimize ghost-paths.svg
 npx svgo src/lib/components/ghost/ghost-paths.svg -o src/lib/components/ghost/ghost-paths.optimized.svg
 ```
 
 #### File Structure Best Practices
+
 - Group related elements that animate together
 - Use meaningful IDs for elements that will be animated
 - Keep the DOM structure as flat as possible
@@ -33,23 +37,28 @@ npx svgo src/lib/components/ghost/ghost-paths.svg -o src/lib/components/ghost/gh
 ### 2. Animation Performance Techniques
 
 #### Use Hardware-Accelerated Properties
+
 When animating SVG elements, prioritize these properties for best performance:
+
 - `transform` (translate, scale, rotate)
 - `opacity`
 - `filter` (use sparingly)
 
 Avoid animating these properties when possible:
+
 - `width`/`height`
 - `x`/`y` coordinates
 - `points` or `d` (path data)
 - `stroke-dasharray`/`stroke-dashoffset` (use carefully)
 
 #### CSS vs. JavaScript Animation
+
 - Use CSS animations for simple, predictable animations
 - Use JavaScript (RAF) for complex, interactive animations
 - Consider GSAP for complex sequencing or performance-critical animations
 
 #### Animation Throttling & Batching
+
 - Limit animation frame rates for subtle animations (e.g., blinking)
 - Batch multiple animation updates together
 - Use `requestAnimationFrame` correctly and avoid nested calls
@@ -57,6 +66,7 @@ Avoid animating these properties when possible:
 ### 3. Ghost Component Specific Optimizations
 
 #### Eye Tracking
+
 - Reduce calculation frequency with throttling
 - Simplify eye movement math
 - Add more caching of calculated positions
@@ -76,6 +86,7 @@ const throttledUpdateEyePosition = throttle((mouseX, mouseY) => {
 ```
 
 #### Layering Strategy
+
 - Split the ghost into separate layers:
   - Static background
   - Animated body
@@ -84,6 +95,7 @@ const throttledUpdateEyePosition = throttle((mouseX, mouseY) => {
 - Use opacity and transforms for transitions between states
 
 #### Reduce Repaints
+
 - Use CSS `will-change` property on animated elements
 - Force GPU acceleration with `transform: translateZ(0)`
 - Avoid animating properties that trigger layout
@@ -91,19 +103,23 @@ const throttledUpdateEyePosition = throttle((mouseX, mouseY) => {
 ### 4. Implementation Suggestions
 
 #### SVG Animation Best Practices
+
 - Pre-compute animation values where possible
 - Use CSS custom properties (variables) for values that change frequently
 - Create efficient animation sequences with proper timing functions
 - Use `will-change` selectively on elements that will animate (but don't overuse)
 
 #### Animation Toggling
+
 - Pause animations when not visible
 - Reduce animation complexity on low-power devices
 - Consider reducing animation based on `prefers-reduced-motion` media query
 
 ```javascript
 // Check for reduced motion preference
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const prefersReducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)",
+).matches;
 
 // Adjust animation based on preference
 if (prefersReducedMotion) {
@@ -116,12 +132,14 @@ if (prefersReducedMotion) {
 ### 5. Performance Monitoring
 
 #### Metrics to Track
+
 - Frame rate during animations
 - Time to first animation frame
 - Animation jank (dropped frames)
 - Memory usage during sustained animation
 
 #### Testing Methods
+
 - Use Chrome DevTools Performance panel to profile animations
 - Monitor in the field with user experience metrics
 - Test on low-end devices regularly
@@ -134,26 +152,26 @@ if (prefersReducedMotion) {
 // Current implementation
 function animateEyes(mouseX, mouseY) {
   // Complex calculations on every frame
-  const leftEye = document.getElementById('left-eye');
-  const rightEye = document.getElementById('right-eye');
-  
+  const leftEye = document.getElementById("left-eye");
+  const rightEye = document.getElementById("right-eye");
+
   // Calculate positions...
-  leftEye.setAttribute('cx', newLeftX);
-  leftEye.setAttribute('cy', newLeftY);
-  rightEye.setAttribute('cx', newRightX);
-  rightEye.setAttribute('cy', newRightY);
+  leftEye.setAttribute("cx", newLeftX);
+  leftEye.setAttribute("cy", newLeftY);
+  rightEye.setAttribute("cx", newRightX);
+  rightEye.setAttribute("cy", newRightY);
 }
 
 // Optimized implementation
 const eyeElements = {
   left: null,
-  right: null
+  right: null,
 };
 
 // Cache eye elements on mount
 function cacheEyeElements() {
-  eyeElements.left = document.getElementById('left-eye');
-  eyeElements.right = document.getElementById('right-eye');
+  eyeElements.left = document.getElementById("left-eye");
+  eyeElements.right = document.getElementById("right-eye");
 }
 
 // Use transforms instead of cx/cy attributes

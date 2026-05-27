@@ -1,26 +1,28 @@
 /**
  * TranscriptDisplay_Core.js
- * 
+ *
  * Core state and configuration for the TranscriptDisplay component.
  * This module contains all props, refs, state variables, and basic UI handlers.
  */
 
-import { ANIMATION, ATTRIBUTION } from '$lib/constants';
-import { onMount, onDestroy } from 'svelte';
-import { geminiService } from '$lib/services/geminiService';
-import { transcriptionService } from '$lib/services/transcription/transcriptionService';
-import { transcriptionText, uiActions, transcriptionState } from '$lib/services';
-import { get, writable, derived } from 'svelte/store';
+import { ANIMATION } from "$lib/constants";
+import { dev } from "$app/environment";
+import { onMount } from "svelte";
+import { transcriptionText, transcriptionState } from "$lib/services";
+import { get, writable, derived } from "svelte/store";
 
 // Do NOT create event dispatcher here - it needs to be created inside a component
 // We'll export a function that creates it instead
 
 // Props and state as Svelte stores
 // Use derived store to sync with transcriptionText - this auto-unsubscribes
-export const transcriptStore = derived(transcriptionText, $text => $text || '');
+export const transcriptStore = derived(
+  transcriptionText,
+  ($text) => $text || "",
+);
 
 export const showCopyTooltipStore = writable(false);
-export const responsiveFontSizeStore = writable('text-base');
+export const responsiveFontSizeStore = writable("text-base");
 export const parentContainerStore = writable(null);
 
 // DOM references as Svelte stores
@@ -43,7 +45,7 @@ export const isRerollingStore = writable(false);
 export const selectionActiveStore = writable(false);
 export const selectionLeftStore = writable(0);
 export const selectionTopStore = writable(0);
-export const selectedTextStore = writable('');
+export const selectedTextStore = writable("");
 export const currentSelectionStore = writable(null);
 
 // Export event dispatcher store - will be set by the component
@@ -53,15 +55,17 @@ export const dispatchStore = writable(null);
 export function getEditedTranscript() {
   const editableTranscript = get(editableTranscriptStore);
   const transcript = get(transcriptStore);
-  
+
   if (!editableTranscript) return transcript;
-  
+
   // Get all lyric lines and join them with newlines
-  const lyricLines = editableTranscript.querySelectorAll('.lyric-line');
+  const lyricLines = editableTranscript.querySelectorAll(".lyric-line");
   if (lyricLines.length > 0) {
-    return Array.from(lyricLines).map(line => line.textContent).join('\n');
+    return Array.from(lyricLines)
+      .map((line) => line.textContent)
+      .join("\n");
   }
-  
+
   // Fallback to innerText if no lyric lines found
   return editableTranscript.innerText;
 }
@@ -69,11 +73,13 @@ export function getEditedTranscript() {
 export function handleTooltipMouseEnter() {
   const hasUsedCopyButton = get(hasUsedCopyButtonStore);
   const tooltipHoverCount = get(tooltipHoverCountStore);
-  
-  if (typeof window !== 'undefined' && 
-      window.innerWidth >= 640 &&
-      !hasUsedCopyButton &&
-      tooltipHoverCount < ANIMATION.COPY.TOOLTIP_MAX_COUNT) {
+
+  if (
+    typeof window !== "undefined" &&
+    window.innerWidth >= 640 &&
+    !hasUsedCopyButton &&
+    tooltipHoverCount < ANIMATION.COPY.TOOLTIP_MAX_COUNT
+  ) {
     showCopyTooltipStore.set(true);
     tooltipHoverCountStore.set(tooltipHoverCount + 1);
   }
@@ -83,23 +89,23 @@ export function checkScrollable() {
   const transcriptBoxRef = get(transcriptBoxRefStore);
 
   if (transcriptBoxRef) {
-    const hasOverflow = transcriptBoxRef.scrollHeight > transcriptBoxRef.clientHeight + 20; // Add buffer for more reliable detection
+    const hasOverflow =
+      transcriptBoxRef.scrollHeight > transcriptBoxRef.clientHeight + 20; // Add buffer for more reliable detection
     isScrollableStore.set(hasOverflow);
   }
 }
 
 export function isWebShareSupported() {
   return (
-    typeof window !== 'undefined' &&
-    typeof navigator !== 'undefined' &&
+    typeof window !== "undefined" &&
+    typeof navigator !== "undefined" &&
     navigator.share &&
-    typeof navigator.share === 'function'
+    typeof navigator.share === "function"
   );
 }
 
 export function handleRerollTooltipMouseEnter() {
-  if (typeof window !== 'undefined' && 
-      window.innerWidth >= 640) {
+  if (typeof window !== "undefined" && window.innerWidth >= 640) {
     showRerollTooltipStore.set(true);
   }
 }
@@ -107,16 +113,16 @@ export function handleRerollTooltipMouseEnter() {
 export function handleReroll() {
   const isRerolling = get(isRerollingStore);
   const dispatch = get(dispatchStore);
-  
+
   if (isRerolling || !dispatch) return; // Prevent multiple simultaneous re-rolls
-  
+
   try {
     isRerollingStore.set(true);
-    
-    // Instead of directly accessing the blob (which we don't have here), 
+
+    // Instead of directly accessing the blob (which we don't have here),
     // we'll dispatch an event to the parent to request a re-roll
-    dispatch('reroll');
-    
+    dispatch("reroll");
+
     // Note: We no longer manually set the text here since the transcription text
     // is managed by the transcriptionState store from the parent component
     // and will be automatically updated there
@@ -124,116 +130,142 @@ export function handleReroll() {
     console.error("Error re-rolling transcript:", error);
     // Return to original state if there's an error
     isRerollingStore.set(false);
-  } finally {
-    // Set a timeout to reset the isRerolling state after a reasonable time
-    // This ensures we can re-roll again if something goes wrong
-    setTimeout(() => {
-      isRerollingStore.set(false);
-    }, 5000);
   }
 }
 
 // Lifecycle management
 export function setupLifecycleHooks(handlers) {
-  const { handleTextSelection, handleClickOutside, handleKeyboardShortcut, handleCollectSnippet, handleDirectCollection } = handlers;
-  
+  const {
+    handleTextSelection,
+    handleClickOutside,
+    handleKeyboardShortcut,
+    handleCollectSnippet,
+    handleDirectCollection,
+  } = handlers;
+  let cleanupFromMount = null;
+  const transcriptionStateUnsubscribe = transcriptionState.subscribe(
+    (state) => {
+      if (!state.inProgress && !state.rerolling) {
+        isRerollingStore.set(false);
+      }
+    },
+  );
+
   onMount(() => {
     // Check if content is scrollable on mount
     checkScrollable();
-    
+
     // Initialize collection in progress flag
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.collectionInProgress = false;
     }
-    
-    // Make this component available globally for debugging
-    if (typeof window !== 'undefined') {
-      window.transcriptDisplay = { stores: {
-        transcriptStore,
-        showCopyTooltipStore,
-        editableTranscriptStore,
-        selectedTextStore,
-        selectionActiveStore
-      }};
-      
+
+    // Make this component available globally for debugging in local dev only.
+    if (dev && typeof window !== "undefined") {
+      window.transcriptDisplay = {
+        stores: {
+          transcriptStore,
+          showCopyTooltipStore,
+          editableTranscriptStore,
+          selectedTextStore,
+          selectionActiveStore,
+        },
+      };
+
       window.forceCollect = (text) => {
         const selectedText = get(selectedTextStore);
         handleCollectSnippet({ detail: { text: text || selectedText } });
       };
-      
+
       // Create a debug monitor object to track transcript selection state
       window.transcriptDebug = {
         getSelectedText: () => get(selectedTextStore),
         forceCollect: (text) => {
           const selectedText = get(selectedTextStore);
           handleCollectSnippet({ detail: { text: text || selectedText } });
-          return 'Collection triggered';
+          return "Collection triggered";
         },
         forceDirectCollect: (text) => {
           const selectedText = get(selectedTextStore);
           handleDirectCollection({ detail: { text: text || selectedText } });
-          return 'Direct collection triggered';
+          return "Direct collection triggered";
         },
         resetCollectionFlag: () => {
           window.collectionInProgress = false;
-          return 'Collection flag reset';
+          return "Collection flag reset";
         },
         getComponentInfo: () => {
           const parentContainer = get(parentContainerStore);
           const selectedText = get(selectedTextStore);
           const selectionActive = get(selectionActiveStore);
-          
+
           return {
             hasParentContainer: !!parentContainer,
-            parentContainerHasAddMethod: parentContainer && typeof parentContainer.addLyricsSnippet === 'function',
+            parentContainerHasAddMethod:
+              parentContainer &&
+              typeof parentContainer.addLyricsSnippet === "function",
             currentSelectedText: selectedText,
             isSelectionActive: selectionActive,
-            collectionInProgress: window.collectionInProgress
+            collectionInProgress: window.collectionInProgress,
           };
-        }
+        },
       };
     }
-    
+
     // Watch for content changes to update scrollable state
     const resizeObserver = new ResizeObserver(() => {
       checkScrollable();
     });
-    
+
     const transcriptBoxRef = get(transcriptBoxRefStore);
     if (transcriptBoxRef) {
       resizeObserver.observe(transcriptBoxRef);
     }
-    
+
     // Add event listeners for selection
-    document.addEventListener('mouseup', handleTextSelection);
-    document.addEventListener('touchend', handleTextSelection);
-    document.addEventListener('click', handleClickOutside);
-    
+    document.addEventListener("mouseup", handleTextSelection);
+    document.addEventListener("touchend", handleTextSelection);
+    document.addEventListener("click", handleClickOutside);
+
     // Add keyboard shortcut handler
-    document.addEventListener('keydown', handleKeyboardShortcut);
-    
-    return () => {
+    document.addEventListener("keydown", handleKeyboardShortcut);
+
+    cleanupFromMount = () => {
       const transcriptBoxRef = get(transcriptBoxRefStore);
       if (transcriptBoxRef) {
         resizeObserver.unobserve(transcriptBoxRef);
       }
-      
+
       // Remove event listeners
-      document.removeEventListener('mouseup', handleTextSelection);
-      document.removeEventListener('touchend', handleTextSelection);
-      document.removeEventListener('click', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyboardShortcut);
-      
+      document.removeEventListener("mouseup", handleTextSelection);
+      document.removeEventListener("touchend", handleTextSelection);
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyboardShortcut);
+
       // Clear any notification timeout
       const notificationTimeout = get(notificationTimeoutStore);
       if (notificationTimeout) {
         clearTimeout(notificationTimeout);
       }
     };
+
+    return () => {
+      if (cleanupFromMount) {
+        cleanupFromMount();
+        cleanupFromMount = null;
+      }
+    };
   });
-  
+
   // Return a cleanup function
   return () => {
+    transcriptionStateUnsubscribe();
+
+    if (cleanupFromMount) {
+      cleanupFromMount();
+      cleanupFromMount = null;
+    }
+
     const notificationTimeout = get(notificationTimeoutStore);
     if (notificationTimeout) {
       clearTimeout(notificationTimeout);

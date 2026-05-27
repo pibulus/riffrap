@@ -17,7 +17,8 @@
       drop-shadow(0 0 25px rgba(255, 150, 80, 0.6));
     transform: scale(1.02);
   }
-  25%, 75% {
+  25%,
+  75% {
     filter: drop-shadow(0 0 20px rgba(255, 150, 80, 0.7))
       drop-shadow(0 0 30px rgba(255, 180, 120, 0.5));
     transform: scale(1.04);

@@ -1,10 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
 	
-	// Page data is now loaded from +page.js using runes syntax
-	let { data } = $props();
-	const metadata = $derived(data.metadata);
-	
 	// Lazy load the GhostTestContainer for smaller bundle size
 	let GhostTestContainer = $state(null);
 	let loading = $state(true);

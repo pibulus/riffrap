@@ -546,10 +546,6 @@
 		}
 	}
 	
-	// Track mouse movement for eyes
-	let lastMouseX = 0;
-	let lastMouseY = 0;
-	
 	function handleMouseMove(event) {
 		if (!eyeTrackingEnabled || !ghostSvg || !eyesElement) return;
 		
@@ -573,9 +569,6 @@
 		// Apply directly to eye element
 		eyesElement.style.transform = `translate(${normalizedX * 4}px, ${normalizedY * 2}px)`;
 		
-		// Store last position
-		lastMouseX = normalizedX;
-		lastMouseY = normalizedY;
 	}
 	
 	// Update eye tracking state

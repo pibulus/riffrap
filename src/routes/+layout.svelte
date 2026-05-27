@@ -47,7 +47,7 @@
 	<meta property="og:description" content={openGraph.description} />
 	<meta property="og:image" content={openGraph.image} />
 	<meta property="og:image:alt" content={openGraph.imageAlt} />
-	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:width" content="1500" />
 	<meta property="og:image:height" content="630" />
 	<meta property="og:url" content={openGraph.url} />
 	<meta property="og:type" content={openGraph.type} />

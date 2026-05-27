@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Create a `.env` file in the project root with:
 
 ```
-VITE_GEMINI_API_KEY=your_api_key_here
+GEMINI_API_KEY=your_api_key_here
 ```
 
 Get a free API key at [Google AI Studio](https://aistudio.google.com/app/apikey)
@@ -30,11 +30,13 @@ Riff Rap is a voice transcription web app that allows users to record audio, tra
 The app follows a service-oriented architecture with several key services:
 
 1. **AudioService** (`/src/lib/services/audio/audioService.js`):
+
    - Handles microphone access, recording, and audio processing
    - Manages recording state via a state machine
    - Handles platform-specific audio implementations (iOS vs other)
 
 2. **TranscriptionService** (`/src/lib/services/transcription/transcriptionService.js`):
+
    - Processes audio through Gemini API to generate text transcriptions
    - Manages transcription state and progress
    - Provides clipboard and sharing functionality
@@ -48,11 +50,13 @@ The app follows a service-oriented architecture with several key services:
 ### Component Structure
 
 - **Ghost Component** (`/src/lib/components/ghost/`):
+
   - Central UI element using SVG with reactive theming
   - Provides visual feedback for app states via animations
   - Implements a hybrid state management approach with Svelte stores
 
 - **Audio/Transcript Components** (`/src/lib/components/mainPage/audio-transcript/`):
+
   - `AudioToText.svelte`: Main container managing recording and transcription
   - `RecordButtonWithTimer.svelte`: Recording control with visual feedback
   - `AudioVisualizer.svelte`: Real-time audio visualization
@@ -134,25 +138,22 @@ When implementing animations in the UI:
 
 ## Deployment
 
-RiffRap uses `@sveltejs/adapter-static` for flexible deployment to any static hosting provider.
+RiffRap uses `@sveltejs/adapter-cloudflare` because transcription runs through the server-side `/api/gemini` route.
 
 ### Deploy to Cloudflare Pages (Recommended)
 
 1. Connect GitHub repo to Cloudflare Pages
 2. Build command: `npm run build`
 3. Output directory: `build`
-4. Add environment variable: `VITE_GEMINI_API_KEY=your_key`
+4. Add environment variable: `GEMINI_API_KEY=your_key`
 
 ### Deploy to Netlify
 
-1. Connect GitHub repo to Netlify
-2. Build command: `npm run build`
-3. Publish directory: `build`
-4. Add environment variable: `VITE_GEMINI_API_KEY=your_key`
+Use a server-capable SvelteKit adapter before deploying to Netlify. Pure static deployment will not support `/api/gemini`.
 
 ### Other Static Hosts
 
-The `/build` directory works on GitHub Pages, Surge, Vercel (static), or any CDN.
+Pure static hosts such as GitHub Pages, Surge, or a plain CDN will not support transcription unless `/api/gemini` is moved to a separate serverless function.
 
 ## SEO & Accessibility
 

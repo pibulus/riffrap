@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from 'svelte';
-  import { fade, scale } from 'svelte/transition';
+  import { scale } from 'svelte/transition';
   import { elasticOut } from 'svelte/easing';
   
   const dispatch = createEventDispatcher();
@@ -13,10 +13,6 @@
   
   function showSettings() {
     dispatch('showSettings');
-  }
-  
-  function showExtension() {
-    dispatch('showExtension');
   }
   
   function handleHeartHover() {

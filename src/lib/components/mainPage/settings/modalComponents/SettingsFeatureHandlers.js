@@ -1,25 +1,21 @@
 /**
  * SettingsFeatureHandlers.js
- * 
+ *
  * This module contains all the feature-specific handler functions for the settings modal.
  * It was extracted from SettingsModal.svelte as part of the code sanitation process
  * to separate business logic from UI rendering and component lifecycle management.
- * 
+ *
  * === PROCESSING ZONES ===
  * - THEME MANAGEMENT: Functions for handling theme/vibe changes
  * - SETTINGS HANDLERS: Toggle and update functions for application settings
- * 
+ *
  * TRAIL MARKER (Unit Cleanup): See sanitation_manifest.md for the Route's overall plan.
  */
 
-import { eventBridge } from '$lib/services/infrastructure/eventBridge';
-import { promptStyle, autoRecord } from '$lib/index.js';
-import { soundService } from '$lib/services/sound';
-import { geminiService } from '$lib/services/geminiService';
-import { createLogger } from '$lib/services/infrastructure/loggerService';
-
-// Create a logger for this module
-const logger = createLogger('SettingsHandlers');
+import { eventBridge } from "$lib/services/infrastructure/eventBridge";
+import { promptStyle, autoRecord } from "$lib/index.js";
+import { soundService } from "$lib/services/sound";
+import { geminiService } from "$lib/services/geminiService";
 
 // === PROCESSING ZONE: THEME MANAGEMENT ===
 /**
@@ -30,39 +26,40 @@ const logger = createLogger('SettingsHandlers');
 export function changeVibe(vibeId, soundsEnabled) {
   // Play sound effect for vibe change
   if (soundsEnabled) {
-    soundService.playSound('edit', { delay: 0.2 });
+    soundService.playSound("edit", { delay: 0.2 });
   }
-  
+
   // Store theme selection in localStorage (both old and new keys for backward compatibility)
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem('riffRap-lyrics-theme', vibeId);
-    localStorage.setItem('lineSnap-lyrics-theme', vibeId); // Maintain backward compatibility
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem("riffRap-lyrics-theme", vibeId);
+    localStorage.setItem("lineSnap-lyrics-theme", vibeId); // Maintain backward compatibility
   }
-  
+
   // Simplest approach: Add a data attribute to the document body
   // This will trigger CSS style changes for all elements
-  if (typeof document !== 'undefined') {
-    document.body.setAttribute('data-lyric-theme', vibeId);
-    
+  if (typeof document !== "undefined") {
+    document.body.setAttribute("data-lyric-theme", vibeId);
+
     // Also add direct style to all snippet items
-    const snippetItems = document.querySelectorAll('.snippet-item');
+    const snippetItems = document.querySelectorAll(".snippet-item");
     snippetItems.forEach((item, index) => {
       // Apply the appropriate theme color based on index
-      item.style.backgroundColor = index % 2 === 0 ? 
-        getThemeColor(vibeId, 'even') : 
-        getThemeColor(vibeId, 'odd');
+      item.style.backgroundColor =
+        index % 2 === 0
+          ? getThemeColor(vibeId, "even")
+          : getThemeColor(vibeId, "odd");
     });
-    
+
     // Also update the empty state if present
-    const emptyState = document.querySelector('.empty-state');
+    const emptyState = document.querySelector(".empty-state");
     if (emptyState) {
-      emptyState.style.background = `linear-gradient(to bottom right, ${getThemeColor(vibeId, 'even')}, ${getThemeColor(vibeId, 'odd')}70)`;
+      emptyState.style.background = `linear-gradient(to bottom right, ${getThemeColor(vibeId, "even")}, ${getThemeColor(vibeId, "odd")}70)`;
     }
   }
-  
+
   // Dispatch the standard event for components to react using eventBridge
   // This will dispatch both 'riffrap-setting-changed' (new) and 'linesnap-setting-changed' (legacy) events
-  eventBridge.dispatchSettingChanged('theme', vibeId);
+  eventBridge.dispatchSettingChanged("theme", vibeId);
 }
 
 /**
@@ -74,28 +71,28 @@ export function changeVibe(vibeId, soundsEnabled) {
 export function getThemeColor(themeId, type) {
   const themeColors = {
     purple: {
-      even: '#F3E8FF',
-      odd: '#FEEBC8'
+      even: "#F3E8FF",
+      odd: "#FEEBC8",
     },
     sunset: {
-      even: '#FEEBC8',
-      odd: '#FED7D7'
+      even: "#FEEBC8",
+      odd: "#FED7D7",
     },
     ocean: {
-      even: '#E6FFFA',
-      odd: '#BEE3F8'
+      even: "#E6FFFA",
+      odd: "#BEE3F8",
     },
     forest: {
-      even: '#C6F6D5',
-      odd: '#E6FFFA'
-    }
+      even: "#C6F6D5",
+      odd: "#E6FFFA",
+    },
   };
-  
+
   // Default to purple theme if theme ID not found
   if (!themeColors[themeId]) {
-    themeId = 'purple';
+    themeId = "purple";
   }
-  
+
   return themeColors[themeId][type];
 }
 // === END PROCESSING ZONE: THEME MANAGEMENT ===
@@ -113,7 +110,7 @@ export function changePromptStyle(style) {
 
   // Dispatch a custom event using eventBridge
   // This will dispatch both 'riffrap-setting-changed' (new) and 'linesnap-setting-changed' (legacy) events
-  eventBridge.dispatchSettingChanged('promptStyle', style);
+  eventBridge.dispatchSettingChanged("promptStyle", style);
 }
 
 /**
@@ -125,7 +122,7 @@ export function changePromptStyle(style) {
 export function toggleAutoRecord(currentValue, soundsEnabled) {
   const newValue = !currentValue;
   autoRecord.set(newValue.toString());
-  
+
   // Play appropriate toggle sound
   if (soundsEnabled) {
     if (newValue) {
@@ -137,8 +134,8 @@ export function toggleAutoRecord(currentValue, soundsEnabled) {
 
   // Dispatch a custom event using eventBridge
   // This will dispatch both 'riffrap-setting-changed' (new) and 'linesnap-setting-changed' (legacy) events
-  eventBridge.dispatchSettingChanged('autoRecord', newValue);
-  
+  eventBridge.dispatchSettingChanged("autoRecord", newValue);
+
   return newValue;
 }
 
@@ -150,7 +147,7 @@ export function toggleAutoRecord(currentValue, soundsEnabled) {
  */
 export function toggleExportAsText(currentValue, soundsEnabled) {
   const newValue = !currentValue;
-  
+
   // Play appropriate toggle sound
   if (soundsEnabled) {
     if (newValue) {
@@ -159,17 +156,17 @@ export function toggleExportAsText(currentValue, soundsEnabled) {
       soundService.playPopOffSound();
     }
   }
-  
+
   // Save to localStorage (both old and new keys for backward compatibility)
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem('riffRap-export-as-text', newValue.toString());
-    localStorage.setItem('lineSnap-export-as-text', newValue.toString()); // Maintain backward compatibility
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem("riffRap-export-as-text", newValue.toString());
+    localStorage.setItem("lineSnap-export-as-text", newValue.toString()); // Maintain backward compatibility
   }
-  
+
   // Dispatch event using eventBridge
   // This will dispatch both 'riffrap-setting-changed' (new) and 'linesnap-setting-changed' (legacy) events
-  eventBridge.dispatchSettingChanged('exportAsText', newValue);
-  
+  eventBridge.dispatchSettingChanged("exportAsText", newValue);
+
   return newValue;
 }
 
@@ -180,30 +177,30 @@ export function toggleExportAsText(currentValue, soundsEnabled) {
  */
 export function toggleSounds(currentValue) {
   const newValue = !currentValue;
-  
+
   // Save to localStorage (both old and new keys for backward compatibility)
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem('riffRap-sounds-enabled', newValue.toString());
-    localStorage.setItem('lineSnap-sounds-enabled', newValue.toString()); // Maintain backward compatibility
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem("riffRap-sounds-enabled", newValue.toString());
+    localStorage.setItem("lineSnap-sounds-enabled", newValue.toString()); // Maintain backward compatibility
   }
-  
+
   // Update sound service
   soundService.setSoundEnabled(newValue);
-  
+
   // Update global flag for direct checks
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     window.soundsEnabled = newValue;
   }
-  
+
   // Play a sound if sounds are enabled
   if (newValue) {
     soundService.playPopOnSound();
   }
-  
+
   // Dispatch event using eventBridge
   // This will dispatch both 'riffrap-setting-changed' (new) and 'linesnap-setting-changed' (legacy) events
-  eventBridge.dispatchSettingChanged('sounds', newValue);
-  
+  eventBridge.dispatchSettingChanged("sounds", newValue);
+
   return newValue;
 }
 

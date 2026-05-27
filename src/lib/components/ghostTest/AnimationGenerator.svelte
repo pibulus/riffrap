@@ -10,7 +10,6 @@
     let animationDescription = '';
     let isGeneratingAnimation = false;
     let animationError = '';
-    let currentRemoveAnimation = null;
     
     // Event dispatcher
     const dispatch = createEventDispatcher();

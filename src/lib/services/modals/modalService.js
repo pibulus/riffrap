@@ -1,5 +1,5 @@
-import { browser } from '$app/environment';
-import { soundService } from '$lib/services/sound';
+import { browser } from "$app/environment";
+import { soundService } from "$lib/services/sound";
 
 export class ModalService {
   constructor() {
@@ -11,7 +11,7 @@ export class ModalService {
 
   openModal(modalId) {
     if (!browser) return;
-    
+
     const modal = document.getElementById(modalId);
     if (!modal) return;
 
@@ -21,23 +21,23 @@ export class ModalService {
     this.modalOpen = true;
     this.activeModal = modal;
 
-    document.documentElement.classList.add('modal-active');
-    document.body.classList.add('modal-active');
-    document.body.style.position = 'fixed';
+    document.documentElement.classList.add("modal-active");
+    document.body.classList.add("modal-active");
+    document.body.style.position = "fixed";
     document.body.style.top = `-${this.scrollPosition}px`;
     document.body.style.width = `${width}px`;
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
 
     this.handleNativeClose = () => {
       this.unlockScroll();
     };
-    modal.addEventListener('close', this.handleNativeClose, { once: true });
+    modal.addEventListener("close", this.handleNativeClose, { once: true });
 
     // Play popup sound
     soundService.playPopupSound();
 
     // Show the modal
-    if (typeof modal.showModal === 'function') {
+    if (typeof modal.showModal === "function") {
       modal.showModal();
     }
 
@@ -50,8 +50,8 @@ export class ModalService {
     this.detachNativeCloseHandler();
 
     // Close any open dialogs
-    document.querySelectorAll('dialog[open]').forEach(dialog => {
-      if (dialog && typeof dialog.close === 'function') {
+    document.querySelectorAll("dialog[open]").forEach((dialog) => {
+      if (dialog && typeof dialog.close === "function") {
         dialog.close();
       }
     });
@@ -61,7 +61,7 @@ export class ModalService {
 
   detachNativeCloseHandler() {
     if (this.activeModal && this.handleNativeClose) {
-      this.activeModal.removeEventListener('close', this.handleNativeClose);
+      this.activeModal.removeEventListener("close", this.handleNativeClose);
     }
     this.handleNativeClose = null;
   }
@@ -72,17 +72,17 @@ export class ModalService {
     this.detachNativeCloseHandler();
 
     // Restore body styles
-    document.documentElement.classList.remove('modal-active');
-    document.body.classList.remove('modal-active');
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-    document.body.style.overflow = '';
-    document.body.style.height = '';
+    document.documentElement.classList.remove("modal-active");
+    document.body.classList.remove("modal-active");
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.width = "";
+    document.body.style.overflow = "";
+    document.body.style.height = "";
 
     // Restore scroll position
     window.scrollTo(0, this.scrollPosition);
-    
+
     this.modalOpen = false;
     this.activeModal = null;
   }

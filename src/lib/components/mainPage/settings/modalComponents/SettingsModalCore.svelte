@@ -1,10 +1,8 @@
 <script>
   // === PROCESSING ZONE: IMPORTS AND DEPENDENCIES ===
   import { onMount } from 'svelte';
-  import { theme, autoRecord, showSettingsModal, promptStyle } from '$lib/index.js';
+  import { theme, autoRecord, promptStyle } from '$lib/index.js';
   import { geminiService } from '$lib/services/geminiService';
-  import { soundService } from '$lib/services/sound';
-  import { createLogger } from '$lib/services/infrastructure/loggerService';
   import { ModalCloseButton } from '../../modals/index.js';
   
   // Import the template and handlers
@@ -15,9 +13,6 @@
   // TRAIL MARKER (Unit Cleanup): See sanitation_manifest.md for the Route's overall plan.
 
   // === PROCESSING ZONE: COMPONENT STATE AND PROPS ===
-  // Create a logger for this component
-  const logger = createLogger('SettingsModal');
-
   // Props for the modal
   export let closeModal = () => {};
 

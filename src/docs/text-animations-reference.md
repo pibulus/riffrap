@@ -51,48 +51,48 @@ Split text into individual letter spans with incremental animation delays:
 
 ```html
 <h1 class="staggered-text">
-	<span class="stagger-letter">H</span>
-	<span class="stagger-letter">e</span>
-	<span class="stagger-letter">l</span>
-	<span class="stagger-letter">l</span>
-	<span class="stagger-letter">o</span>
+  <span class="stagger-letter">H</span>
+  <span class="stagger-letter">e</span>
+  <span class="stagger-letter">l</span>
+  <span class="stagger-letter">l</span>
+  <span class="stagger-letter">o</span>
 </h1>
 ```
 
 ```css
 .stagger-letter {
-	display: inline-block;
-	opacity: 0;
-	transform: translateY(20px);
-	animation: staggerFadeIn 0.5s ease-out forwards;
-	will-change: transform, opacity;
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: staggerFadeIn 0.5s ease-out forwards;
+  will-change: transform, opacity;
 }
 
 .stagger-letter:nth-child(1) {
-	animation-delay: 0.1s;
+  animation-delay: 0.1s;
 }
 .stagger-letter:nth-child(2) {
-	animation-delay: 0.15s;
+  animation-delay: 0.15s;
 }
 .stagger-letter:nth-child(3) {
-	animation-delay: 0.2s;
+  animation-delay: 0.2s;
 }
 .stagger-letter:nth-child(4) {
-	animation-delay: 0.25s;
+  animation-delay: 0.25s;
 }
 .stagger-letter:nth-child(5) {
-	animation-delay: 0.3s;
+  animation-delay: 0.3s;
 }
 
 @keyframes staggerFadeIn {
-	0% {
-		opacity: 0;
-		transform: translateY(20px);
-	}
-	100% {
-		opacity: 1;
-		transform: translateY(0);
-	}
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 ```
 
@@ -106,21 +106,21 @@ Simple slide and fade for paragraphs or blocks of text:
 
 ```css
 .slide-in {
-	opacity: 0;
-	transform: translateY(15px);
-	animation: slideIn 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-	will-change: transform, opacity;
+  opacity: 0;
+  transform: translateY(15px);
+  animation: slideIn 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  will-change: transform, opacity;
 }
 
 @keyframes slideIn {
-	0% {
-		opacity: 0;
-		transform: translateY(15px);
-	}
-	100% {
-		opacity: 1;
-		transform: translateY(0);
-	}
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 ```
 
@@ -134,21 +134,21 @@ Subtle fade in with slight scaling for a soft entry:
 
 ```css
 .fade-scale {
-	opacity: 0;
-	transform: scale(0.95);
-	animation: fadeScale 0.7s ease-out forwards;
-	will-change: transform, opacity;
+  opacity: 0;
+  transform: scale(0.95);
+  animation: fadeScale 0.7s ease-out forwards;
+  will-change: transform, opacity;
 }
 
 @keyframes fadeScale {
-	0% {
-		opacity: 0;
-		transform: scale(0.95);
-	}
-	100% {
-		opacity: 1;
-		transform: scale(1);
-	}
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 ```
 
@@ -162,32 +162,32 @@ Text that types out character by character:
 
 ```css
 .typewriter {
-	overflow: hidden;
-	white-space: nowrap;
-	border-right: 2px solid;
-	width: 0;
-	animation:
-		typing 2s steps(30, end) forwards,
-		cursor-blink 0.75s step-end infinite;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid;
+  width: 0;
+  animation:
+    typing 2s steps(30, end) forwards,
+    cursor-blink 0.75s step-end infinite;
 }
 
 @keyframes typing {
-	from {
-		width: 0;
-	}
-	to {
-		width: 100%;
-	}
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 @keyframes cursor-blink {
-	from,
-	to {
-		border-color: transparent;
-	}
-	50% {
-		border-color: currentColor;
-	}
+  from,
+  to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: currentColor;
+  }
 }
 ```
 
@@ -201,13 +201,13 @@ Text that glows on hover:
 
 ```css
 .hover-glow {
-	transition: text-shadow 0.3s ease;
+  transition: text-shadow 0.3s ease;
 }
 
 .hover-glow:hover {
-	text-shadow:
-		0 0 8px rgba(255, 255, 255, 0.8),
-		0 0 12px rgba(70, 120, 255, 0.5);
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.8),
+    0 0 12px rgba(70, 120, 255, 0.5);
 }
 ```
 
@@ -221,18 +221,18 @@ Animated gradient color across text:
 
 ```css
 .gradient-text {
-	background: linear-gradient(to right, #ff8a00, #e52e71, #ff8a00);
-	background-size: 200% auto;
-	color: transparent;
-	-webkit-background-clip: text;
-	background-clip: text;
-	animation: gradient-shift 3s linear infinite;
+  background: linear-gradient(to right, #ff8a00, #e52e71, #ff8a00);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: gradient-shift 3s linear infinite;
 }
 
 @keyframes gradient-shift {
-	to {
-		background-position: 200% center;
-	}
+  to {
+    background-position: 200% center;
+  }
 }
 ```
 
@@ -248,17 +248,17 @@ These combinations work well together to create cohesive animation sequences:
 
 ```html
 <div class="hero">
-	<h1 class="staggered-text">
-		<span class="stagger-letter">W</span>
-		<span class="stagger-letter">e</span>
-		<span class="stagger-letter">l</span>
-		<span class="stagger-letter">c</span>
-		<span class="stagger-letter">o</span>
-		<span class="stagger-letter">m</span>
-		<span class="stagger-letter">e</span>
-	</h1>
-	<p class="slide-in">Your amazing product tagline goes here</p>
-	<button class="fade-scale pulse">Get Started</button>
+  <h1 class="staggered-text">
+    <span class="stagger-letter">W</span>
+    <span class="stagger-letter">e</span>
+    <span class="stagger-letter">l</span>
+    <span class="stagger-letter">c</span>
+    <span class="stagger-letter">o</span>
+    <span class="stagger-letter">m</span>
+    <span class="stagger-letter">e</span>
+  </h1>
+  <p class="slide-in">Your amazing product tagline goes here</p>
+  <button class="fade-scale pulse">Get Started</button>
 </div>
 ```
 
@@ -282,7 +282,7 @@ To maintain 60fps animations, especially on mobile devices:
 
    ```css
    .animated-element {
-   	will-change: transform, opacity;
+     will-change: transform, opacity;
    }
    ```
 
@@ -299,10 +299,10 @@ To maintain 60fps animations, especially on mobile devices:
 4. **Add progressive enhancement**:
    ```css
    @media (prefers-reduced-motion: reduce) {
-   	.animated-element {
-   		animation: none !important;
-   		transition: none !important;
-   	}
+     .animated-element {
+       animation: none !important;
+       transition: none !important;
+     }
    }
    ```
 

@@ -1,46 +1,52 @@
 // Import services for local usage in initialization function
-import { eventBus as eventBusInstance } from './infrastructure/index';
-import { hapticService as hapticServiceInstance } from './infrastructure/index';
-import { audioService as audioServiceInstance } from './audio/audioService';
-import { transcriptionService as transcriptionServiceInstance } from './transcription/transcriptionService';
-import { themeService as themeServiceInstance } from './theme/themeService';
-import { modalService as modalServiceInstance } from './modals/modalService';
-import { firstVisitService as firstVisitServiceInstance } from './first-visit/firstVisitService';
-import { pwaService as pwaServiceInstance } from './pwa/pwaService';
-import { soundService as soundServiceInstance } from './sound/soundService';
-import { resetStores } from './infrastructure/stores';
+import { eventBus as eventBusInstance } from "./infrastructure/index";
+import { hapticService as hapticServiceInstance } from "./infrastructure/index";
+import { audioService as audioServiceInstance } from "./audio/audioService";
+import { transcriptionService as transcriptionServiceInstance } from "./transcription/transcriptionService";
+import { themeService as themeServiceInstance } from "./theme/themeService";
+import { modalService as modalServiceInstance } from "./modals/modalService";
+import { firstVisitService as firstVisitServiceInstance } from "./first-visit/firstVisitService";
+import { pwaService as pwaServiceInstance } from "./pwa/pwaService";
+import { soundService as soundServiceInstance } from "./sound/soundService";
+import { resetStores } from "./infrastructure/stores";
 
 // Re-export services for external usage
-export { eventBus, hapticService, StorageUtils } from './infrastructure/index';
-export { themeService } from './theme/themeService';
-export { modalService } from './modals/modalService';
-export { firstVisitService, isFirstVisit } from './first-visit/firstVisitService';
-export { 
-  pwaService, 
-  deferredInstallPrompt, 
-  transcriptionCount, 
-  showPwaInstallPrompt, 
+export { eventBus, hapticService, StorageUtils } from "./infrastructure/index";
+export { themeService } from "./theme/themeService";
+export { modalService } from "./modals/modalService";
+export {
+  firstVisitService,
+  isFirstVisit,
+} from "./first-visit/firstVisitService";
+export {
+  pwaService,
+  deferredInstallPrompt,
+  transcriptionCount,
+  showPwaInstallPrompt,
   isPwaInstalled,
-  shouldShowPrompt 
-} from './pwa/pwaService';
+  shouldShowPrompt,
+} from "./pwa/pwaService";
 // Export lyrics services
-export { snippetStore } from './lyrics';
+export { snippetStore } from "./lyrics";
 // Export sound service
-export { soundService } from './sound/soundService';
+export { soundService } from "./sound/soundService";
 
 // Audio services
-export { AudioStates } from './audio/audioStates';
-export { audioService, AudioEvents } from './audio/audioService';
+export { AudioStates } from "./audio/audioStates";
+export { audioService, AudioEvents } from "./audio/audioService";
 
 // Transcription services
-export { transcriptionService, TranscriptionEvents } from './transcription/transcriptionService';
+export {
+  transcriptionService,
+  TranscriptionEvents,
+} from "./transcription/transcriptionService";
 
 // Store exports
-export { 
-  audioState, 
-  recordingState, 
-  transcriptionState, 
-  uiState, 
+export {
+  audioState,
+  recordingState,
+  transcriptionState,
+  uiState,
   userPreferences,
   isRecording,
   isTranscribing,
@@ -53,30 +59,29 @@ export {
   // Remove transcriptionCompletedEvent export to fix circular imports
   audioActions,
   transcriptionActions,
-  uiActions
-} from './infrastructure/stores';
+  uiActions,
+} from "./infrastructure/stores";
 
 // Convenience function to initialize all services
 export function initializeServices(options = {}) {
   const { debug = false, haptic = true } = options;
-  
+
   // Reset stores to initial state
   resetStores();
-  
+
   // Enable debugging if requested
   if (debug) {
     eventBusInstance.setDebug(true);
   }
-  
+
   // Configure haptic feedback
   if (!haptic) {
     hapticServiceInstance.disable();
   }
-  
-  
+
   // Initialize sound service
   soundServiceInstance.init();
-  
+
   return {
     eventBus: eventBusInstance,
     audioService: audioServiceInstance,
@@ -86,6 +91,6 @@ export function initializeServices(options = {}) {
     modalService: modalServiceInstance,
     firstVisitService: firstVisitServiceInstance,
     pwaService: pwaServiceInstance,
-    soundService: soundServiceInstance
+    soundService: soundServiceInstance,
   };
 }

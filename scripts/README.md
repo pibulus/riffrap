@@ -24,6 +24,7 @@ node scripts/generate-theme-favicon.js
 ```
 
 This generates:
+
 - `favicon-light.png` - Black ghost for light theme
 - `favicon-dark.png` - White ghost for dark theme
 - `favicon.png` - Gray ghost as fallback
@@ -37,6 +38,7 @@ node scripts/generate-maskable-icon.js
 ```
 
 This generates:
+
 - `icon-maskable-512x512.png` - Gray ghost for general use
 - `icon-maskable-light-512x512.png` - Black ghost for light theme
 - `icon-maskable-dark-512x512.png` - White ghost for dark theme
@@ -418,25 +420,25 @@ The output report structure is:
 
 ```json
 {
-	"meta": {
-		"generatedAt": "2023-06-15T12:34:56.789Z",
-		"tasksAnalyzed": 20,
-		"thresholdScore": 5,
-		"projectName": "Your Project Name",
-		"usedResearch": true
-	},
-	"complexityAnalysis": [
-		{
-			"taskId": 8,
-			"taskTitle": "Develop Implementation Drift Handling",
-			"complexityScore": 9.5,
-			"recommendedSubtasks": 6,
-			"expansionPrompt": "Create subtasks that handle detecting...",
-			"reasoning": "This task requires sophisticated logic...",
-			"expansionCommand": "task-master expand --id=8 --num=6 --prompt=\"Create subtasks...\" --research"
-		}
-		// More tasks sorted by complexity score (highest first)
-	]
+  "meta": {
+    "generatedAt": "2023-06-15T12:34:56.789Z",
+    "tasksAnalyzed": 20,
+    "thresholdScore": 5,
+    "projectName": "Your Project Name",
+    "usedResearch": true
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 8,
+      "taskTitle": "Develop Implementation Drift Handling",
+      "complexityScore": 9.5,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Create subtasks that handle detecting...",
+      "reasoning": "This task requires sophisticated logic...",
+      "expansionCommand": "task-master expand --id=8 --num=6 --prompt=\"Create subtasks...\" --research"
+    }
+    // More tasks sorted by complexity score (highest first)
+  ]
 }
 ```
 

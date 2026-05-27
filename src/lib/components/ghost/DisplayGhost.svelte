@@ -2,7 +2,7 @@
   import './ghost-animations.css';
   import './ghost-themes.css';
   import ghostPathsUrl from './ghost-paths.svg?url';
-  import { initGradientAnimation, cleanupAnimation, cleanupAllAnimations } from './gradientAnimator';
+  import { initGradientAnimation, cleanupAllAnimations } from './gradientAnimator';
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
   
   // Direct theme prop - no store subscription
@@ -63,12 +63,6 @@
       leftEye.style.transform = `translate(0, 0)`;
       rightEye.style.transform = `translate(0, 0)`;
     }
-  }
-  
-  // Force reflow helper
-  function forceReflow(element) {
-    if (!element) return;
-    void element.offsetWidth;
   }
   
   // Lifecycle

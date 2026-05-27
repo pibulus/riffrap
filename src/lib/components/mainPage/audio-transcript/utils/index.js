@@ -2,4 +2,4 @@
  * Animation utilities index
  */
 
-export * from './buttonAnimations.js';
+export * from "./buttonAnimations.js";

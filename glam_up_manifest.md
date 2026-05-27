@@ -7,70 +7,77 @@
 ## Phases & Treatment Sessions:
 
 ### Phase 0: The Grand Entrance & Vibe Check 👋
+
 - [x] Create `glam_up_manifest.md` (Like, totally done! ✅)
 
 ### Phase 1: The Digital Detox & Glow-Up Prep 🧹
+
 - [ ] Session 1 (Deep Exfoliation Treatment) 🧖
-    - [x] 1.1: Identify and propose purging of, like, totally un-glam files.
-    - [x] 1.2: Client Selfie Check-in 1A: Confirm proposed file purges. ✅
-    - [x] 1.3: Identify and propose ditching, like, unused accessories (exports).
-    - [x] 1.4: Client Selfie Check-in 1B: Confirm proposed accessory ditching. ✅
-    - [x] 1.5: Identify and propose initial removal of, like, TalkType-era un-glam legacy code.
-    - [x] 1.6: Client Selfie Check-in 1C: Confirm proposed legacy removal. ✅
+  - [x] 1.1: Identify and propose purging of, like, totally un-glam files.
+  - [x] 1.2: Client Selfie Check-in 1A: Confirm proposed file purges. ✅
+  - [x] 1.3: Identify and propose ditching, like, unused accessories (exports).
+  - [x] 1.4: Client Selfie Check-in 1B: Confirm proposed accessory ditching. ✅
+  - [x] 1.5: Identify and propose initial removal of, like, TalkType-era un-glam legacy code.
+  - [x] 1.6: Client Selfie Check-in 1C: Confirm proposed legacy removal. ✅
 - [ ] Session 2 (UI Detox & Purification) 🫧
-    - [x] 2.1: Identify and propose UI simplification for, like, maximum sparkle.
-    - [x] 2.2: Client Selfie Check-in 2A: Confirm proposed UI cleanups. ✅
-    - [ ] 2.3: Identify and propose initial tidying of layouts and routing.
-    - [ ] 2.4: Client Selfie Check-in 2B: Confirm proposed layout/routing tidying. ✅
+  - [x] 2.1: Identify and propose UI simplification for, like, maximum sparkle.
+  - [x] 2.2: Client Selfie Check-in 2A: Confirm proposed UI cleanups. ✅
+  - [ ] 2.3: Identify and propose initial tidying of layouts and routing.
+  - [ ] 2.4: Client Selfie Check-in 2B: Confirm proposed layout/routing tidying. ✅
 
 ### Phase 2: The Inner Beauty Blueprint 📝
+
 - [x] Session 3 (Structural Assessment) 🔍
-    - [x] 3.1: Add high-level style guides (comments) to identify key beauty zones.
-    - [x] 3.2: Map out logical "glam zones" with clear delimiters.
-    - [x] 3.3: Client Selfie Check-in 3A: Review the structural assessment plan. ✅
+  - [x] 3.1: Add high-level style guides (comments) to identify key beauty zones.
+  - [x] 3.2: Map out logical "glam zones" with clear delimiters.
+  - [x] 3.3: Client Selfie Check-in 3A: Review the structural assessment plan. ✅
 - [x] Session 4 (Connective Tissue Documentation) 🧠
-    - [x] 4.1: Document detailed inputs/outputs, dependencies, and side effects within zones.
-    - [x] 4.2: Refine glam zone boundaries based on detailed understanding.
-    - [x] 4.3: Client Selfie Check-in 4A: Review detailed documentation and refined zoning. ✅
+  - [x] 4.1: Document detailed inputs/outputs, dependencies, and side effects within zones.
+  - [x] 4.2: Refine glam zone boundaries based on detailed understanding.
+  - [x] 4.3: Client Selfie Check-in 4A: Review detailed documentation and refined zoning. ✅
 
 ### Phase 3: The Structural Makeover & Component Couture 🧩
+
 - [x] Session 5 (Code Detangling) 🧶
-    - [x] 5.1: Mark clear sections for separation within, like, ginormous files.
-    - [x] 5.2: Propose splitting into up to 3 distinct new files, as exact replicas.
-    - [x] 5.3: Client Selfie Check-in 5A: Confirm proposed file separations. ✅
-    - [x] 5.4: Client Selfie Check-in 5B: Quick Runway Test Walk for immediate issues. ✅
+  - [x] 5.1: Mark clear sections for separation within, like, ginormous files.
+  - [x] 5.2: Propose splitting into up to 3 distinct new files, as exact replicas.
+  - [x] 5.3: Client Selfie Check-in 5A: Confirm proposed file separations. ✅
+  - [x] 5.4: Client Selfie Check-in 5B: Quick Runway Test Walk for immediate issues. ✅
 - [x] Session 6 (Primary Focus Treatment) 💆‍♀️
-    - [x] 6.1: For the first separated file, extract key independent modules.
-    - [x] 6.2: Client Selfie Check-in 6A: Confirm proposed extractions. ✅
-    - [x] 6.3: Client Selfie Check-in 6B: Functional Runway Test Walk for regressions. ✅
+  - [x] 6.1: For the first separated file, extract key independent modules.
+  - [x] 6.2: Client Selfie Check-in 6A: Confirm proposed extractions. ✅
+  - [x] 6.3: Client Selfie Check-in 6B: Functional Runway Test Walk for regressions. ✅
 - [ ] Session 7 (Secondary Area Treatment) 💆‍♂️
-    - [x] 7.1: For remaining files, extract all meaningful modules.
-    - [ ] 7.2: Client Selfie Check-in 7A: Confirm proposed extractions. ✅
-    - [ ] 7.3: Client Selfie Check-in 7B: Complete Functional Runway Test Walk. ✅
+  - [x] 7.1: For remaining files, extract all meaningful modules.
+  - [ ] 7.2: Client Selfie Check-in 7A: Confirm proposed extractions. ✅
+  - [ ] 7.3: Client Selfie Check-in 7B: Complete Functional Runway Test Walk. ✅
 
 ### Phase 4: Mobile Chic, Social Sparkle & SEO Glow-Up ✨📱💖
+
 - [ ] Session 8 (Mobile Chic Optimization) 📱✨
-    - [ ] 8.1: Ensure, like, totally responsive layouts for all devices.
-    - [ ] 8.2: Optimize images and assets for, like, super fast mobile loading.
-    - [ ] 8.3: Client Selfie Check-in 8A: Confirm mobile optimizations. ✅
+  - [ ] 8.1: Ensure, like, totally responsive layouts for all devices.
+  - [ ] 8.2: Optimize images and assets for, like, super fast mobile loading.
+  - [ ] 8.3: Client Selfie Check-in 8A: Confirm mobile optimizations. ✅
 - [ ] Session 9 (Social Butterfly & Search Engine Sparkle) 💖📈
-    - [ ] 9.1: Set up, like, perfect meta tags for search engines (Google, obvi!).
-    - [ ] 9.2: Configure Open Graph and Twitter Card tags for, like, amazing social sharing.
-    - [ ] 9.3: Generate a comprehensive `glam_report.md` with all the glow-up details.
-    - [ ] 9.4: Client Selfie Check-in 9A: Review SEO/Sharing configs and `glam_report.md`. ✅
+  - [ ] 9.1: Set up, like, perfect meta tags for search engines (Google, obvi!).
+  - [ ] 9.2: Configure Open Graph and Twitter Card tags for, like, amazing social sharing.
+  - [ ] 9.3: Generate a comprehensive `glam_report.md` with all the glow-up details.
+  - [ ] 9.4: Client Selfie Check-in 9A: Review SEO/Sharing configs and `glam_report.md`. ✅
 
 ---
 
 ## Glam-Up Diary & Discoveries:
 
 ### Initial Vibe Check:
-- OMG, I just checked out LineSnap and it's like, *so close* to being totally fabulous! The app has this super cute ghost mascot that changes themes, but the mobile experience needs some serious love! 📱💕
+
+- OMG, I just checked out LineSnap and it's like, _so close_ to being totally fabulous! The app has this super cute ghost mascot that changes themes, but the mobile experience needs some serious love! 📱💕
 - The meta tags are missing like, half the SEO juice they could have! No Open Graph tags for social sharing = literally invisible on Instagram and Pinterest! 😱
 - Images are serving full-size to mobile which is like, so 2018! Need to implement responsive image strategies ASAP! 🖼️
 - The main content area doesn't adapt gracefully to smaller screens - text gets all wonky and buttons sometimes overflow! Not a cute look! 👀
 - Could totally use some microdata/structured data for enhanced search results - right now Google is seeing bare basics! 🔍
 
 ### After Session 1 (Deep Exfoliation Treatment):
+
 - Successfully removed several un-glam files that were cluttering up the project:
   - Removed duplicate PurpleStyleCollectionBox versions (.commented and .original) that were, like, totally last season
   - Removed an outdated treatment plan document (spa_treatment_plan_record_button.md) - treatment's done, time to move on! 💅
@@ -90,6 +97,7 @@
 - These brand updates make the codebase more consistent and maintainable while preserving compatibility 🌟
 
 ### After Session 2 (UI Detox & Purification):
+
 - Major UI simplification in key components:
   - Streamlined the RecordButtonWithTimer component by extracting complex conditionals to a computed reactive property
   - Moved button styles to CSS classes instead of inline styles for better maintainability
@@ -102,6 +110,7 @@
 - The UI feels lighter, more consistent, and totally more maintainable now! 💅
 
 ### After Session 3 (Structural Assessment):
+
 - Completed in-depth structural assessment of the most complex components:
   - TranscriptDisplay.svelte (1,519 lines): Identified 7 distinct "glam zones" including core state, user interactions, text selection system, notification feedback, lifecycle hooks, UI template, and styles
   - AudioService.js (664 lines): Mapped 6 zones including initialization, permissions, recording lifecycle, audio analysis, cleanup, and public API
@@ -120,6 +129,7 @@
 - This structural assessment provides a super solid foundation for our modularization efforts in Phase 3 and makes the codebase much more understandable! 📊✨
 
 ### After Session 4 (Connective Tissue Documentation):
+
 - Created detailed assessments documenting inputs/outputs and dependencies for each component:
   - TranscriptDisplay.detailed-assessment.md: Documented all 7 zones with detailed interaction patterns
   - AudioService.detailed-assessment.md: Mapped complex input/output relationships and platform-specific behavior
@@ -141,6 +151,7 @@
 - This detailed analysis has given us a much deeper understanding of the component interconnections and provides a clear roadmap for the upcoming modularization work! 🧠💖
 
 ### After Session 5 (Code Detangling):
+
 - Marked clear sections for separation in the three most complex components:
   - TranscriptDisplay.svelte: Added split markers for all 7 zones, creating clear boundaries for extraction
   - AudioService.js: Added split markers for all major functional sections (core, platform, recording, visualizer)
@@ -148,7 +159,7 @@
 - Proposed detailed plans for splitting each file into focused modules:
   - TranscriptDisplay.svelte → 4 files (main + 3 modules)
     - TranscriptDisplay.svelte - Main component with UI and styles
-    - TranscriptDisplay_Core.js - Core state and configuration 
+    - TranscriptDisplay_Core.js - Core state and configuration
     - TranscriptDisplay_Selection.js - Text selection system
     - TranscriptDisplay_Notification.js - Notifications and feedback
   - AudioService.js → 5 files (main + 4 modules)
@@ -181,6 +192,7 @@
   - Easier maintenance with explicit dependencies
 
 ### After Session 6 (Primary Focus Treatment):
+
 - Successfully implemented modularization for TranscriptDisplay.svelte:
   - Created TranscriptDisplay_Core.js (164 lines) containing:
     - State management, props, reactive declarations
@@ -193,7 +205,7 @@
     - Selection UI positioning logic
   - Created TranscriptDisplay_Notification.js (172 lines) containing:
     - Toast notification system
-    - Collection handler functions 
+    - Collection handler functions
     - Collection error handling
     - Success/error notification display
   - Reduced TranscriptDisplay.svelte from 1,665 lines to 66 lines in the script section!
@@ -204,7 +216,7 @@
   - Maintained the same behavior while improving structure
 - Rewrote the main component to use these modules:
   - Simplified main component to import from modules
-  - Kept the template and styles untouched to maintain visual consistency 
+  - Kept the template and styles untouched to maintain visual consistency
   - Created proper lifecycle handling with cleanup
   - Preserved all original functionality
 - This modularization provides several immediate benefits:
@@ -214,9 +226,10 @@
   - Smaller, more testable modules with single responsibilities
   - Better separation of concerns
 - The circular dependency issue in TranscriptDisplay modules was fixed by carefully organizing imports and exports
-- The modular architecture has been established while maintaining backward compatibility 
+- The modular architecture has been established while maintaining backward compatibility
 
 ### After Session 7 (Secondary Area Treatment):
+
 - Successfully implemented comprehensive modularization for AudioService.js and EventBridge.js:
   - AudioService.js:
     - Created AudioService_Core.js with core definitions and state management

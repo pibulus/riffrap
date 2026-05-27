@@ -1,6 +1,6 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
-	import { appActive, shouldAnimateStore } from '$lib/services/infrastructure';
+	import { appActive } from '$lib/services/infrastructure';
 
 	// Audio visualization configuration
 	let audioDataArray;
@@ -10,6 +10,8 @@
 	const historyLength = 30; // Number of bars to display in history
 	let analyser;
 	let audioContext;
+	let visualizerStream;
+	let sourceNode;
 	let recording = false; // Track recording state within the component
 	let resumeAudioHandler = null; // Track click handler for cleanup
 	
@@ -33,39 +35,33 @@
 	let scalingFactor;
 	let offset;
 	let exponent;
-	let detectedDevice = 'Unknown'; // Variable to store detected device
-
 	// Platform detection for default settings
 	if (isAndroid) {
 		// Android specific settings
 		scalingFactor = 40;
 		offset = 80;
 		exponent = 0.5;
-		detectedDevice = 'Android';
 	} else if (isiPhone) {
 		// iPhone specific settings
 		scalingFactor = 40;
 		offset = 80;
 		exponent = 0.2;
-		detectedDevice = 'iPhone';
 	} else if (isMac) {
 		// macOS specific settings
 		scalingFactor = 20;
 		offset = 100;
 		exponent = 0.5;
-		detectedDevice = 'Mac';
 	} else {
 		// Default settings for other platforms
 		scalingFactor = 2000;
 		offset = 80;
 		exponent = 0.5;
-		detectedDevice = 'PC';
 	}
 
 	// ===== STANDARD AUDIO VISUALIZER =====
 	async function initStandardVisualizer() {
 		try {
-			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+			visualizerStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
 			// Explicitly handle user gesture for Safari
 			if (typeof window !== 'undefined' && window.document) {
@@ -79,8 +75,8 @@
 
 			audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			analyser = audioContext.createAnalyser();
-			const source = audioContext.createMediaStreamSource(stream);
-			source.connect(analyser);
+			sourceNode = audioContext.createMediaStreamSource(visualizerStream);
+			sourceNode.connect(analyser);
 			analyser.fftSize = 256;
 
 			recording = true;
@@ -293,10 +289,19 @@
 			audioLevel = 0;
 			history = [];
 			if (audioContext) {
+				if (sourceNode) {
+					sourceNode.disconnect();
+					sourceNode = null;
+				}
 				audioContext.close();
 				audioContext = null;
 				analyser = null;
 			}
+		}
+
+		if (visualizerStream) {
+			visualizerStream.getTracks().forEach((track) => track.stop());
+			visualizerStream = null;
 		}
 
 		// Clean up event listener if it exists

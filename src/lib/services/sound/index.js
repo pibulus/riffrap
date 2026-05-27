@@ -1,1 +1,1 @@
-export { soundService } from './soundService.js';
+export { soundService } from "./soundService.js";

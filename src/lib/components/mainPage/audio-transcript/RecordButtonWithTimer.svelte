@@ -37,6 +37,9 @@
   
   /** @type {number} Transcription progress (0-100) */
   export let progress = 0;
+
+  /** @type {boolean} Whether recording controls should be temporarily disabled */
+  export let disabled = false;
   
   // Local state
   let showLyricMessage = false;
@@ -84,7 +87,7 @@
    */
   function handleKeyDown(event) {
     // Space or Enter key to toggle recording when focused
-    if ((event.key === 'Enter' || event.key === ' ') && !transcribing) {
+    if ((event.key === 'Enter' || event.key === ' ') && !transcribing && !disabled) {
       event.preventDefault(); // Prevent default space/enter behavior
       dispatch('click');
     }
@@ -186,10 +189,10 @@
       on:click={() => dispatch('click')}
       on:mouseenter={() => dispatch('preload')}
       on:keydown={handleKeyDown}
-      disabled={transcribing}
+      disabled={transcribing || disabled}
       aria-label={recording ? 'Stop Recording' : 'Start Recording'}
       aria-pressed={recording}
-      aria-busy={transcribing}
+      aria-busy={transcribing || disabled}
       aria-live={recording ? 'polite' : 'off'}
       aria-atomic="true"
     >

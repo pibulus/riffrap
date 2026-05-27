@@ -75,22 +75,22 @@ TalkType is designed to work with modern browsers:
 
 ```javascript
 // Example: Proper browser API use in Svelte
-import { onMount } from 'svelte';
+import { onMount } from "svelte";
 
 let audioContext;
 
 onMount(() => {
-	// Safe to access browser APIs here
-	if (typeof window !== 'undefined') {
-		audioContext = new (window.AudioContext || window.webkitAudioContext)();
-	}
+  // Safe to access browser APIs here
+  if (typeof window !== "undefined") {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
 
-	return () => {
-		// Cleanup when component unmounts
-		if (audioContext) {
-			audioContext.close();
-		}
-	};
+  return () => {
+    // Cleanup when component unmounts
+    if (audioContext) {
+      audioContext.close();
+    }
+  };
 });
 ```
 

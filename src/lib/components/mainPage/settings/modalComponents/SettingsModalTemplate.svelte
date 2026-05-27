@@ -118,7 +118,7 @@
         <h4 class="text-sm font-bold text-gray-700">Lyrics Card Style</h4>
 
         <div class="flex flex-row justify-between w-full pb-1">
-          {#each gradientOptions as gradient, index}
+          {#each gradientOptions as gradient}
             <button
               on:click={() => handleChangeVibe(gradient.id)}
               class="gradient-option flex-shrink-0 relative flex flex-col items-center rounded-xl border border-pink-100 bg-[#fffdf5] p-2 shadow-sm transition-all duration-300 hover:border-pink-200 hover:shadow-md {selectedVibe === gradient.id

@@ -17,17 +17,17 @@ It's especially good for when you're half-singing, half-thinking — testing ide
 Even when you're just mumbling gibberish, Riff Rap tries to **meet you halfway**.  
 It fills in the gaps, makes sense of the nonsense, and helps you catch what was almost there.
 
-It's not about getting it right. It's about getting it *out*.
+It's not about getting it right. It's about getting it _out_.
 
 ---
 
 ## What it does
 
-- 🔵 Turns your vocal gibberish into usable lyric ideas  
-- 🟣 Snap the lines that feel good  
-- 🟢 Re-roll the ones that don't until they make sense  
-- 🟡 Test rhythms, flows, and melodies without committing  
-- 🟠 Rearrange, edit, compile, and export when it's feeling right  
+- 🔵 Turns your vocal gibberish into usable lyric ideas
+- 🟣 Snap the lines that feel good
+- 🟢 Re-roll the ones that don't until they make sense
+- 🟡 Test rhythms, flows, and melodies without committing
+- 🟠 Rearrange, edit, compile, and export when it's feeling right
 
 That's it. No more, no less. It gets out of your way.
 
@@ -69,6 +69,7 @@ The rougher, the better — Riff Rap thrives on turning vocal chaos into lyrical
 ## Setup
 
 1. **Clone and install dependencies:**
+
    ```bash
    git clone https://github.com/pibulus/riffrap.git
    cd riffrap
@@ -77,9 +78,11 @@ The rougher, the better — Riff Rap thrives on turning vocal chaos into lyrical
 
 2. **Add your Gemini API key:**
    Create a `.env` file in the project root:
+
    ```bash
    GEMINI_API_KEY=your_api_key_here
    ```
+
    Get a free API key at [Google AI Studio](https://aistudio.google.com/app/apikey)
 
 3. **Start development server:**
@@ -91,18 +94,16 @@ The rougher, the better — Riff Rap thrives on turning vocal chaos into lyrical
 
 ## Building & Deployment
 
-Riff Rap now runs as a Node-backed SvelteKit app:
+Riff Rap is built for Cloudflare Pages with `@sveltejs/adapter-cloudflare`.
+The Gemini key is read only on the server.
 
 ```bash
 npm run build
 ```
 
-The built app outputs to the `/build` directory and should be run with a server process plus:
+Set these environment variables in Cloudflare Pages:
 
 ```bash
-PORT=3002
-HOST=0.0.0.0
-ORIGIN=https://riffrap.app
 GEMINI_API_KEY=your_api_key_here
 GEMINI_MODEL=gemini-3.1-flash-lite-preview
 ALLOWED_ORIGINS=https://riffrap.app

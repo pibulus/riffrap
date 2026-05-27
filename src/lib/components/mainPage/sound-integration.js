@@ -3,7 +3,7 @@
  * Provides a consistent interface to the soundService for all app components
  */
 
-import { soundService } from '$lib/services/sound';
+import { soundService } from "$lib/services/sound";
 
 // Original sound functions
 export function playGrabSound() {

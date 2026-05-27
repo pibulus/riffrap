@@ -36,7 +36,7 @@ The AppSuffix component accepts the following props:
 - `customClass`: Optional additional CSS classes
 
 ```svelte
-<AppSuffix 
+<AppSuffix
   color="inherit"
   size="65%"
   customClass="title-suffix"
@@ -72,7 +72,7 @@ You may optionally use a slightly lighter shade of the brand color for subtle di
 ```svelte
 <script>
   import { AppSuffix } from '$lib/components/ui';
-  
+
   export let showAppSuffix = true;
   export let suffixColor = "inherit";
   export let suffixSize = "65%";
@@ -80,10 +80,10 @@ You may optionally use a slightly lighter shade of the brand color for subtle di
 
 <h1>
   <span>TalkType</span>
-  
+
   {#if showAppSuffix}
     <span>
-      <AppSuffix 
+      <AppSuffix
         color={suffixColor}
         size={suffixSize}
         customClass="title-suffix"

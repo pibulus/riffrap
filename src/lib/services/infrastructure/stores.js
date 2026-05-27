@@ -1,6 +1,6 @@
-import { writable, derived, get } from 'svelte/store';
-import { AudioStates } from '../audio/audioStates';
-import { ANIMATION } from '$lib/constants';
+import { writable, derived, get } from "svelte/store";
+import { AudioStates } from "../audio/audioStates";
+import { ANIMATION } from "$lib/constants";
 
 // Core audio state store
 export const audioState = writable({
@@ -9,7 +9,8 @@ export const audioState = writable({
   previousState: null,
   timestamp: Date.now(),
   mimeType: null,
-  waveformData: []
+  waveformData: [],
+  timeLimit: false,
 });
 
 // Recording state
@@ -17,279 +18,289 @@ export const recordingState = writable({
   isRecording: false,
   duration: 0,
   audioBlob: null,
-  audioURL: null
+  audioURL: null,
 });
 
 // Transcription state
 export const transcriptionState = writable({
   inProgress: false,
   progress: 0,
-  text: '',
+  text: "",
   error: null,
   timestamp: null,
-  rerolling: false // Flag to indicate re-rolling state for UI animations
+  rerolling: false, // Flag to indicate re-rolling state for UI animations
 });
 
 // UI state
 export const uiState = writable({
   clipboardSuccess: false,
   lyricsCollected: false, // New state for lyrics collection
-  errorMessage: '',
+  errorMessage: "",
   showPermissionError: false,
   transcriptionCopied: false,
-  screenReaderMessage: ''
+  screenReaderMessage: "",
 });
 
 // User options
 export const userPreferences = writable({
-  promptStyle: 'standard'
+  promptStyle: "standard",
 });
 
 // Derived stores for easier consumption
 export const isRecording = derived(
   audioState,
-  $audioState => $audioState.state === AudioStates.RECORDING
+  ($audioState) => $audioState.state === AudioStates.RECORDING,
 );
 
 export const isTranscribing = derived(
   transcriptionState,
-  $state => $state.inProgress
+  ($state) => $state.inProgress,
 );
 
 export const transcriptionProgress = derived(
   transcriptionState,
-  $state => $state.progress
+  ($state) => $state.progress,
 );
 
 export const transcriptionText = derived(
   transcriptionState,
-  $state => $state.text
+  ($state) => $state.text,
 );
 
 export const hasPermissionError = derived(
   audioState,
-  $state => $state.state === AudioStates.PERMISSION_DENIED
+  ($state) => $state.state === AudioStates.PERMISSION_DENIED,
 );
 
 export const recordingDuration = derived(
   recordingState,
-  $state => $state.duration
+  ($state) => $state.duration,
 );
 
-export const errorMessage = derived(
-  uiState,
-  $state => $state.errorMessage
-);
+export const errorMessage = derived(uiState, ($state) => $state.errorMessage);
 
 export const waveformData = derived(
   audioState,
-  $state => $state.waveformData || []
+  ($state) => $state.waveformData || [],
 );
 
 // Action functions to update the stores
 export const audioActions = {
   updateState(state, error = null) {
-    audioState.update(current => ({
+    audioState.update((current) => ({
       ...current,
       previousState: current.state,
       state,
       error,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      timeLimit:
+        state === AudioStates.RECORDING || state === AudioStates.IDLE
+          ? false
+          : current.timeLimit,
     }));
-    
+
     // Update recording state when audio state changes
     if (state === AudioStates.RECORDING) {
-      recordingState.update(current => ({ ...current, isRecording: true }));
+      recordingState.update((current) => ({ ...current, isRecording: true }));
       this.startRecordingTimer();
     } else if (state !== AudioStates.RECORDING) {
-      recordingState.update(current => ({ ...current, isRecording: false }));
+      recordingState.update((current) => ({ ...current, isRecording: false }));
       this.stopRecordingTimer();
     }
   },
-  
+
   setWaveformData(dataArray) {
-    audioState.update(current => ({
+    audioState.update((current) => ({
       ...current,
-      waveformData: dataArray
+      waveformData: dataArray,
     }));
   },
-  
+
   setAudioBlob(blob, mimeType) {
-    recordingState.update(current => ({
+    recordingState.update((current) => ({
       ...current,
-      audioBlob: blob
+      audioBlob: blob,
     }));
-    
+
     if (mimeType) {
-      audioState.update(current => ({
+      audioState.update((current) => ({
         ...current,
-        mimeType
+        mimeType,
       }));
     }
   },
-  
+
   // Timer management for recording duration
   recordingTimer: null,
   startTime: null,
-  
+
   startRecordingTimer() {
     this.stopRecordingTimer();
     this.startTime = Date.now();
-    recordingState.update(current => ({ ...current, duration: 0 }));
-    
+    recordingState.update((current) => ({ ...current, duration: 0 }));
+
     this.recordingTimer = setInterval(() => {
       const elapsed = Date.now() - this.startTime;
       // Use float for more precise duration - will appear smoother in UI
       const duration = elapsed / 1000;
-      
-      recordingState.update(current => ({ 
-        ...current, 
-        duration 
+
+      recordingState.update((current) => ({
+        ...current,
+        duration,
       }));
-      
+
       // Check if we've reached the time limit (still use integer for the limit check)
       const timeLimit = ANIMATION.RECORDING.LIMIT;
-        
+
       if (Math.floor(duration) >= timeLimit) {
         // Signal that recording should stop due to time limit
         this.recordingTimeLimitReached();
       }
     }, 50); // Update 20 times per second for ultra-smooth animation
   },
-  
+
   stopRecordingTimer() {
     if (this.recordingTimer) {
       clearInterval(this.recordingTimer);
       this.recordingTimer = null;
     }
   },
-  
+
   recordingTimeLimitReached() {
     // This function can be subscribed to for stopping recording
-    audioState.update(current => ({
-      ...current,
-      timeLimit: true
-    }));
-    
-    // For reliable auto-stop, we also immediately update the recording state 
-    // so that subscribers can react to it
-    import('./loggerService').then(({ createLogger }) => {
-      const storeLogger = createLogger('Stores');
-      storeLogger.warn('⏱️ Recording time limit reached, signaling automatic stop');
+    audioState.update((current) => {
+      if (current.timeLimit) return current;
+
+      return {
+        ...current,
+        timeLimit: true,
+      };
     });
-  }
+
+    // For reliable auto-stop, we also immediately update the recording state
+    // so that subscribers can react to it
+    import("./loggerService").then(({ createLogger }) => {
+      const storeLogger = createLogger("Stores");
+      storeLogger.warn(
+        "⏱️ Recording time limit reached, signaling automatic stop",
+      );
+    });
+  },
 };
 
 export const transcriptionActions = {
   startTranscribing() {
-    transcriptionState.update(current => ({
+    transcriptionState.update((current) => ({
       ...current,
       inProgress: true,
       progress: 0,
       error: null,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }));
   },
-  
+
   updateProgress(progress) {
-    transcriptionState.update(current => ({
+    transcriptionState.update((current) => ({
       ...current,
-      progress: Math.min(progress, 100)
+      progress: Math.min(progress, 100),
     }));
   },
-  
+
   completeTranscription(text) {
     const currentTime = Date.now();
-    
+
     // Add a small delay to ensure UI updates properly
     setTimeout(() => {
-      transcriptionState.update(current => ({
+      transcriptionState.update((current) => ({
         ...current,
         inProgress: false,
         progress: 100,
         text,
-        timestamp: currentTime
+        timestamp: currentTime,
       }));
-      
+
       // Log to help with debugging
-      import('./loggerService').then(({ createLogger }) => {
-        const storeLogger = createLogger('Stores');
-        storeLogger.info('completeTranscription called with text length:', text?.length || 0);
+      import("./loggerService").then(({ createLogger }) => {
+        const storeLogger = createLogger("Stores");
+        storeLogger.info(
+          "completeTranscription called with text length:",
+          text?.length || 0,
+        );
       });
     }, 50);
   },
-  
+
   setTranscriptionError(error) {
-    transcriptionState.update(current => ({
+    transcriptionState.update((current) => ({
       ...current,
       inProgress: false,
-      error
+      error,
     }));
-    
-    uiState.update(current => ({
+
+    uiState.update((current) => ({
       ...current,
-      errorMessage: `Transcription error: ${error || 'Unknown error'}`
+      errorMessage: `Transcription error: ${error || "Unknown error"}`,
     }));
-  }
+  },
 };
 
 export const uiActions = {
   setErrorMessage(message) {
-    uiState.update(current => ({
+    uiState.update((current) => ({
       ...current,
-      errorMessage: message
+      errorMessage: message,
     }));
   },
-  
+
   clearErrorMessage() {
-    uiState.update(current => ({
+    uiState.update((current) => ({
       ...current,
-      errorMessage: ''
+      errorMessage: "",
     }));
   },
-  
+
   setPermissionError(show) {
-    uiState.update(current => ({
+    uiState.update((current) => ({
       ...current,
-      showPermissionError: show
+      showPermissionError: show,
     }));
   },
-  
+
   showClipboardSuccess(duration = ANIMATION.COPY.SUCCESS_TIMER) {
-    uiState.update(current => ({ 
-      ...current, 
-      clipboardSuccess: true,
-      transcriptionCopied: true
-    }));
-    
-    setTimeout(() => {
-      uiState.update(current => ({ 
-        ...current, 
-        clipboardSuccess: false 
-      }));
-    }, duration);
-  },
-  
-  showLyricsCollected(duration = ANIMATION.COPY.SUCCESS_TIMER) {
-    uiState.update(current => ({ 
-      ...current, 
-      lyricsCollected: true 
-    }));
-    
-    setTimeout(() => {
-      uiState.update(current => ({ 
-        ...current, 
-        lyricsCollected: false 
-      }));
-    }, duration);
-  },
-  
-  setScreenReaderMessage(message) {
-    uiState.update(current => ({
+    uiState.update((current) => ({
       ...current,
-      screenReaderMessage: message
+      clipboardSuccess: true,
+      transcriptionCopied: true,
     }));
-  }
+
+    setTimeout(() => {
+      uiState.update((current) => ({
+        ...current,
+        clipboardSuccess: false,
+      }));
+    }, duration);
+  },
+
+  showLyricsCollected(duration = ANIMATION.COPY.SUCCESS_TIMER) {
+    uiState.update((current) => ({
+      ...current,
+      lyricsCollected: true,
+    }));
+
+    setTimeout(() => {
+      uiState.update((current) => ({
+        ...current,
+        lyricsCollected: false,
+      }));
+    }, duration);
+  },
+
+  setScreenReaderMessage(message) {
+    uiState.update((current) => ({
+      ...current,
+      screenReaderMessage: message,
+    }));
+  },
 };
 
 // Reset function for when component unmounts
@@ -300,33 +311,34 @@ export function resetStores() {
     previousState: null,
     timestamp: Date.now(),
     mimeType: null,
-    waveformData: []
+    waveformData: [],
+    timeLimit: false,
   });
-  
+
   recordingState.set({
     isRecording: false,
     duration: 0,
     audioBlob: null,
-    audioURL: null
+    audioURL: null,
   });
-  
+
   transcriptionState.set({
     inProgress: false,
     progress: 0,
-    text: '',
+    text: "",
     error: null,
-    timestamp: null
+    timestamp: null,
   });
-  
+
   uiState.set({
     clipboardSuccess: false,
     lyricsCollected: false,
-    errorMessage: '',
+    errorMessage: "",
     showPermissionError: false,
     transcriptionCopied: false,
-    screenReaderMessage: ''
+    screenReaderMessage: "",
   });
-  
+
   audioActions.stopRecordingTimer();
 }
 
@@ -334,42 +346,46 @@ export function resetStores() {
 export const transcriptionCompletedEvent = (() => {
   const { subscribe, set } = writable(null); // Event store, emits text on completion then null
   let _previousInProgress = get(transcriptionState).inProgress; // Initialize with current state
-  let _lastText = ''; // Track last emitted text to prevent duplicates
-  
+  let _lastText = ""; // Track last emitted text to prevent duplicates
+
   // Maintain a flag to track if an event is pending to be fired
   let _pendingEvent = false;
   // Timestamp of last event to prevent rapid firing
   let _lastEventTime = 0;
-  
-  transcriptionState.subscribe(currentState => {
+
+  transcriptionState.subscribe((currentState) => {
     // First check: was transcribing and now finished
-    const justCompleted = _previousInProgress === true && currentState.inProgress === false;
-    
+    const justCompleted =
+      _previousInProgress === true && currentState.inProgress === false;
+
     // Second check: has valid text content
-    const hasValidContent = currentState.text && currentState.text.trim() !== '';
-    
+    const hasValidContent =
+      currentState.text && currentState.text.trim() !== "";
+
     // Third check: is text different from last emitted text
     const isNewText = currentState.text !== _lastText;
-    
+
     // Fourth check: enough time has passed since last event (100ms min)
     const enoughTimePassed = Date.now() - _lastEventTime > 100;
-    
+
     if (justCompleted && hasValidContent && isNewText && enoughTimePassed) {
       // Use our logger instead of console.log
-      import('./loggerService').then(({ createLogger }) => {
-        const storeLogger = createLogger('Stores');
-        storeLogger.info('transcriptionCompletedEvent: Detected completion with text -', 
-          currentState.text?.substring(0, 20) + '...');
+      import("./loggerService").then(({ createLogger }) => {
+        const storeLogger = createLogger("Stores");
+        storeLogger.info(
+          "transcriptionCompletedEvent: Detected completion with text -",
+          currentState.text?.substring(0, 20) + "...",
+        );
       });
-      
+
       // Set flag that an event is pending
       _pendingEvent = true;
       _lastEventTime = Date.now();
       _lastText = currentState.text;
-      
+
       // Fire immediately, no delay
       set(currentState.text); // Emit the text value
-      
+
       // Reset to null to make it a true "event" store for the next completion
       // but do it as a microtask to ensure current subscribers process the text value first
       Promise.resolve().then(() => {
@@ -377,32 +393,34 @@ export const transcriptionCompletedEvent = (() => {
         _pendingEvent = false;
       });
     }
-    
+
     // Update previous state for next check
     _previousInProgress = currentState.inProgress;
   });
 
   // Also subscribe to the text derived store to catch direct text updates that might bypass
   // the normal state transition detection
-  transcriptionText.subscribe(text => {
+  transcriptionText.subscribe((text) => {
     // Only fire if there's valid text content and it's different from last emitted
-    if (text && text.trim() !== '' && text !== _lastText && !_pendingEvent) {
+    if (text && text.trim() !== "" && text !== _lastText && !_pendingEvent) {
       // Check timing to prevent duplicate events
       const enoughTimePassed = Date.now() - _lastEventTime > 200;
       if (enoughTimePassed) {
-        import('./loggerService').then(({ createLogger }) => {
-          const storeLogger = createLogger('Stores');
-          storeLogger.info('transcriptionCompletedEvent: Detected text change without state transition -', 
-            text?.substring(0, 20) + '...');
+        import("./loggerService").then(({ createLogger }) => {
+          const storeLogger = createLogger("Stores");
+          storeLogger.info(
+            "transcriptionCompletedEvent: Detected text change without state transition -",
+            text?.substring(0, 20) + "...",
+          );
         });
-        
+
         _pendingEvent = true;
         _lastEventTime = Date.now();
         _lastText = text;
-        
+
         // Fire the event
         set(text);
-        
+
         // Reset as a microtask
         Promise.resolve().then(() => {
           set(null);
@@ -415,30 +433,32 @@ export const transcriptionCompletedEvent = (() => {
   // Extend the store with a method to manually trigger the event
   const forceEmit = (text) => {
     if (!text || !text.trim()) return false; // Don't emit empty text
-    
+
     // If the same text was recently emitted, don't emit again
     if (text === _lastText && Date.now() - _lastEventTime < 300) {
       return false;
     }
-    
-    import('./loggerService').then(({ createLogger }) => {
-      const storeLogger = createLogger('Stores');
-      storeLogger.info('transcriptionCompletedEvent: Force emitting with text -', 
-        text?.substring(0, 20) + '...');
+
+    import("./loggerService").then(({ createLogger }) => {
+      const storeLogger = createLogger("Stores");
+      storeLogger.info(
+        "transcriptionCompletedEvent: Force emitting with text -",
+        text?.substring(0, 20) + "...",
+      );
     });
-    
+
     _pendingEvent = true;
     _lastEventTime = Date.now();
     _lastText = text;
-    
+
     set(text); // Emit the text value
-    
+
     // Reset to null as a microtask
     Promise.resolve().then(() => {
       set(null);
       _pendingEvent = false;
     });
-    
+
     return true;
   };
 

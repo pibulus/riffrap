@@ -19,19 +19,19 @@ Riff Rap uses a centralized, consistent logging system across the application. T
 Import the `createLogger` function and create a logger with a specific namespace:
 
 ```javascript
-import { createLogger } from '$lib/services/infrastructure/loggerService';
+import { createLogger } from "$lib/services/infrastructure/loggerService";
 
 // Create a logger for your component/service
-const logger = createLogger('MyComponent');
+const logger = createLogger("MyComponent");
 
 // Use the logger methods
-logger.debug('Detailed debug information');
-logger.info('General information');
-logger.warn('Warning message');
-logger.error('Error message', errorObject);
+logger.debug("Detailed debug information");
+logger.info("General information");
+logger.warn("Warning message");
+logger.error("Error message", errorObject);
 
 // Advanced logging
-logger.group('Group title');
+logger.group("Group title");
 logger.table(data);
 logger.groupEnd();
 ```
@@ -42,12 +42,12 @@ Instead of using `console.log`, use the appropriate logger method:
 
 ```javascript
 // ❌ Don't do this
-console.log('Component mounted');
+console.log("Component mounted");
 
 // ✅ Do this
-import { createLogger } from '$lib/services/infrastructure/loggerService';
-const logger = createLogger('MyComponent');
-logger.info('Component mounted');
+import { createLogger } from "$lib/services/infrastructure/loggerService";
+const logger = createLogger("MyComponent");
+logger.info("Component mounted");
 ```
 
 ### Default Logger
@@ -55,9 +55,9 @@ logger.info('Component mounted');
 For quick logging without creating a new logger instance:
 
 ```javascript
-import { logger } from '$lib/services/infrastructure/loggerService';
+import { logger } from "$lib/services/infrastructure/loggerService";
 
-logger.info('Application message');
+logger.info("Application message");
 ```
 
 ## Configuration
@@ -67,14 +67,17 @@ logger.info('Application message');
 You can enable or disable all logging, or configure specific namespaces:
 
 ```javascript
-import { setDebugMode, configureNamespace } from '$lib/services/infrastructure/loggerService';
+import {
+  setDebugMode,
+  configureNamespace,
+} from "$lib/services/infrastructure/loggerService";
 
 // Enable or disable all logging
 setDebugMode(true);
 
 // Configure specific namespaces
-configureNamespace('API', true);
-configureNamespace('Animation', false);
+configureNamespace("API", true);
+configureNamespace("Animation", false);
 ```
 
 ### Log Levels
@@ -82,10 +85,10 @@ configureNamespace('Animation', false);
 Set the minimum log level to display:
 
 ```javascript
-import { setLogLevel } from '$lib/services/infrastructure/loggerService';
+import { setLogLevel } from "$lib/services/infrastructure/loggerService";
 
 // Only show warnings and errors
-setLogLevel('warn');
+setLogLevel("warn");
 ```
 
 ### Checking Debug Mode in Components
@@ -109,7 +112,7 @@ You can reactively check if debug mode is enabled:
 Useful utilities for runtime debugging:
 
 ```javascript
-import { consoleHelper } from '$lib/services/infrastructure/loggerService';
+import { consoleHelper } from "$lib/services/infrastructure/loggerService";
 
 // Show current configuration
 consoleHelper.showConfig();
@@ -141,6 +144,7 @@ consoleHelper.disableAll();
 The logging system is implemented in `src/lib/services/infrastructure/loggerService.js` and integrates with LineSnap's existing debug configuration in localStorage.
 
 The system:
+
 - Checks `STORAGE_KEYS.DEBUG_MODE` in localStorage
 - Uses environment detection to disable logging in production
 - Maintains a consistent format for all logs

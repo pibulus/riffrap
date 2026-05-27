@@ -11,7 +11,7 @@
 
 <script>
   // === IMPORTS CHUNK START ===
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import LyricsCollection from './lyrics-collection/LyricsCollection.svelte';
   import { lyricsStore } from './lyrics-collection/stores/lyricsStore';
   // === IMPORTS CHUNK END ===
@@ -24,7 +24,7 @@
   export let collectedSnippets = [];
 
   // Subscribe to the lyricsStore to keep collectedSnippets updated
-  lyricsStore.subscribe(state => {
+  const unsubscribeLyricsStore = lyricsStore.subscribe(state => {
     if (state && state.snippets) {
       collectedSnippets = state.snippets;
     }
@@ -34,9 +34,11 @@
   // === LIFECYCLE CHUNK START ===
   // Ensure compatibility with window methods
   onMount(() => {
-    // The LyricsCollection component will handle all global methods
-    // Just log initialization for debugging
-    console.log('LyricsPanel initialized - using modular LyricsCollection');
+    // The LyricsCollection component handles global compatibility methods.
+  });
+
+  onDestroy(() => {
+    unsubscribeLyricsStore();
   });
   // === LIFECYCLE CHUNK END ===
 </script>

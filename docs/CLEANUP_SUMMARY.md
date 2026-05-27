@@ -11,15 +11,18 @@ Between commits `653e1dd` and `92297a4`, the RiffRap codebase underwent comprehe
 ## 🗑️ **Major Cleanups**
 
 ### **1. Massive Structure Cleanup**
-**Commit**: `d67ff1b` - *Massive cleanup - remove 360MB+ redundant structure*
+
+**Commit**: `d67ff1b` - _Massive cleanup - remove 360MB+ redundant structure_
 
 **What Was Removed**:
+
 - Complete duplicate `riffrap/` directory structure (356MB)
 - All backup files (`.bak`, `.bak2`, `.new`, `.tmp`)
 - Assessment documentation artifacts (`*-assessment.md`)
 - Development planning files (`task_lexicon_*`, `integration-plan.md`)
 
-**Why This Matters**: 
+**Why This Matters**:
+
 - Eliminates confusion about which files are active
 - Reduces repository size significantly
 - Removes development artifacts that don't belong in production
@@ -27,9 +30,11 @@ Between commits `653e1dd` and `92297a4`, the RiffRap codebase underwent comprehe
 **For Legacy Code**: If you see references to duplicate paths or backup files, they've been consolidated into the main structure.
 
 ### **2. Debug Component Removal**
-**Commit**: `92297a4` - *Remove 52KB unused components*
+
+**Commit**: `92297a4` - _Remove 52KB unused components_
 
 **Components Removed**:
+
 - `src/lib/components/debug/` (entire directory - 40KB)
 - `FixedDebugPanel.svelte`
 - `DebugDirectCollectionBox.svelte`
@@ -37,6 +42,7 @@ Between commits `653e1dd` and `92297a4`, the RiffRap codebase underwent comprehe
 - 5 unused collection panel variants
 
 **Why This Matters**:
+
 - Reduces production bundle size
 - Eliminates dead code that was never imported
 - Simplifies component architecture
@@ -48,15 +54,18 @@ Between commits `653e1dd` and `92297a4`, the RiffRap codebase underwent comprehe
 ## 🏷️ **Branding & Naming Consistency**
 
 ### **3. Unified RiffRap Branding**
+
 **Commits**: `75bff26`, `92297a4`
 
 **Changes Made**:
+
 - **LineSnap** → **RiffRap** (everywhere)
-- **TalkType** → **RiffRap** (everywhere) 
+- **TalkType** → **RiffRap** (everywhere)
 - **PurpleStyleCollectionBox** → **LyricsPanel**
 - Updated storage keys, comments, and documentation
 
 **Why This Matters**:
+
 - Consistent user experience
 - Clear component naming that reflects purpose
 - Easier codebase navigation
@@ -68,33 +77,41 @@ Between commits `653e1dd` and `92297a4`, the RiffRap codebase underwent comprehe
 ## ⚡ **Performance Optimizations**
 
 ### **4. Bundle Size Optimization**
+
 **Multiple commits**
 
 **Optimizations Made**:
+
 - LyricSnapIcon.png: 1.4MB → 1.3MB (100KB saved)
 - Lazy loading for ghost-test route (104KB dev-only code)
 - Removed unused audio source files (1.4MB)
 - Eliminated duplicate static assets (84KB)
 
 **Why This Matters**:
+
 - Faster load times
 - Better user experience on slower connections
 - Reduced server bandwidth costs
 
 ### **5. Lazy Loading Implementation**
+
 **Commit**: `92297a4`
 
 **What Was Added**:
+
 ```javascript
 // Ghost test route now loads components on-demand
 let GhostTestContainer = $state(null);
 onMount(async () => {
-  const module = await import('$lib/components/ghostTest/GhostTestContainer.svelte');
+  const module = await import(
+    "$lib/components/ghostTest/GhostTestContainer.svelte"
+  );
   GhostTestContainer = module.default;
 });
 ```
 
 **Why This Matters**:
+
 - Development tools don't bloat production bundle
 - Better separation of dev vs production code
 - Improved initial page load performance
@@ -104,14 +121,17 @@ onMount(async () => {
 ## 🧹 **Code Quality Improvements**
 
 ### **6. Production Readiness**
-**Commit**: `048e0c5` - *Production-ready cleanup*
+
+**Commit**: `048e0c5` - _Production-ready cleanup_
 
 **Debug Code Removed**:
+
 - 30+ `console.log` statements from critical paths
 - Performance timing logs
 - Development-only debugging subscriptions
 
 **Why This Matters**:
+
 - Cleaner console output in production
 - Slightly better runtime performance
 - Professional deployment-ready code
@@ -119,12 +139,14 @@ onMount(async () => {
 ### **7. Architecture Simplification**
 
 **Key Improvements**:
+
 - **One-way data flow** for transcription (prevents race conditions)
 - **Modular component structure** (LyricsPanel wraps LyricsCollection)
 - **Clean service separation** (audio, transcription, UI)
 - **Event-driven architecture** with centralized event bridge
 
 **Why This Matters**:
+
 - Easier debugging and maintenance
 - Predictable data flow
 - Better testability
@@ -134,6 +156,7 @@ onMount(async () => {
 ## 📂 **File Structure Changes**
 
 ### **Before Cleanup**:
+
 ```
 ├── riffrap/                          # 356MB duplicate!
 ├── backups/                          # Dev artifacts
@@ -147,6 +170,7 @@ onMount(async () => {
 ```
 
 ### **After Cleanup**:
+
 ```
 ├── LyricsPanel.svelte                # Clear, semantic naming
 ├── docs/CLEANUP_SUMMARY.md           # This document!
@@ -175,7 +199,7 @@ onMount(async () => {
 ### **What NOT to Look For**
 
 - ❌ Debug components or panels
-- ❌ Backup files with `.bak` extensions  
+- ❌ Backup files with `.bak` extensions
 - ❌ Duplicate directory structures
 - ❌ TalkType or LineSnap references
 - ❌ console.log statements in critical paths
@@ -192,26 +216,30 @@ onMount(async () => {
 ## 🔧 **Repository Optimization**
 
 ### **8. Git Housekeeping**
+
 **Post-cleanup maintenance**
 
 **Issue**: After removing 360MB+ of files, Git accumulated many "loose objects" (references to deleted files) that were bloating the repository and blocking automatic cleanup.
 
 **Solution Applied**:
+
 ```bash
 # Remove blocking log file
 rm -f .git/gc.log
 
-# Clean up and pack repository efficiently  
+# Clean up and pack repository efficiently
 git gc --prune=now
 ```
 
 **Results**:
+
 - **Before**: Hundreds of loose objects, automatic cleanup blocked
 - **After**: 0 loose objects, 531 objects efficiently packed
 - **Repository size**: Significantly reduced .git folder size
 - **Performance**: Faster git operations (clone, fetch, push)
 
-**Why This Matters**: 
+**Why This Matters**:
+
 - Keeps repository lean after major file deletions
 - Improves git performance for all developers
 - Prevents repository bloat from accumulating
@@ -222,14 +250,14 @@ git gc --prune=now
 
 ## 📊 **Impact Summary**
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Repository Size | ~600MB+ | ~240MB | -360MB+ |
-| Git Objects | 100s loose | 531 packed | Optimized |
-| Production Bundle | 184KB | 182KB | Maintained |
-| Component Count | 50+ | 35 | -15 unused |
-| Lines of Code | N/A | -2,717 | Cleaner |
-| Debug Artifacts | Many | Zero | Production-ready |
+| Metric            | Before     | After      | Improvement      |
+| ----------------- | ---------- | ---------- | ---------------- |
+| Repository Size   | ~600MB+    | ~240MB     | -360MB+          |
+| Git Objects       | 100s loose | 531 packed | Optimized        |
+| Production Bundle | 184KB      | 182KB      | Maintained       |
+| Component Count   | 50+        | 35         | -15 unused       |
+| Lines of Code     | N/A        | -2,717     | Cleaner          |
+| Debug Artifacts   | Many       | Zero       | Production-ready |
 
 ---
 
@@ -245,4 +273,4 @@ To maintain this clean architecture:
 
 ---
 
-*This cleanup established RiffRap as a lean, professional, and maintainable codebase ready for production deployment and future development.*
+_This cleanup established RiffRap as a lean, professional, and maintainable codebase ready for production deployment and future development._

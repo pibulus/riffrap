@@ -1,7 +1,7 @@
 <script>
 	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 	import { browser } from '$app/environment';
-	import { appActive, shouldAnimateStore } from '$lib/services/infrastructure';
+	import { appActive } from '$lib/services/infrastructure';
 
 	// CSS imports
 	import './ghost-animations.css';
@@ -16,8 +16,6 @@
 		ANIMATION_STATES,
 		CSS_CLASSES,
 		PULSE_CONFIG,
-		ANIMATION_TIMING, // Import ANIMATION_TIMING
-		WOBBLE_CONFIG, // Import WOBBLE_CONFIG
 		EYE_CONFIG
 	} from './animationConfig.js';
 
@@ -32,8 +30,7 @@
 	// Import animation utilities
 	import { forceReflow } from './utils/animationUtils.js'; // Only forceReflow needed directly
 
-	// Import gradient animator for theme updates
-	// import { cleanupAllAnimations, initGradientAnimation } from './gradientAnimator.js'; // These seem to be unused based on later comments
+	import { cleanupAnimation, initGradientAnimation } from './gradientAnimator.js';
 
 	// Import the new Svelte Action
 	import { initialGhostAnimation } from './actions/initialGhostAnimation.js';
@@ -72,14 +69,10 @@
 	let lastRecordingState = false;
 	let lastProcessingState = false;
 	// let lastAnimationState = animationState; // Removed reference to undefined variable
-	let lastAppliedWobbleDirection = null;
-
 	// Additional state variables
 	let currentTheme;
 	let themeStore = externalTheme || localTheme;
 	let unsubscribeTheme;
-	let isRecordingTransition = false;
-	let manualStateChange = false;
 	let wakeUpBlinkTriggered = false; // Flag to ensure blink only triggers once per wake-up
 	let eyeTracker; // Variable to hold the eye tracking instance
 	let timeoutIds = []; // Track all setTimeout calls for cleanup
@@ -124,9 +117,6 @@
 
 		// Only update recording state if it has changed
 		if (isRecording !== lastRecordingState) {
-			const isStartingRecording = isRecording && !lastRecordingState;
-			const isStoppingRecording = !isRecording && lastRecordingState;
-
 			// Update local tracking state first
 			lastRecordingState = isRecording;
 

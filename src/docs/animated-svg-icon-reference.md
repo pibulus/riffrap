@@ -63,12 +63,21 @@ A layered approach provides maximum animation flexibility:
 
 ```html
 <div class="icon-layers">
-	<!-- Gradient background (bottom layer) -->
-	<img src="/icon-bg-gradient.svg" alt="" class="icon-bg" aria-hidden="true" />
-	<!-- Main shape without animated parts (middle layer) -->
-	<img src="/assets/icon-base.svg" alt="" class="icon-base" aria-hidden="true" />
-	<!-- Just the animated elements (top layer) -->
-	<img src="/assets/icon-animated-parts.svg" alt="Icon Description" class="icon-animated" />
+  <!-- Gradient background (bottom layer) -->
+  <img src="/icon-bg-gradient.svg" alt="" class="icon-bg" aria-hidden="true" />
+  <!-- Main shape without animated parts (middle layer) -->
+  <img
+    src="/assets/icon-base.svg"
+    alt=""
+    class="icon-base"
+    aria-hidden="true"
+  />
+  <!-- Just the animated elements (top layer) -->
+  <img
+    src="/assets/icon-animated-parts.svg"
+    alt="Icon Description"
+    class="icon-animated"
+  />
 </div>
 ```
 
@@ -76,31 +85,31 @@ A layered approach provides maximum animation flexibility:
 
 ```css
 .icon-layers {
-	position: relative;
-	width: 100%;
-	height: 100%;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .icon-bg,
 .icon-base,
 .icon-animated {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	transition: all 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: all 0.3s ease;
 }
 
 /* Stack the layers correctly */
 .icon-bg {
-	z-index: 1;
+  z-index: 1;
 } /* Bottom layer */
 .icon-base {
-	z-index: 2;
+  z-index: 2;
 } /* Middle layer */
 .icon-animated {
-	z-index: 3;
+  z-index: 3;
 } /* Top layer */
 ```
 
@@ -139,22 +148,22 @@ Basic CSS animation provides a fallback pattern:
 
 ```css
 .icon-animated {
-	animation: primary-animation 6s infinite; /* Ambient animation baseline */
-	transform-origin: center center;
+  animation: primary-animation 6s infinite; /* Ambient animation baseline */
+  transform-origin: center center;
 }
 
 @keyframes primary-animation {
-	0%,
-	96.5%,
-	100% {
-		transform: scaleY(1);
-	}
-	97.5% {
-		transform: scaleY(0);
-	}
-	98.5% {
-		transform: scaleY(1);
-	}
+  0%,
+  96.5%,
+  100% {
+    transform: scaleY(1);
+  }
+  97.5% {
+    transform: scaleY(0);
+  }
+  98.5% {
+    transform: scaleY(1);
+  }
 }
 ```
 
@@ -169,15 +178,15 @@ const maxGap = 9000; // Maximum time between animations (9s)
 
 // Animation type probabilities
 const animationTypes = [
-	{ type: 'primary', probability: 0.6 }, // 60%
-	{ type: 'secondary', probability: 0.3 }, // 30%
-	{ type: 'complex', probability: 0.1 } // 10%
+  { type: "primary", probability: 0.6 }, // 60%
+  { type: "secondary", probability: 0.3 }, // 30%
+  { type: "complex", probability: 0.1 }, // 10%
 ];
 
 // Schedule the next animation recursively with randomized timing
 function scheduleNextAnimation() {
-	const nextInterval = Math.floor(minGap + Math.random() * (maxGap - minGap));
-	// ...implementation details...
+  const nextInterval = Math.floor(minGap + Math.random() * (maxGap - minGap));
+  // ...implementation details...
 }
 ```
 
@@ -189,48 +198,48 @@ The icon can serve as both a visual element and an interactive control.
 
 ```javascript
 function toggleIconState(event) {
-	// Stop event propagation
-	event.stopPropagation();
-	event.preventDefault();
+  // Stop event propagation
+  event.stopPropagation();
+  event.preventDefault();
 
-	// Get DOM elements with error checking
-	const iconContainer = event.currentTarget;
+  // Get DOM elements with error checking
+  const iconContainer = event.currentTarget;
 
-	// Use DOM class as source of truth
-	const hasActiveClass = iconContainer.classList.contains('active');
+  // Use DOM class as source of truth
+  const hasActiveClass = iconContainer.classList.contains("active");
 
-	if (hasActiveClass) {
-		// DEACTIVATING
-		isActive = false;
+  if (hasActiveClass) {
+    // DEACTIVATING
+    isActive = false;
 
-		// Reset all animation state
-		animatedElement.style.animation = 'none';
+    // Reset all animation state
+    animatedElement.style.animation = "none";
 
-		// Force browser reflow
-		void animatedElement.offsetWidth;
+    // Force browser reflow
+    void animatedElement.offsetWidth;
 
-		// Remove the active class
-		iconContainer.classList.remove('active');
+    // Remove the active class
+    iconContainer.classList.remove("active");
 
-		// Play deactivation animation, then resume ambient animation
-		// ...implementation details...
-	} else {
-		// ACTIVATING
-		isActive = true;
-		clearAllAnimationTimeouts();
+    // Play deactivation animation, then resume ambient animation
+    // ...implementation details...
+  } else {
+    // ACTIVATING
+    isActive = true;
+    clearAllAnimationTimeouts();
 
-		// Reset any existing animations
-		animatedElement.style.animation = 'none';
+    // Reset any existing animations
+    animatedElement.style.animation = "none";
 
-		// Force browser reflow
-		void animatedElement.offsetWidth;
+    // Force browser reflow
+    void animatedElement.offsetWidth;
 
-		// Random chance for different start behaviors
-		// ...implementation details...
+    // Random chance for different start behaviors
+    // ...implementation details...
 
-		// Add active class after animation completes
-		iconContainer.classList.add('active');
-	}
+    // Add active class after animation completes
+    iconContainer.classList.add("active");
+  }
 }
 ```
 
@@ -238,23 +247,24 @@ function toggleIconState(event) {
 
 ```css
 .icon-container.active {
-	animation: active-glow 1.5s infinite;
-	transform: scale(1.05);
+  animation: active-glow 1.5s infinite;
+  transform: scale(1.05);
 }
 
 @keyframes active-glow {
-	0% {
-		filter: drop-shadow(0 0 15px rgba(255, 100, 243, 0.5))
-			drop-shadow(0 0 25px rgba(249, 168, 212, 0.4));
-	}
-	50% {
-		filter: drop-shadow(0 0 25px rgba(255, 100, 243, 0.8))
-			drop-shadow(0 0 35px rgba(255, 120, 170, 0.5)) drop-shadow(0 0 40px rgba(249, 168, 212, 0.4));
-	}
-	100% {
-		filter: drop-shadow(0 0 15px rgba(255, 100, 243, 0.5))
-			drop-shadow(0 0 25px rgba(249, 168, 212, 0.4));
-	}
+  0% {
+    filter: drop-shadow(0 0 15px rgba(255, 100, 243, 0.5))
+      drop-shadow(0 0 25px rgba(249, 168, 212, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 25px rgba(255, 100, 243, 0.8))
+      drop-shadow(0 0 35px rgba(255, 120, 170, 0.5))
+      drop-shadow(0 0 40px rgba(249, 168, 212, 0.4));
+  }
+  100% {
+    filter: drop-shadow(0 0 15px rgba(255, 100, 243, 0.5))
+      drop-shadow(0 0 25px rgba(249, 168, 212, 0.4));
+  }
 }
 ```
 
@@ -264,51 +274,51 @@ When active, the icon can use a special animation pattern:
 
 ```css
 .icon-container.active .icon-animated {
-	animation: active-animation 4s infinite;
-	transform-origin: center center;
+  animation: active-animation 4s infinite;
+  transform-origin: center center;
 }
 
 @keyframes active-animation {
-	/* Custom animation keyframes */
-	0%,
-	23%,
-	100% {
-		transform: scaleY(1);
-	}
-	3% {
-		transform: scaleY(0.8);
-	}
-	4% {
-		transform: scaleY(1);
-	}
+  /* Custom animation keyframes */
+  0%,
+  23%,
+  100% {
+    transform: scaleY(1);
+  }
+  3% {
+    transform: scaleY(0.8);
+  }
+  4% {
+    transform: scaleY(1);
+  }
 
-	/* More complex sequences */
-	40% {
-		transform: scaleY(1);
-	}
-	42% {
-		transform: scaleY(0.7);
-	}
-	43% {
-		transform: scaleY(0.85);
-	}
-	46% {
-		transform: scaleY(0.7);
-	}
-	48% {
-		transform: scaleY(1);
-	}
+  /* More complex sequences */
+  40% {
+    transform: scaleY(1);
+  }
+  42% {
+    transform: scaleY(0.7);
+  }
+  43% {
+    transform: scaleY(0.85);
+  }
+  46% {
+    transform: scaleY(0.7);
+  }
+  48% {
+    transform: scaleY(1);
+  }
 
-	/* Final sequence */
-	80% {
-		transform: scaleY(1);
-	}
-	82% {
-		transform: scaleY(0.8);
-	}
-	83% {
-		transform: scaleY(1);
-	}
+  /* Final sequence */
+  80% {
+    transform: scaleY(1);
+  }
+  82% {
+    transform: scaleY(0.8);
+  }
+  83% {
+    transform: scaleY(1);
+  }
 }
 ```
 
@@ -317,25 +327,25 @@ When active, the icon can use a special animation pattern:
 ```css
 .icon-container:hover,
 .icon-container:active {
-	filter: drop-shadow(0 0 18px rgba(249, 168, 212, 0.45))
-		drop-shadow(0 0 30px rgba(255, 156, 243, 0.3));
-	transform: scale(1.03);
-	animation: gentle-pulse 3s infinite;
+  filter: drop-shadow(0 0 18px rgba(249, 168, 212, 0.45))
+    drop-shadow(0 0 30px rgba(255, 156, 243, 0.3));
+  transform: scale(1.03);
+  animation: gentle-pulse 3s infinite;
 }
 
 @keyframes gentle-pulse {
-	0% {
-		filter: drop-shadow(0 0 15px rgba(249, 168, 212, 0.4))
-			drop-shadow(0 0 20px rgba(255, 156, 243, 0.25));
-	}
-	50% {
-		filter: drop-shadow(0 0 25px rgba(249, 168, 212, 0.55))
-			drop-shadow(0 0 30px rgba(255, 156, 243, 0.35));
-	}
-	100% {
-		filter: drop-shadow(0 0 15px rgba(249, 168, 212, 0.4))
-			drop-shadow(0 0 20px rgba(255, 156, 243, 0.25));
-	}
+  0% {
+    filter: drop-shadow(0 0 15px rgba(249, 168, 212, 0.4))
+      drop-shadow(0 0 20px rgba(255, 156, 243, 0.25));
+  }
+  50% {
+    filter: drop-shadow(0 0 25px rgba(249, 168, 212, 0.55))
+      drop-shadow(0 0 30px rgba(255, 156, 243, 0.35));
+  }
+  100% {
+    filter: drop-shadow(0 0 15px rgba(249, 168, 212, 0.4))
+      drop-shadow(0 0 20px rgba(255, 156, 243, 0.25));
+  }
 }
 ```
 
@@ -346,21 +356,35 @@ The complete DOM structure for an animated icon:
 ```html
 <!-- Icon Container with Accessibility Features -->
 <div
-	class="icon-container h-32 w-32 cursor-pointer md:h-56 md:w-56"
-	on:click|preventDefault|stopPropagation="{toggleIconState}"
-	role="button"
-	tabindex="0"
-	aria-label="Toggle Action"
+  class="icon-container h-32 w-32 cursor-pointer md:h-56 md:w-56"
+  on:click|preventDefault|stopPropagation="{toggleIconState}"
+  role="button"
+  tabindex="0"
+  aria-label="Toggle Action"
 >
-	<!-- Layered approach with gradient background and animated parts -->
-	<div class="icon-layers">
-		<!-- Gradient background (bottom layer) -->
-		<img src="/icon-bg-gradient.svg" alt="" class="icon-bg" aria-hidden="true" />
-		<!-- Main shape (middle layer) -->
-		<img src="/assets/icon-base.svg" alt="" class="icon-base" aria-hidden="true" />
-		<!-- Animated elements (top layer) -->
-		<img src="/assets/icon-animated-parts.svg" alt="Icon Description" class="icon-animated" />
-	</div>
+  <!-- Layered approach with gradient background and animated parts -->
+  <div class="icon-layers">
+    <!-- Gradient background (bottom layer) -->
+    <img
+      src="/icon-bg-gradient.svg"
+      alt=""
+      class="icon-bg"
+      aria-hidden="true"
+    />
+    <!-- Main shape (middle layer) -->
+    <img
+      src="/assets/icon-base.svg"
+      alt=""
+      class="icon-base"
+      aria-hidden="true"
+    />
+    <!-- Animated elements (top layer) -->
+    <img
+      src="/assets/icon-animated-parts.svg"
+      alt="Icon Description"
+      class="icon-animated"
+    />
+  </div>
 </div>
 ```
 
@@ -406,69 +430,69 @@ Detailed parameters for all icon animations:
 ```javascript
 // Proper wobble animation implementation
 function applyWobbleAnimation(element) {
-	// Force a browser reflow to ensure animation applies cleanly
-	void element.offsetWidth;
+  // Force a browser reflow to ensure animation applies cleanly
+  void element.offsetWidth;
 
-	// Clear any existing animation classes
-	element.classList.remove('wobble-left', 'wobble-right');
+  // Clear any existing animation classes
+  element.classList.remove("wobble-left", "wobble-right");
 
-	// Choose animation direction randomly
-	const wobbleClass = Math.random() > 0.5 ? 'wobble-left' : 'wobble-right';
+  // Choose animation direction randomly
+  const wobbleClass = Math.random() > 0.5 ? "wobble-left" : "wobble-right";
 
-	// Apply the animation class
-	element.classList.add(wobbleClass);
+  // Apply the animation class
+  element.classList.add(wobbleClass);
 
-	// Remove class after animation completes
-	setTimeout(() => {
-		element.classList.remove(wobbleClass);
-	}, 600);
+  // Remove class after animation completes
+  setTimeout(() => {
+    element.classList.remove(wobbleClass);
+  }, 600);
 }
 ```
 
 ```css
 /* Proper CSS implementation with global scope */
 @keyframes wobble-left {
-	0% {
-		transform: rotate(0deg);
-	}
-	25% {
-		transform: rotate(-5deg);
-	}
-	50% {
-		transform: rotate(3deg);
-	}
-	75% {
-		transform: rotate(-2deg);
-	}
-	100% {
-		transform: rotate(0deg);
-	}
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 @keyframes wobble-right {
-	0% {
-		transform: rotate(0deg);
-	}
-	25% {
-		transform: rotate(5deg);
-	}
-	50% {
-		transform: rotate(-3deg);
-	}
-	75% {
-		transform: rotate(2deg);
-	}
-	100% {
-		transform: rotate(0deg);
-	}
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(5deg);
+  }
+  50% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(2deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 :global(.wobble-left) {
-	animation: wobble-left 0.6s ease-in-out !important;
+  animation: wobble-left 0.6s ease-in-out !important;
 }
 
 :global(.wobble-right) {
-	animation: wobble-right 0.6s ease-in-out !important;
+  animation: wobble-right 0.6s ease-in-out !important;
 }
 ```
 
@@ -488,115 +512,115 @@ This is a complete, reusable pattern for implementing click-triggered animations
 
 ```javascript
 function handleIconClick(event) {
-	// Stop event propagation to prevent bubbling
-	event.stopPropagation();
-	event.preventDefault();
+  // Stop event propagation to prevent bubbling
+  event.stopPropagation();
+  event.preventDefault();
 
-	// Get the icon container element
-	const iconContainer = event.currentTarget;
-	if (!iconContainer) return;
+  // Get the icon container element
+  const iconContainer = event.currentTarget;
+  if (!iconContainer) return;
 
-	// Toggle the icon's state if needed
-	const isActive = iconContainer.classList.contains('active');
+  // Toggle the icon's state if needed
+  const isActive = iconContainer.classList.contains("active");
 
-	if (isActive) {
-		// Deactivation logic
-		iconContainer.classList.remove('active');
-	} else {
-		// Activation logic
-		iconContainer.classList.add('active');
-	}
+  if (isActive) {
+    // Deactivation logic
+    iconContainer.classList.remove("active");
+  } else {
+    // Activation logic
+    iconContainer.classList.add("active");
+  }
 
-	// Apply wobble animation regardless of state change
-	applyWobbleAnimation(iconContainer);
+  // Apply wobble animation regardless of state change
+  applyWobbleAnimation(iconContainer);
 
-	// Other state-specific logic
-	// ...
+  // Other state-specific logic
+  // ...
 }
 
 function applyWobbleAnimation(element) {
-	// Force browser reflow to ensure animation applies cleanly
-	void element.offsetWidth;
+  // Force browser reflow to ensure animation applies cleanly
+  void element.offsetWidth;
 
-	// Clear any existing animation classes first
-	element.classList.remove('wobble-left', 'wobble-right');
+  // Clear any existing animation classes first
+  element.classList.remove("wobble-left", "wobble-right");
 
-	// Choose random direction for variety
-	const wobbleClass = Math.random() > 0.5 ? 'wobble-left' : 'wobble-right';
+  // Choose random direction for variety
+  const wobbleClass = Math.random() > 0.5 ? "wobble-left" : "wobble-right";
 
-	// Apply the wobble class
-	element.classList.add(wobbleClass);
+  // Apply the wobble class
+  element.classList.add(wobbleClass);
 
-	// Remove class after animation completes (match duration with CSS)
-	setTimeout(() => {
-		element.classList.remove(wobbleClass);
-	}, 600);
+  // Remove class after animation completes (match duration with CSS)
+  setTimeout(() => {
+    element.classList.remove(wobbleClass);
+  }, 600);
 }
 ```
 
 ```css
 /* Animation keyframes - defined in the same component that applies them */
 @keyframes wobble-left {
-	0% {
-		transform: rotate(0deg);
-	}
-	25% {
-		transform: rotate(-5deg);
-	}
-	50% {
-		transform: rotate(3deg);
-	}
-	75% {
-		transform: rotate(-2deg);
-	}
-	100% {
-		transform: rotate(0deg);
-	}
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 @keyframes wobble-right {
-	0% {
-		transform: rotate(0deg);
-	}
-	25% {
-		transform: rotate(5deg);
-	}
-	50% {
-		transform: rotate(-3deg);
-	}
-	75% {
-		transform: rotate(2deg);
-	}
-	100% {
-		transform: rotate(0deg);
-	}
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(5deg);
+  }
+  50% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(2deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 /* Global scoping for cross-component animation classes */
 :global(.wobble-left) {
-	animation: wobble-left 0.6s ease-in-out !important;
+  animation: wobble-left 0.6s ease-in-out !important;
 }
 
 :global(.wobble-right) {
-	animation: wobble-right 0.6s ease-in-out !important;
+  animation: wobble-right 0.6s ease-in-out !important;
 }
 
 /* State-specific styling */
 .icon-container.active {
-	/* Active state styling */
+  /* Active state styling */
 }
 ```
 
 ```html
 <!-- In your component template -->
 <div
-	class="icon-container"
-	on:click|preventDefault|stopPropagation="{handleIconClick}"
-	role="button"
-	tabindex="0"
-	aria-label="Toggle State"
+  class="icon-container"
+  on:click|preventDefault|stopPropagation="{handleIconClick}"
+  role="button"
+  tabindex="0"
+  aria-label="Toggle State"
 >
-	<!-- Icon content -->
+  <!-- Icon content -->
 </div>
 ```
 
@@ -652,9 +676,9 @@ function applyWobbleAnimation(element) {
 - Example:
   ```javascript
   // Force reflow between animation changes
-  element.style.animation = 'none';
+  element.style.animation = "none";
   void element.offsetWidth; // Trigger reflow
-  element.style.animation = 'new-animation 1s';
+  element.style.animation = "new-animation 1s";
   ```
 
 #### Inconsistent Animations
@@ -670,12 +694,12 @@ function applyWobbleAnimation(element) {
   ```javascript
   // Debug helper function
   function debug(message) {
-  	console.log(`[Animation] ${message}`);
+    console.log(`[Animation] ${message}`);
   }
 
   function startAmbientAnimation() {
-  	debug(`Starting ambient animation, state: ${currentState}`);
-  	// Rest of function
+    debug(`Starting ambient animation, state: ${currentState}`);
+    // Rest of function
   }
   ```
 
@@ -690,10 +714,10 @@ function applyWobbleAnimation(element) {
 - Use DOM class as source of truth:
   ```javascript
   // Use DOM class as source of truth
-  const hasActiveClass = iconContainer.classList.contains('active');
+  const hasActiveClass = iconContainer.classList.contains("active");
   if (hasActiveClass !== isActive) {
-  	debug('DOM class state and JS variable out of sync');
-  	isActive = hasActiveClass; // Resync
+    debug("DOM class state and JS variable out of sync");
+    isActive = hasActiveClass; // Resync
   }
   ```
 
@@ -712,14 +736,14 @@ function applyWobbleAnimation(element) {
   let animationTimeouts = [];
 
   function clearAllAnimationTimeouts() {
-  	animationTimeouts.forEach((timeout) => clearTimeout(timeout));
-  	animationTimeouts = [];
+    animationTimeouts.forEach((timeout) => clearTimeout(timeout));
+    animationTimeouts = [];
   }
 
   function scheduleAnimation(fn, delay) {
-  	const timeout = setTimeout(fn, delay);
-  	animationTimeouts.push(timeout);
-  	return timeout;
+    const timeout = setTimeout(fn, delay);
+    animationTimeouts.push(timeout);
+    return timeout;
   }
   ```
 
@@ -735,41 +759,41 @@ function applyWobbleAnimation(element) {
 
   ```javascript
   function setupDomObserver() {
-  	debug('Setting up DOM observer');
+    debug("Setting up DOM observer");
 
-  	// Try direct selection first
-  	let element = document.querySelector('.animated-element');
-  	if (element) {
-  		debug('Element found immediately');
-  		return element;
-  	}
+    // Try direct selection first
+    let element = document.querySelector(".animated-element");
+    if (element) {
+      debug("Element found immediately");
+      return element;
+    }
 
-  	// If not found, set up observer to watch for it
-  	return new Promise((resolve) => {
-  		const observer = new MutationObserver((mutations, obs) => {
-  			const el = document.querySelector('.animated-element');
-  			if (el) {
-  				debug('Element found via MutationObserver');
-  				obs.disconnect();
-  				resolve(el);
-  			}
-  		});
+    // If not found, set up observer to watch for it
+    return new Promise((resolve) => {
+      const observer = new MutationObserver((mutations, obs) => {
+        const el = document.querySelector(".animated-element");
+        if (el) {
+          debug("Element found via MutationObserver");
+          obs.disconnect();
+          resolve(el);
+        }
+      });
 
-  		// Start observing
-  		observer.observe(document.body, {
-  			childList: true,
-  			subtree: true
-  		});
+      // Start observing
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
 
-  		// Fallback timeout
-  		setTimeout(() => {
-  			const el = document.querySelector('.animated-element');
-  			if (el) {
-  				debug('Element found via fallback timeout');
-  				resolve(el);
-  			}
-  		}, 2000);
-  	});
+      // Fallback timeout
+      setTimeout(() => {
+        const el = document.querySelector(".animated-element");
+        if (el) {
+          debug("Element found via fallback timeout");
+          resolve(el);
+        }
+      }, 2000);
+    });
   }
   ```
 
@@ -786,15 +810,15 @@ function applyWobbleAnimation(element) {
   ```css
   /* Regular animation */
   .icon-animated {
-  	animation: complex-animation 4s infinite;
-  	will-change: transform;
+    animation: complex-animation 4s infinite;
+    will-change: transform;
   }
 
   /* Simplified for mobile */
   @media (max-width: 768px) {
-  	.icon-animated {
-  		animation: simple-animation 4s infinite;
-  	}
+    .icon-animated {
+      animation: simple-animation 4s infinite;
+    }
   }
   ```
 
@@ -811,12 +835,12 @@ function applyWobbleAnimation(element) {
   ```css
   /* ❌ WRONG - Scoped to component only */
   .wobble-animation {
-  	animation: wobble 0.6s ease-in-out;
+    animation: wobble 0.6s ease-in-out;
   }
 
   /* ✅ CORRECT - Available globally across components */
   :global(.wobble-animation) {
-  	animation: wobble 0.6s ease-in-out !important;
+    animation: wobble 0.6s ease-in-out !important;
   }
   ```
 
@@ -831,9 +855,9 @@ function applyWobbleAnimation(element) {
 - Add debug logging to track animation class application:
   ```javascript
   // Debug animation state
-  console.log('Before adding class:', element.className);
-  element.classList.add('animation-class');
-  console.log('After adding class:', element.className);
+  console.log("Before adding class:", element.className);
+  element.classList.add("animation-class");
+  console.log("After adding class:", element.className);
   ```
 
 #### Browser Compatibility
@@ -848,16 +872,16 @@ function applyWobbleAnimation(element) {
 
   ```javascript
   function setupAnimation() {
-  	// Check for animation support
-  	const hasAnimationSupport = 'animation' in document.documentElement.style;
+    // Check for animation support
+    const hasAnimationSupport = "animation" in document.documentElement.style;
 
-  	if (!hasAnimationSupport) {
-  		// Apply simple fallback
-  		element.classList.add('fallback-animation');
-  	} else {
-  		// Use enhanced animation
-  		element.classList.add('enhanced-animation');
-  	}
+    if (!hasAnimationSupport) {
+      // Apply simple fallback
+      element.classList.add("fallback-animation");
+    } else {
+      // Use enhanced animation
+      element.classList.add("enhanced-animation");
+    }
   }
   ```
 
@@ -872,11 +896,12 @@ function applyWobbleAnimation(element) {
 - Example iOS-specific fix:
 
   ```javascript
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isIOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
   if (isIOS) {
-  	// Apply iOS-specific adjustments
-  	element.classList.add('ios-optimized');
+    // Apply iOS-specific adjustments
+    element.classList.add("ios-optimized");
   }
   ```
 

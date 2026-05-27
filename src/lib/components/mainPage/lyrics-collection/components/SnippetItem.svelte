@@ -254,7 +254,7 @@
     on:click={handleDelete}
     class="delete-button absolute {snippet.isCompiled
       ? 'left-2 top-2'
-      : 'right-2 top-2'} flex h-7 w-7 items-center justify-center rounded-full border border-purple-200 bg-white opacity-0 transition-colors duration-150 active:scale-95 group-hover:opacity-100"
+      : 'right-2 top-2'} flex h-11 w-11 items-center justify-center rounded-full border border-purple-200 bg-white opacity-100 transition-colors duration-150 active:scale-95 sm:opacity-0 sm:group-hover:opacity-100"
     aria-label="{snippet.isCompiled && canUndo ? 'Undo combination' : 'Delete lyric'}"
     title="{snippet.isCompiled && canUndo ? 'Undo combination' : 'Delete lyric'}"
   >

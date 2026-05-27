@@ -20,16 +20,16 @@ The application includes a standardized event system called EventBridge that han
 To dispatch a setting change event (which sends both current and legacy format events):
 
 ```javascript
-import { eventBridge } from '$lib/services/infrastructure/eventBridge';
+import { eventBridge } from "$lib/services/infrastructure/eventBridge";
 
 // Dispatch a setting change
-eventBridge.dispatchSettingChanged('theme', 'mint');
+eventBridge.dispatchSettingChanged("theme", "mint");
 
 // For settings specific to the current app version (optional)
-eventBridge.dispatchSettingChanged('newSetting', value, false);
+eventBridge.dispatchSettingChanged("newSetting", value, false);
 
 // For legacy settings that should only use legacy format (rare)
-eventBridge.dispatchSettingChanged('legacySetting', value, true);
+eventBridge.dispatchSettingChanged("legacySetting", value, true);
 ```
 
 #### Listening for Setting Changes
@@ -37,15 +37,18 @@ eventBridge.dispatchSettingChanged('legacySetting', value, true);
 To listen for setting changes (catches both current and legacy events):
 
 ```javascript
-import { eventBridge } from '$lib/services/infrastructure/eventBridge';
+import { eventBridge } from "$lib/services/infrastructure/eventBridge";
 
 // Add a listener for a specific setting
-const removeListener = eventBridge.addSettingChangeListener('theme', (value, event) => {
-  console.log('Theme changed to:', value);
-  
-  // You can also access the original event if needed
-  console.log('Original event:', event);
-});
+const removeListener = eventBridge.addSettingChangeListener(
+  "theme",
+  (value, event) => {
+    console.log("Theme changed to:", value);
+
+    // You can also access the original event if needed
+    console.log("Original event:", event);
+  },
+);
 
 // Later, when you need to remove the listener
 removeListener();
@@ -58,21 +61,24 @@ For application-specific events (non-setting events):
 #### Dispatching App Events
 
 ```javascript
-import { eventBridge } from '$lib/services/infrastructure/eventBridge';
+import { eventBridge } from "$lib/services/infrastructure/eventBridge";
 
 // Dispatch an application event
-eventBridge.dispatchAppEvent('record-started', { duration: 60 });
+eventBridge.dispatchAppEvent("record-started", { duration: 60 });
 ```
 
 #### Listening for App Events
 
 ```javascript
-import { eventBridge } from '$lib/services/infrastructure/eventBridge';
+import { eventBridge } from "$lib/services/infrastructure/eventBridge";
 
 // Add a listener for an application event
-const removeListener = eventBridge.addAppEventListener('record-started', (event) => {
-  console.log('Recording started:', event.detail.duration);
-});
+const removeListener = eventBridge.addAppEventListener(
+  "record-started",
+  (event) => {
+    console.log("Recording started:", event.detail.duration);
+  },
+);
 
 // Later, when you need to remove the listener
 removeListener();
@@ -83,35 +89,42 @@ removeListener();
 ### For Event Dispatchers
 
 Before:
+
 ```javascript
 window.dispatchEvent(
-  new CustomEvent('talktype-setting-changed', {
-    detail: { setting: 'theme', value: 'mint' }
-  })
+  new CustomEvent("talktype-setting-changed", {
+    detail: { setting: "theme", value: "mint" },
+  }),
 );
 ```
 
 After:
+
 ```javascript
-eventBridge.dispatchSettingChanged('theme', 'mint');
+eventBridge.dispatchSettingChanged("theme", "mint");
 ```
 
 ### For Event Listeners
 
 Before:
+
 ```javascript
-window.addEventListener('talktype-setting-changed', (e) => {
-  if (e.detail && e.detail.setting === 'theme') {
+window.addEventListener("talktype-setting-changed", (e) => {
+  if (e.detail && e.detail.setting === "theme") {
     handleThemeChange(e.detail.value);
   }
 });
 ```
 
 After:
+
 ```javascript
-const removeListener = eventBridge.addSettingChangeListener('theme', (value) => {
-  handleThemeChange(value);
-});
+const removeListener = eventBridge.addSettingChangeListener(
+  "theme",
+  (value) => {
+    handleThemeChange(value);
+  },
+);
 ```
 
 ## Advanced Features
@@ -122,9 +135,9 @@ The EventBridge automatically normalizes setting names to ensure consistent hand
 
 ```javascript
 // These all dispatch the same event
-eventBridge.dispatchSettingChanged('theme', 'mint');
-eventBridge.dispatchSettingChanged('Theme', 'mint');
-eventBridge.dispatchSettingChanged('THEME', 'mint');
+eventBridge.dispatchSettingChanged("theme", "mint");
+eventBridge.dispatchSettingChanged("Theme", "mint");
+eventBridge.dispatchSettingChanged("THEME", "mint");
 ```
 
 ### Event Constants
@@ -132,11 +145,11 @@ eventBridge.dispatchSettingChanged('THEME', 'mint');
 For direct use of event prefixes (rare):
 
 ```javascript
-import { eventBridge } from '$lib/services/infrastructure/eventBridge';
+import { eventBridge } from "$lib/services/infrastructure/eventBridge";
 
 const { EVENT_PREFIXES } = eventBridge;
 console.log(EVENT_PREFIXES.CURRENT); // Current app prefix
-console.log(EVENT_PREFIXES.LEGACY);  // Legacy app prefix
+console.log(EVENT_PREFIXES.LEGACY); // Legacy app prefix
 ```
 
 ## Implementation Details
@@ -144,6 +157,7 @@ console.log(EVENT_PREFIXES.LEGACY);  // Legacy app prefix
 The EventBridge is implemented in `src/lib/services/infrastructure/eventBridge.js` and provides a clean interface for all application events.
 
 The system:
+
 - Dispatches events in both formats for backward compatibility
 - Normalizes event names to prevent case sensitivity issues
 - Handles cleanup of event listeners automatically

@@ -24,19 +24,10 @@
   // === PROCESSING ZONE: IMPORTS AND DEPENDENCIES ===
   // === IMPORTS CHUNK START ===
   import { onMount, onDestroy } from 'svelte';
-  import { fade, fly, scale } from 'svelte/transition';
   import Confetti from '$lib/components/ui/effects/Confetti.svelte';
   import { eventBridge } from '$lib/services/infrastructure/eventBridge';
   import { createLogger } from '$lib/services/infrastructure/loggerService';
   import { 
-    playGrabSound, 
-    playEditSound, 
-    playDeleteSound, 
-    playDragStartSound, 
-    playDropSound, 
-    playCopySound, 
-    playHoverSound,
-    playCompileSound,
     playCardHoverSound
   } from '../sound-integration.js';
   // === IMPORTS CHUNK END ===
@@ -46,7 +37,6 @@
   // === COMPONENT IMPORTS CHUNK START ===
   // Import extracted components
   import { 
-    SnippetItem, 
     HeaderActions, 
     EmptyState,
     NotificationDisplay,
@@ -453,7 +443,7 @@
       
       // Step 2: Set up event listeners using eventBridge
       // This handles both LineSnap and TalkType events
-      const removeThemeListener = eventBridge.addSettingChangeListener('theme', (value) => {
+      removeThemeListener = eventBridge.addSettingChangeListener('theme', (value) => {
         logger.info('Theme change detected:', value);
         handleThemeChange(value);
       });

@@ -1,6 +1,7 @@
 # Glossary - RiffRap
 
 ## Components (Svelte)
+
 - `AudioToText` - Main recording and transcription container (lib/components/mainPage/audio-transcript/AudioToText.svelte)
 - `RecordButtonWithTimer` - Recording control with visual feedback (lib/components/mainPage/audio-transcript/RecordButtonWithTimer.svelte)
 - `AudioVisualizer` - Real-time audio waveform visualization (lib/components/mainPage/audio-transcript/AudioVisualizer.svelte)
@@ -25,6 +26,7 @@
 - `PageLayout` - Base page layout (lib/components/layout/PageLayout.svelte)
 
 ## Services
+
 - `audioService.js` - Microphone access, recording, audio processing (lib/services/audio/)
 - `AudioService_Recording.js` - Recording logic (lib/services/audio/)
 - `AudioService_Visualizer.js` - Visualizer logic (lib/services/audio/)
@@ -39,12 +41,14 @@
 - `gradientThemes.js` - Ghost gradient themes (lib/services/theme/)
 
 ## Infrastructure Services
+
 - `errorHandler.js` - Centralized error handling with custom error classes
 - `eventBridge.js` - Cross-component event communication
 - `loggerService.js` - Structured logging system
 - `storageUtils.js` - LocalStorage abstraction with encryption
 
 ## Core Concepts
+
 - **Service-Oriented Architecture** - AudioService, TranscriptionService, Infrastructure Services
 - **Ghost Animation System** - SVG-based reactive theming, eye tracking, state-based animations
 - **Lyrics Collection** - Organize, edit, export transcribed snippets

@@ -5,9 +5,8 @@
 	import ContentContainer from './ContentContainer.svelte';
 	import FooterComponent from './FooterComponent.svelte';
 	import { geminiService } from '$lib/services/geminiService';
-	import { themeService } from '$lib/services/theme';
 	import { modalService } from '$lib/services/modals';
-	import { firstVisitService, isFirstVisit } from '$lib/services/first-visit';
+	import { firstVisitService } from '$lib/services/first-visit';
 	import { pwaService, deferredInstallPrompt, showPwaInstallPrompt } from '$lib/services/pwa';
 	import { isRecording as recordingStore } from '$lib/services';
 	import { PageLayout } from '$lib/components/layout';
@@ -272,7 +271,6 @@
 					debug('Auto-record enabled, attempting to start recording immediately');
 					try {
 						contentContainer.startRecording();
-						ghostContainer.startWobbleAnimation();
 						debug('Auto-record: Called startRecording()');
 					} catch (err) {
 						debug(`Auto-record: Error starting recording: ${err.message}`);
@@ -322,10 +320,8 @@
 			debug('Added listeners for settings changes and show-settings events');
 		}
 
-		// Keep the first-visit state current without auto-opening a native
-		// dialog, because showModal() hides the root scrollbar while it is open.
-		firstVisitService.checkFirstVisit();
-	});
+			firstVisitService.showIntroModal('intro_modal', 600);
+		});
 </script>
 
 <PageLayout>

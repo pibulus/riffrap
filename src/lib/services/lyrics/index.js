@@ -1,1 +1,1 @@
-export { snippetStore } from './snippetStore';
+export { snippetStore } from "./snippetStore";

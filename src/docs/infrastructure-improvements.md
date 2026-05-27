@@ -17,23 +17,29 @@ A new event bridge system has been implemented to standardize event handling acr
 
 ```javascript
 // Import the event bridge
-import { eventBridge } from '$lib/services/infrastructure/eventBridge';
+import { eventBridge } from "$lib/services/infrastructure/eventBridge";
 
 // Dispatch setting changes
-eventBridge.dispatchSettingChanged('theme', 'ocean'); // Sends both 'linesnap-setting-changed' and 'talktype-setting-changed'
+eventBridge.dispatchSettingChanged("theme", "ocean"); // Sends both 'linesnap-setting-changed' and 'talktype-setting-changed'
 
 // Listen for setting changes
-const removeListener = eventBridge.addSettingChangeListener('theme', (value) => {
-  console.log('Theme changed:', value);
-});
+const removeListener = eventBridge.addSettingChangeListener(
+  "theme",
+  (value) => {
+    console.log("Theme changed:", value);
+  },
+);
 
 // Dispatch application events
-eventBridge.dispatchAppEvent('record-started', { duration: 60 });
+eventBridge.dispatchAppEvent("record-started", { duration: 60 });
 
 // Listen for application events
-const removeAppListener = eventBridge.addAppEventListener('record-started', (event) => {
-  console.log('Recording started:', event.detail);
-});
+const removeAppListener = eventBridge.addAppEventListener(
+  "record-started",
+  (event) => {
+    console.log("Recording started:", event.detail);
+  },
+);
 
 // Clean up listeners
 removeListener();
@@ -65,19 +71,19 @@ A centralized logging system has been implemented to standardize debugging and l
 
 ```javascript
 // Import the logger
-import { createLogger } from '$lib/services/infrastructure/loggerService';
+import { createLogger } from "$lib/services/infrastructure/loggerService";
 
 // Create a logger for a specific component
-const logger = createLogger('MyComponent');
+const logger = createLogger("MyComponent");
 
 // Use the logger
-logger.debug('Detailed debug information');
-logger.info('General information');
-logger.warn('Warning message');
-logger.error('Error message', errorObject);
+logger.debug("Detailed debug information");
+logger.info("General information");
+logger.warn("Warning message");
+logger.error("Error message", errorObject);
 
 // Advanced logging
-logger.group('Group title');
+logger.group("Group title");
 logger.table(data);
 logger.groupEnd();
 ```

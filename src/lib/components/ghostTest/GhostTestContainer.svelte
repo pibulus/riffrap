@@ -1,6 +1,5 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
-	import GhostSvg from './GhostSvg.svelte';
 	import StatePanel from './StatePanel.svelte';
 	import ControlPanel from './ControlPanel.svelte';
 	import { animationGenerationService } from '$lib/services/animationGenerationService';

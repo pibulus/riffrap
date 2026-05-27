@@ -7,19 +7,20 @@
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
   background-size: 100% 100%;
   background-position: 0% 0%;
-  transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1), 
-              box-shadow 0.2s cubic-bezier(0.25, 0.1, 0.25, 1), 
-              background-image 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
-  
+  transition:
+    transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+    box-shadow 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+    background-image 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+
   /* Simple gradient */
   background-image: linear-gradient(
     to right,
     rgba(251, 191, 36, 1),
     rgba(245, 158, 11, 0.96)
   );
-  
+
   /* Basic shadow */
-  box-shadow: 
+  box-shadow:
     0 4px 6px -1px rgba(251, 191, 36, 0.2),
     0 2px 4px -1px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
@@ -33,11 +34,21 @@
   right: 0;
   bottom: 0;
   left: 0;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.8) 1%, transparent 5%),
-                    radial-gradient(circle, rgba(255, 255, 255, 0.6) 1%, transparent 10%),
-                    radial-gradient(circle, rgba(255, 255, 255, 0.4) 1%, transparent 15%);
-  background-position: 85% 15%, 30% 40%, 60% 80%;
-  background-size: 400% 400%, 300% 300%, 200% 200%;
+  background-image: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.8) 1%,
+      transparent 5%
+    ),
+    radial-gradient(circle, rgba(255, 255, 255, 0.6) 1%, transparent 10%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.4) 1%, transparent 15%);
+  background-position:
+    85% 15%,
+    30% 40%,
+    60% 80%;
+  background-size:
+    400% 400%,
+    300% 300%,
+    200% 200%;
   background-repeat: no-repeat;
   opacity: 0;
   animation: sparkle-entry 1.5s ease-out forwards;
@@ -47,7 +58,10 @@
 @keyframes sparkle-entry {
   0% {
     opacity: 0;
-    background-position: 85% 15%, 30% 40%, 60% 80%;
+    background-position:
+      85% 15%,
+      30% 40%,
+      60% 80%;
   }
   20% {
     opacity: 1;
@@ -57,14 +71,19 @@
   }
   100% {
     opacity: 0;
-    background-position: 90% 20%, 35% 50%, 70% 90%;
+    background-position:
+      90% 20%,
+      35% 50%,
+      70% 90%;
   }
 }
 
 /* Focus state */
 .record-button:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.4), 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 0 0 3px rgba(251, 191, 36, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Enhanced focus ring for keyboard navigation */
@@ -76,7 +95,7 @@
 /* Hover state */
 .record-button:hover:not(:disabled) {
   transform: translateY(-1px) scale(1.02);
-  box-shadow: 
+  box-shadow:
     0 6px 10px -2px rgba(251, 191, 36, 0.25),
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -95,7 +114,7 @@
 /* Active/pressed state */
 .record-button:active:not(:disabled) {
   transform: translateY(1px) scale(0.98);
-  box-shadow: 
+  box-shadow:
     0 2px 4px -1px rgba(251, 191, 36, 0.15),
     0 1px 2px -1px rgba(0, 0, 0, 0.1),
     inset 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -142,7 +161,7 @@
 }
 
 .pulse-animation::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -4px;
   right: -4px;
@@ -155,7 +174,8 @@
 }
 
 @keyframes button-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     box-shadow: 0 0 10px 2px rgba(251, 191, 36, 0.4);
   }
@@ -169,7 +189,8 @@
   0% {
     opacity: 0.5;
   }
-  70%, 100% {
+  70%,
+  100% {
     opacity: 0;
   }
 }
@@ -178,7 +199,7 @@
 .notification-pulse {
   animation: notification-glow 2.5s ease-in-out infinite;
   transform-origin: center;
-  box-shadow: 
+  box-shadow:
     0 0 15px 3px rgba(139, 92, 246, 0.2),
     0 0 5px 1px rgba(139, 92, 246, 0.1);
   background-image: linear-gradient(
@@ -190,14 +211,15 @@
 }
 
 @keyframes notification-glow {
-  0%, 100% {
-    box-shadow: 
+  0%,
+  100% {
+    box-shadow:
       0 0 10px 1px rgba(139, 92, 246, 0.2),
       0 0 3px 0px rgba(139, 92, 246, 0.1);
     transform: scale(1);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 0 18px 4px rgba(139, 92, 246, 0.3),
       0 0 8px 2px rgba(139, 92, 246, 0.15);
     transform: scale(1.003);
@@ -236,45 +258,48 @@
 .recording-active {
   position: relative;
   overflow: hidden;
-  
+
   /* Bright golden glow for normal recording state */
-  background-image: 
-    linear-gradient(to right, 
-      rgba(251, 191, 36, 1), 
-      rgba(251, 191, 36, 1) var(--progress, 0%), 
-      rgba(251, 191, 36, 0.5) calc(var(--progress, 0%) + 0.5%), 
+  background-image:
+    linear-gradient(
+      to right,
+      rgba(251, 191, 36, 1),
+      rgba(251, 191, 36, 1) var(--progress, 0%),
+      rgba(251, 191, 36, 0.5) calc(var(--progress, 0%) + 0.5%),
       rgba(245, 158, 11, 0.4) 100%
     ),
     /* Subtle noise texture overlay */
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.07'/%3E%3C/svg%3E");
-  
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.07'/%3E%3C/svg%3E");
+
   background-size: 100% 100%;
-  box-shadow: 
-    0 4px 15px -1px rgba(251, 191, 36, 0.35), 
+  box-shadow:
+    0 4px 15px -1px rgba(251, 191, 36, 0.35),
     inset 0 0 10px rgba(251, 191, 36, 0.2),
     0 0 20px rgba(251, 191, 36, 0.2);
   border: 1px solid rgba(251, 191, 36, 0.3);
   /* Smoother & faster transitions for clearer state changes */
-  transition: 
-    background-image 0.3s ease-out, 
-    box-shadow 0.3s ease-out, 
+  transition:
+    background-image 0.3s ease-out,
+    box-shadow 0.3s ease-out,
     border 0.3s ease-out,
     transform 0.2s ease;
 }
 
 /* Simple warning/danger gradients for recording states */
 .recording-warning {
-  background-image: linear-gradient(to right, 
-    rgb(251, 146, 60) var(--progress, 0%), 
-    rgba(251, 146, 60, 0.5) var(--progress, 0%), 
+  background-image: linear-gradient(
+    to right,
+    rgb(251, 146, 60) var(--progress, 0%),
+    rgba(251, 146, 60, 0.5) var(--progress, 0%),
     rgba(234, 88, 12, 0.3) 100%
   );
 }
 
 .recording-danger {
-  background-image: linear-gradient(to right, 
-    rgb(239, 68, 68) var(--progress, 0%), 
-    rgba(239, 68, 68, 0.5) var(--progress, 0%), 
+  background-image: linear-gradient(
+    to right,
+    rgb(239, 68, 68) var(--progress, 0%),
+    rgba(239, 68, 68, 0.5) var(--progress, 0%),
     rgba(220, 38, 38, 0.3) 100%
   );
 }
@@ -288,7 +313,9 @@
 
 /* Enhanced text visibility when recording */
 .text-shadow-recording {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 0 1px rgba(0, 0, 0, 0.1);
   font-weight: 700;
   letter-spacing: 0.01em;
 }
@@ -308,7 +335,8 @@
 
 /* Subtle pulse animation for danger state */
 @keyframes pulse-subtle {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -325,7 +353,9 @@
 /* Lyrics collection animation */
 .lyrics-collected-animation {
   animation: lyrics-get-flash 2s ease-out forwards;
-  box-shadow: 0 0 15px rgba(236, 72, 153, 0.4), 0 0 30px rgba(236, 72, 153, 0.2);
+  box-shadow:
+    0 0 15px rgba(236, 72, 153, 0.4),
+    0 0 30px rgba(236, 72, 153, 0.2);
   background-image: linear-gradient(
     to right,
     rgba(255, 228, 230, 0.95),
@@ -341,7 +371,9 @@
       rgba(255, 228, 230, 0.95),
       rgba(252, 231, 243, 0.95)
     );
-    box-shadow: 0 0 15px rgba(236, 72, 153, 0.4), 0 0 30px rgba(236, 72, 153, 0.2);
+    box-shadow:
+      0 0 15px rgba(236, 72, 153, 0.4),
+      0 0 30px rgba(236, 72, 153, 0.2);
     transform: scale(1);
   }
   20% {
@@ -350,7 +382,9 @@
       rgba(249, 168, 212, 0.95),
       rgba(244, 114, 182, 0.95)
     );
-    box-shadow: 0 0 25px rgba(236, 72, 153, 0.6), 0 0 40px rgba(236, 72, 153, 0.3);
+    box-shadow:
+      0 0 25px rgba(236, 72, 153, 0.6),
+      0 0 40px rgba(236, 72, 153, 0.3);
     transform: scale(1.02);
   }
   40% {
@@ -367,7 +401,9 @@
       rgba(249, 168, 212, 0.95),
       rgba(244, 114, 182, 0.95)
     );
-    box-shadow: 0 0 15px rgba(236, 72, 153, 0.4), 0 0 30px rgba(236, 72, 153, 0.2);
+    box-shadow:
+      0 0 15px rgba(236, 72, 153, 0.4),
+      0 0 30px rgba(236, 72, 153, 0.2);
     transform: scale(1.01);
   }
   100% {
@@ -376,7 +412,8 @@
       rgba(251, 191, 36, 1),
       rgba(245, 158, 11, 0.96)
     );
-    box-shadow: 0 4px 6px -1px rgba(251, 191, 36, 0.2),
+    box-shadow:
+      0 4px 6px -1px rgba(251, 191, 36, 0.2),
       0 2px 4px -1px rgba(0, 0, 0, 0.1),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transform: scale(1);
@@ -388,7 +425,7 @@
   .button-content {
     font-size: 0.95em;
   }
-  
+
   .timer-display {
     font-size: 0.9em;
   }

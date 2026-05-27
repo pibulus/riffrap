@@ -1,6 +1,6 @@
 # 🔧 TINKER.md - RiffRap Quick Reference
 
-*For when you haven't touched this in 6 months and need to change something NOW*
+_For when you haven't touched this in 6 months and need to change something NOW_
 
 **ADHD MODE**: Jump to [QUICK WINS](#-quick-wins---80-of-what-youll-change) or [WHEN SHIT BREAKS](#-when-shit-breaks---top-3-fixes)
 
@@ -9,6 +9,7 @@
 ## 🚀 START HERE - RUN THE DAMN THING
 
 ### Dev Mode
+
 ```bash
 # STACK: SVELTEKIT + VITE + TAILWIND + DAISYUI
 npm run dev
@@ -16,12 +17,14 @@ npm run dev
 ```
 
 ### Production Build
+
 ```bash
 npm run build
 npm run preview
 ```
 
 ### Health Check
+
 ```bash
 npm run lint        # Check code quality
 npm run format      # Auto-format code
@@ -29,6 +32,7 @@ npm run lighthouse  # Performance audit
 ```
 
 ### Dev Scripts
+
 ```bash
 npm run list        # List dev script commands
 npm run generate    # Generate code/components
@@ -56,6 +60,7 @@ riffrap/
 ```
 
 ### The Files You'll Actually Touch:
+
 1. **src/routes/+page.svelte** - Main app page
 2. **src/lib/components/ghost/** - Ghost character with SVG animations
 3. **src/lib/components/mainPage/audio-transcript/** - Recording + transcription UI
@@ -74,6 +79,7 @@ riffrap/
 ## 🎯 QUICK WINS - 80% OF WHAT YOU'LL CHANGE
 
 ### 1. Change the Main Text/Copy
+
 ```
 File: src/routes/+page.svelte
 Look for: <h1> and <p> tags with app title/description
@@ -81,6 +87,7 @@ What: Main page copy, headers, button labels
 ```
 
 ### 2. Change Colors/Theme
+
 ```
 File: tailwind.config.js
 Look for: theme: { extend: { colors: {...} } }
@@ -90,6 +97,7 @@ DaisyUI docs: https://daisyui.com/docs/themes/
 ```
 
 ### 3. Change App Name/Title
+
 ```
 File: src/app.html
 Look for: <title>RiffRap</title>
@@ -104,6 +112,7 @@ And: static/manifest.json (for PWA if exists)
 ## 🔧 COMMON TWEAKS
 
 ### Add a New Page/Route
+
 ```bash
 # SvelteKit routing:
 Create: src/routes/newpage/+page.svelte
@@ -114,6 +123,7 @@ Create: src/routes/newpage/+layout.svelte
 ```
 
 ### Change Port
+
 ```bash
 # Vite default is 5173
 # To change, add to package.json dev script:
@@ -121,6 +131,7 @@ Create: src/routes/newpage/+layout.svelte
 ```
 
 ### Use Dev Scripts
+
 ```bash
 # Scripts are in scripts/dev.js
 npm run list       # See available commands
@@ -129,6 +140,7 @@ npm run parse-prd  # Parse PRD docs
 ```
 
 ### Add/Remove DaisyUI Component
+
 ```bash
 # DaisyUI is already installed
 # Use components directly in Svelte files:
@@ -143,6 +155,7 @@ https://daisyui.com/components/
 ## 💥 WHEN SHIT BREAKS - TOP 3 FIXES
 
 ### 1. Port Already in Use
+
 ```bash
 # Find what's using port 5173:
 lsof -i :5173
@@ -154,6 +167,7 @@ kill -9 PID_NUMBER
 ```
 
 ### 2. Dependencies Fucked
+
 ```bash
 # Nuclear option:
 rm -rf node_modules package-lock.json
@@ -164,6 +178,7 @@ npm run dev
 ```
 
 ### 3. Build Fails
+
 ```bash
 # Clean everything:
 rm -rf dist .svelte-kit node_modules
@@ -180,6 +195,7 @@ npm run build
 ## 🚦 DEPLOYMENT - SHIP IT
 
 ### One-Liner Deploy (Vercel)
+
 ```bash
 # Install Vercel CLI:
 npm i -g vercel
@@ -189,6 +205,7 @@ vercel --prod
 ```
 
 ### Manual Deploy Steps
+
 1. Build it: `npm run build`
 2. Test it: `npm run preview`
 3. Audit: `npm run lighthouse`
@@ -220,6 +237,7 @@ vercel --prod
 - **Vercel adapter**: Production-ready
 
 ### Pablo's Project Quirks:
+
 - Voice-to-lyrics workflow (not general transcription)
 - Ghost character provides visual feedback for app states
 - iOS-specific audio handling in audioService.js
@@ -251,6 +269,7 @@ npm run dev
 ```
 
 **Quick paths:**
+
 - Main page: `src/routes/+page.svelte`
 - Components: `src/lib/components/`
 - Colors: `tailwind.config.js`
@@ -258,4 +277,4 @@ npm run dev
 
 ---
 
-*Generated for RiffRap 🎸*
+_Generated for RiffRap 🎸_

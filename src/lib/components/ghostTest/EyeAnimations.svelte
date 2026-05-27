@@ -74,9 +74,4 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    button.active {
-        background: #4f46e5;
-        color: white;
-        border-color: #4338ca;
-    }
 </style>

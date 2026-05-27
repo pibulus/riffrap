@@ -4,7 +4,7 @@
  * to fix import path issues.
  */
 
-import { soundService } from '$lib/services/sound';
+import { soundService } from "$lib/services/sound";
 
 // Sound functions needed by the lyrics collection component
 export function playGrabSound() {

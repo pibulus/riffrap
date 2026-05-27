@@ -54,7 +54,6 @@
       clone.dataset.relocated = 'true';
       
       // Set absolute positioning based on original tooltip position
-      const rect = tooltip.getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
       
       clone.style.position = 'fixed';

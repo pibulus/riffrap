@@ -1,16 +1,3 @@
-<script>
-	import { onMount } from 'svelte';
-	export let title = 'RiffRap | Turn Your Voice Into Song Lyrics';
-	export let description =
-		'Gibberish in. Killer lines out. You riff the bars — we fill the gaps with RiffRap.';
-	export const footerYear = new Date().getFullYear();
-</script>
-
-<svelte:head>
-	<title>{title}</title>
-	<meta name="description" content={description} />
-</svelte:head>
-
 <section
 	class="bg-gradient-mesh main center hero min-h-[100dvh] gap-5 px-4 pt-4 pb-28 sm:pb-20 font-sans text-black antialiased sm:px-6 md:px-8"
 >
