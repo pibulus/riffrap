@@ -39,7 +39,7 @@ function isAllowedOrigin(origin) {
 }
 
 export function getGeminiModel() {
-  return env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+  return env.GEMINI_MODEL || "gemini-flash-lite-latest";
 }
 
 export function getMaxUploadBytes() {
