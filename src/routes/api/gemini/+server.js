@@ -78,6 +78,22 @@ function withTimeout(promise) {
   );
 }
 
+async function withRetry(fn, { tries = 3, baseMs = 600 } = {}) {
+  let lastErr;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const msg = String(err?.message || err);
+      const transient = /\b(503|429|overload|UNAVAILABLE|RESOURCE_EXHAUSTED)\b/i.test(msg);
+      lastErr = err;
+      if (!transient || i === tries - 1) throw err;
+      await new Promise((r) => setTimeout(r, baseMs * 2 ** i));
+    }
+  }
+  throw lastErr;
+}
+
 export async function POST(event) {
   try {
     const guardResponse = guardRequest(event);
@@ -141,7 +157,9 @@ export async function POST(event) {
       const prompt = getPrompt("generateAnimation", "standard", {
         description,
       });
-      const result = await withTimeout(getModel().generateContent(prompt));
+      const result = await withTimeout(
+        withRetry(() => getModel().generateContent(prompt)),
+      );
       const response = await result.response;
       return noStoreJson({ text: response.text() });
     }
@@ -192,15 +210,17 @@ export async function POST(event) {
     }
 
     const result = await withTimeout(
-      getModel().generateContent([
-        prompt,
-        {
-          inlineData: {
-            data: audioData,
-            mimeType: normalizedMimeType,
+      withRetry(() =>
+        getModel().generateContent([
+          prompt,
+          {
+            inlineData: {
+              data: audioData,
+              mimeType: normalizedMimeType,
+            },
           },
-        },
-      ]),
+        ]),
+      ),
     );
 
     const response = await result.response;
