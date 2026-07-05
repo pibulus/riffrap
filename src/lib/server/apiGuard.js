@@ -4,6 +4,21 @@ import { dev } from "$app/environment";
 
 const rateLimitBuckets = new Map();
 
+// Hard cap on tracked keys so a flood of unique IPs (e.g. spoofed
+// X-Forwarded-For values when cf-connecting-ip is absent) can't grow the Map
+// without bound. Map preserves insertion order, so oldest-first eviction.
+const MAX_RATE_LIMIT_BUCKETS = 10_000;
+
+function evictOldestBucketsIfNeeded() {
+  if (rateLimitBuckets.size <= MAX_RATE_LIMIT_BUCKETS) return;
+  const overflow = rateLimitBuckets.size - MAX_RATE_LIMIT_BUCKETS;
+  let removed = 0;
+  for (const key of rateLimitBuckets.keys()) {
+    rateLimitBuckets.delete(key);
+    if (++removed >= overflow) break;
+  }
+}
+
 function toPositiveInt(value, fallback) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -66,6 +81,7 @@ export function guardRequest(event) {
       count: 1,
       resetAt: now + rateWindowMs,
     });
+    evictOldestBucketsIfNeeded();
     return null;
   }
 

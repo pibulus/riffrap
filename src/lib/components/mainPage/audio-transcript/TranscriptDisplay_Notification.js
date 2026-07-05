@@ -18,6 +18,15 @@ import {
 import { dev } from "$app/environment";
 import { get } from "svelte/store";
 
+// This file's console.log calls are leftover DOM-hunting debug scaffolding
+// (selected text, fallback-path tracing) — gate them so they never leak
+// user transcript content to a production console.
+function debugLog(...args) {
+  if (dev) {
+    console.log(...args);
+  }
+}
+
 // Export notification functions
 export function showNotification({ message, type = "info" }) {
   // Clear any existing notification timeout
@@ -90,7 +99,7 @@ export function handleCollectSnippet(event) {
 
   // Skip if collection already in progress
   if (typeof window !== "undefined" && window.collectionInProgress) {
-    console.log(
+    debugLog(
       "Collection already in progress in handleCollectSnippet, skipping",
     );
     return;
@@ -99,16 +108,16 @@ export function handleCollectSnippet(event) {
   // Set flag to prevent duplicate collection
   if (typeof window !== "undefined") {
     window.collectionInProgress = true;
-    console.log("Setting collection in progress flag in handleCollectSnippet");
+    debugLog("Setting collection in progress flag in handleCollectSnippet");
   }
 
   const parentContainer = get(parentContainerStore);
 
-  console.log("TranscriptDisplay.handleCollectSnippet called with text:", text);
-  console.log("parentContainer exists:", !!parentContainer);
+  debugLog("TranscriptDisplay.handleCollectSnippet called with text:", text);
+  debugLog("parentContainer exists:", !!parentContainer);
 
   if (parentContainer) {
-    console.log(
+    debugLog(
       "parentContainer addLyricsSnippet exists:",
       typeof parentContainer.addLyricsSnippet === "function",
     );
@@ -122,13 +131,11 @@ export function handleCollectSnippet(event) {
       typeof window !== "undefined" &&
       typeof window.addToMainCollectionBox === "function"
     ) {
-      console.log("Using direct window.addToMainCollectionBox method");
+      debugLog("Using direct window.addToMainCollectionBox method");
       try {
         const added = window.addToMainCollectionBox(text);
         if (added) {
-          console.log(
-            "Collection successful via window.addToMainCollectionBox",
-          );
+          debugLog("Collection successful via window.addToMainCollectionBox");
           collectionSuccessful = true;
         }
       } catch (err) {
@@ -142,18 +149,18 @@ export function handleCollectSnippet(event) {
       parentContainer &&
       typeof parentContainer.addLyricsSnippet === "function"
     ) {
-      console.log(
+      debugLog(
         "TranscriptDisplay: Trying parentContainer.addLyricsSnippet as fallback",
       );
       try {
         const added = parentContainer.addLyricsSnippet(text);
-        console.log(
+        debugLog(
           "TranscriptDisplay: parentContainer.addLyricsSnippet returned:",
           added,
         );
 
         if (added) {
-          console.log("Collection successful via parent container");
+          debugLog("Collection successful via parent container");
           collectionSuccessful = true;
         }
       } catch (err) {
@@ -163,7 +170,7 @@ export function handleCollectSnippet(event) {
 
     // 3. Global trigger method (last resort)
     if (!collectionSuccessful && typeof window !== "undefined") {
-      console.log("Attempting collection via global trigger mechanism");
+      debugLog("Attempting collection via global trigger mechanism");
       window.transcriptSelectedText = text.trim();
       window.transcriptCollectTrigger = true;
 
@@ -195,7 +202,7 @@ export function handleCollectSnippet(event) {
     if (typeof window !== "undefined") {
       setTimeout(() => {
         window.collectionInProgress = false;
-        console.log(
+        debugLog(
           "Resetting collection in progress flag in handleCollectSnippet",
         );
       }, 500);
@@ -217,7 +224,7 @@ export function handleCollectSnippet(event) {
     // Reset collection flag
     if (typeof window !== "undefined") {
       window.collectionInProgress = false;
-      console.log("Resetting collection in progress flag - no valid text");
+      debugLog("Resetting collection in progress flag - no valid text");
     }
   }
 }
@@ -233,9 +240,7 @@ export function handleCollectionError(event) {
   // Reset collection flag
   if (typeof window !== "undefined") {
     window.collectionInProgress = false;
-    console.log(
-      "Resetting collection in progress flag in handleCollectionError",
-    );
+    debugLog("Resetting collection in progress flag in handleCollectionError");
   }
 }
 
@@ -245,7 +250,7 @@ export function handleDirectCollection(event) {
 
   // Skip if collection already in progress
   if (typeof window !== "undefined" && window.collectionInProgress) {
-    console.log(
+    debugLog(
       "Collection already in progress in handleDirectCollection, skipping",
     );
     return;
@@ -254,9 +259,7 @@ export function handleDirectCollection(event) {
   // Set flag to prevent duplicate collection
   if (typeof window !== "undefined") {
     window.collectionInProgress = true;
-    console.log(
-      "Setting collection in progress flag in handleDirectCollection",
-    );
+    debugLog("Setting collection in progress flag in handleDirectCollection");
   }
 
   if (!text || !text.trim()) {
@@ -273,7 +276,7 @@ export function handleDirectCollection(event) {
     return;
   }
 
-  console.log("TranscriptDisplay: Direct collection requested:", text);
+  debugLog("TranscriptDisplay: Direct collection requested:", text);
 
   // Try multiple collection methods in order of preference
   const parentContainer = get(parentContainerStore);
@@ -284,12 +287,12 @@ export function handleDirectCollection(event) {
     typeof window.addToMainCollectionBox === "function"
   ) {
     try {
-      console.log(
+      debugLog(
         "Using direct window.addToMainCollectionBox method for direct collection",
       );
       const added = window.addToMainCollectionBox(text);
       if (added) {
-        console.log(
+        debugLog(
           "Direct collection successful via window.addToMainCollectionBox",
         );
         collectionSuccessful = true;
@@ -309,13 +312,13 @@ export function handleDirectCollection(event) {
     typeof parentContainer.addLyricsSnippet === "function"
   ) {
     try {
-      console.log(
+      debugLog(
         "Using parentContainer.addLyricsSnippet as fallback for direct collection",
       );
       const success = parentContainer.addLyricsSnippet(text);
 
       if (success) {
-        console.log("Direct collection successful via parent container");
+        debugLog("Direct collection successful via parent container");
         collectionSuccessful = true;
       }
     } catch (err) {
@@ -328,7 +331,7 @@ export function handleDirectCollection(event) {
 
   // 3. Global trigger method (last resort)
   if (!collectionSuccessful && typeof window !== "undefined") {
-    console.log("Attempting direct collection via global trigger mechanism");
+    debugLog("Attempting direct collection via global trigger mechanism");
     window.transcriptSelectedText = text.trim();
     window.transcriptCollectTrigger = true;
 
@@ -361,7 +364,7 @@ export function handleDirectCollection(event) {
   if (typeof window !== "undefined") {
     setTimeout(() => {
       window.collectionInProgress = false;
-      console.log(
+      debugLog(
         "Resetting collection in progress flag in handleDirectCollection",
       );
     }, 500);
@@ -374,12 +377,12 @@ export function handleClickOutside(event) {
   // Don't hide if clicking on the selection button
   const isSelectButton = event.target.closest(".selection-button-container");
   if (isSelectButton) {
-    console.log("Click on selection button, keeping visible");
+    debugLog("Click on selection button, keeping visible");
     return;
   }
 
   if (editableTranscript && !editableTranscript.contains(event.target)) {
-    console.log("Click outside transcript, hiding selection button");
+    debugLog("Click outside transcript, hiding selection button");
     hideSelectionButton();
   }
 }
@@ -389,7 +392,7 @@ export function handleKeyboardShortcut(event) {
 
   // Debug shortcut: Ctrl+Shift+A adds test snippet
   if (dev && event.ctrlKey && event.shiftKey && event.key === "A") {
-    console.log("Debug shortcut: Adding current selection");
+    debugLog("Debug shortcut: Adding current selection");
     if (selectedText) {
       handleCollectSnippet({ detail: { text: selectedText } });
     } else {

@@ -85,7 +85,8 @@ async function withRetry(fn, { tries = 3, baseMs = 600 } = {}) {
       return await fn();
     } catch (err) {
       const msg = String(err?.message || err);
-      const transient = /\b(503|429|overload|UNAVAILABLE|RESOURCE_EXHAUSTED)\b/i.test(msg);
+      const transient =
+        /\b(503|429|overload|UNAVAILABLE|RESOURCE_EXHAUSTED)\b/i.test(msg);
       lastErr = err;
       if (!transient || i === tries - 1) throw err;
       await new Promise((r) => setTimeout(r, baseMs * 2 ** i));

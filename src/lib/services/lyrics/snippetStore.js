@@ -24,7 +24,6 @@ const createSnippetStore = () => {
 
     // Add a new snippet to the collection
     addSnippet: (text) => {
-      console.log("Adding snippet:", text);
       update((snippets) => {
         const newSnippet = {
           id: generateId(),
@@ -34,7 +33,6 @@ const createSnippetStore = () => {
         };
 
         const updatedSnippets = [...snippets, newSnippet];
-        console.log("Updated snippets:", updatedSnippets);
 
         // Save to localStorage
         if (browser) {

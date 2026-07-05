@@ -53,6 +53,7 @@ export class AudioService {
     this.analyserRef = { current: null };
     this.animationFrameIdRef = { current: null };
     this.cleanupPromiseRef = { current: null };
+    this.maxDurationTimeoutRef = { current: null };
 
     // Set up state management
     this.stateManager = createStateManager();
@@ -90,6 +91,8 @@ export class AudioService {
       streamRef: this.streamRef,
       mediaRecorderRef: this.mediaRecorderRef,
       audioChunksRef: this.audioChunksRef,
+      maxDurationTimeoutRef: this.maxDurationTimeoutRef,
+      stopRecording: this.stopRecording.bind(this),
     };
 
     return startRecordingImpl(context);
@@ -100,6 +103,8 @@ export class AudioService {
    * @returns {Promise<Blob|null>} The recorded audio blob or null if failed
    */
   async stopRecording() {
+    clearTimeout(this.maxDurationTimeoutRef.current);
+
     const context = {
       stateManager: this.stateManager,
       mediaRecorderRef: this.mediaRecorderRef,

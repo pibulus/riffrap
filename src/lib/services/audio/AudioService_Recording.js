@@ -18,8 +18,15 @@ import { createLogger } from "../infrastructure/loggerService";
 import { AudioStates } from "./audioStates";
 import { eventBridge } from "../infrastructure/eventBridge";
 import { audioState, audioActions, uiActions } from "../infrastructure/stores";
+import { ANIMATION } from "$lib/constants";
 
 const logger = createLogger("AudioService:Recording");
+
+// Speech doesn't need music bitrates, and the server forwards this as a JSON
+// base64 payload with no size guard reachable below the platform body-size
+// cap — 48kbps keeps quality identical for voice while using a fraction of
+// the bytes-per-second the browser default (~128kbps) would.
+const SPEECH_AUDIO_BITS_PER_SECOND = 48000;
 
 /**
  * Starts a new audio recording session
@@ -99,12 +106,16 @@ export async function startRecording(context) {
         ? ["audio/mp4", "audio/aac", "audio/webm", ""]
         : ["audio/webm", "audio/ogg", ""];
 
-      let mediaRecorderOptions = null;
+      let mediaRecorderOptions = {
+        audioBitsPerSecond: SPEECH_AUDIO_BITS_PER_SECOND,
+      };
       let selectedMimeType = "";
 
       for (const mimeType of mimeTypes) {
         if (!mimeType || MediaRecorder.isTypeSupported(mimeType)) {
-          mediaRecorderOptions = mimeType ? { mimeType } : undefined;
+          mediaRecorderOptions = mimeType
+            ? { mimeType, audioBitsPerSecond: SPEECH_AUDIO_BITS_PER_SECOND }
+            : { audioBitsPerSecond: SPEECH_AUDIO_BITS_PER_SECOND };
           selectedMimeType = mimeType || "default";
           break;
         }
@@ -137,6 +148,22 @@ export async function startRecording(context) {
       mediaRecorderRef.current.start(1000);
       stateManager.setState(AudioStates.RECORDING);
       logger.info("Started recording audio");
+
+      // The timer UI displays ANIMATION.RECORDING.LIMIT as a countdown but
+      // nothing enforced it — a user could keep talking well past the
+      // displayed cap. Force-stop so the recording (and the JSON payload it
+      // becomes) can't grow unbounded.
+      if (context.maxDurationTimeoutRef) {
+        clearTimeout(context.maxDurationTimeoutRef.current);
+        context.maxDurationTimeoutRef.current = setTimeout(() => {
+          if (stateManager.getState() === AudioStates.RECORDING) {
+            logger.info("Max recording duration reached, auto-stopping", {
+              limitSeconds: ANIMATION.RECORDING.LIMIT,
+            });
+            context.stopRecording?.();
+          }
+        }, ANIMATION.RECORDING.LIMIT * 1000);
+      }
 
       // Dispatch recording started event
       eventBridge.dispatchAppEvent("audio-recording-started", {

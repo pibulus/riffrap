@@ -113,7 +113,6 @@ function createLyricsStore() {
       }
 
       const formattedText = formatText(text);
-      console.log("Adding snippet:", formattedText);
 
       update((state) => {
         const newSnippet = {

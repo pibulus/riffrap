@@ -1,6 +1,13 @@
 <script>
   import { createEventDispatcher } from 'svelte';
-  
+  import { dev } from '$app/environment';
+
+  function debugLog(...args) {
+    if (dev) {
+      console.log(...args);
+    }
+  }
+
   // Props
   export let left = 0;
   export let top = 0;
@@ -12,37 +19,36 @@
   
   // Handle collect button click - avoids store for reliability
   function handleCollect() {
-    // Log for debugging
-    console.log('Collect button clicked, selectedText:', selectedText);
-    
+    debugLog('Collect button clicked, selectedText:', selectedText);
+
     if (!selectedText || !selectedText.trim()) {
       console.error("No text selected to collect");
       dispatch('collection-error', { message: 'No text selected' });
       return;
     }
-    
+
     const textToCollect = selectedText.trim();
-    console.log('Text to collect:', textToCollect);
-    
+    debugLog('Text to collect:', textToCollect);
+
     // PURPLE BOX DIRECT INTEGRATION
     if (typeof window !== 'undefined') {
       window.transcriptSelectedText = textToCollect;
       window.transcriptCollectTrigger = true;
-      
+
       // Try all possible collection functions
       if (window.addToMainCollectionBox) {
-        console.log('Directly adding to main collection box');
+        debugLog('Directly adding to main collection box');
         window.addToMainCollectionBox(textToCollect);
       }
-      
+
       if (window.addToFixedPanel) {
-        console.log('Directly adding to fixed debug panel');
+        debugLog('Directly adding to fixed debug panel');
         window.addToFixedPanel(textToCollect);
       }
-      
+
       // Also try the standalone box
       if (window.addToStandaloneBox) {
-        console.log('Directly adding to standalone box');
+        debugLog('Directly adding to standalone box');
         window.addToStandaloneBox(textToCollect);
       }
     }

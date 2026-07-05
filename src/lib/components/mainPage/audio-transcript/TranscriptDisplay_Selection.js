@@ -19,6 +19,16 @@ import {
 } from "./TranscriptDisplay_Core.js";
 
 import { get } from "svelte/store";
+import { dev } from "$app/environment";
+
+// This file's console.log calls are leftover DOM-hunting debug scaffolding
+// (selected text, fallback-path tracing) — gate them so they never leak
+// user transcript content to a production console.
+function debugLog(...args) {
+  if (dev) {
+    console.log(...args);
+  }
+}
 
 // Simple line-by-line selection system
 
@@ -106,16 +116,14 @@ export function handleTextSelection(event) {
         // Use a flag to prevent duplicate collection
         if (typeof window !== "undefined" && !window.collectionInProgress) {
           window.collectionInProgress = true;
-          console.log(
-            "Setting collection in progress flag to prevent duplicates",
-          );
+          debugLog("Setting collection in progress flag to prevent duplicates");
 
           setTimeout(() => {
             // Look for a button with specific class
             let grabLyricsButton = document.querySelector(".collect-button");
 
             if (grabLyricsButton) {
-              console.log("Found Grab Lyrics button, triggering click!");
+              debugLog("Found Grab Lyrics button, triggering click!");
               grabLyricsButton.click();
 
               // Show success notification - use dispatch from store
@@ -130,7 +138,7 @@ export function handleTextSelection(event) {
               // Reset collection flag after a delay
               setTimeout(() => {
                 window.collectionInProgress = false;
-                console.log("Resetting collection in progress flag");
+                debugLog("Resetting collection in progress flag");
               }, 500);
 
               return; // Exit if we successfully found and clicked the button
@@ -141,7 +149,7 @@ export function handleTextSelection(event) {
               typeof window !== "undefined" &&
               typeof window.addToMainCollectionBox === "function"
             ) {
-              console.log("Using direct window.addToMainCollectionBox method");
+              debugLog("Using direct window.addToMainCollectionBox method");
               const result = window.addToMainCollectionBox(selectionText);
 
               if (result) {
@@ -156,7 +164,7 @@ export function handleTextSelection(event) {
                 // Reset collection flag after a delay
                 setTimeout(() => {
                   window.collectionInProgress = false;
-                  console.log("Resetting collection in progress flag");
+                  debugLog("Resetting collection in progress flag");
                 }, 500);
 
                 return; // Exit if direct method worked
@@ -167,7 +175,7 @@ export function handleTextSelection(event) {
             window.collectionInProgress = false;
           }, 50);
         } else {
-          console.log(
+          debugLog(
             "Collection already in progress, skipping duplicate collection",
           );
         }
@@ -177,7 +185,7 @@ export function handleTextSelection(event) {
         setTimeout(() => {
           // Skip fallback if collection is already in progress
           if (typeof window !== "undefined" && window.collectionInProgress) {
-            console.log("Collection in progress, skipping fallback methods");
+            debugLog("Collection in progress, skipping fallback methods");
             return;
           }
 
@@ -201,7 +209,7 @@ export function handleTextSelection(event) {
             if (typeof window !== "undefined") {
               setTimeout(() => {
                 window.collectionInProgress = false;
-                console.log(
+                debugLog(
                   "Resetting collection in progress flag (fallback method)",
                 );
               }, 500);
@@ -209,7 +217,7 @@ export function handleTextSelection(event) {
           } else {
             // No valid collection method found - try setting global trigger
             if (typeof window !== "undefined") {
-              console.log("Using global trigger for collection");
+              debugLog("Using global trigger for collection");
               window.transcriptCollectTrigger = true;
 
               // Show notification and use global method if available
@@ -266,7 +274,7 @@ export function handleTextSelection(event) {
         // No longer need to set selectionActive since we don't show buttons anymore
       }
 
-      console.log("Selected text:", selectionText);
+      debugLog("Selected text:", selectionText);
     } else if (selectionText.length === 0) {
       selectedTextStore.set("");
       if (typeof window !== "undefined") {
