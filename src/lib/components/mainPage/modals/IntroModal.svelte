@@ -19,7 +19,7 @@
 </script>
 
 <dialog bind:this={modalElement} id="intro_modal" class="modal modal-bottom sm:modal-middle" aria-labelledby="intro_modal_title" aria-modal="true">
-  <div class="modal-box relative bg-[#fff9ed] rounded-3xl p-6 sm:p-8 md:p-10 w-[95%] max-w-[90vw] sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto border-0"
+  <div class="modal-box relative bg-[#fff9ed] rounded-3xl p-6 sm:p-8 md:p-10 w-[95%] max-w-[90vw] sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto border-0 max-h-[85vh] overflow-y-auto"
     style="box-shadow: 0 10px 25px -5px rgba(249, 168, 212, 0.3), 0 8px 10px -6px rgba(249, 168, 212, 0.2), 0 0 15px rgba(249, 168, 212, 0.15);">
 
     <form method="dialog">
@@ -33,7 +33,9 @@
         </div>
       </div>
 
-      <h1 id="intro_modal_title" class="text-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight text-gray-900">
+      <!-- Capped at 3xl: 4xl/5xl inside a modal panel pushes the CTAs below
+           the fold on ~800px desktop viewports (known family bug). -->
+      <h1 id="intro_modal_title" class="text-center text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight text-gray-900">
         RiffRap's the trick. <br> Write rhymes that stick.
       </h1>
 
