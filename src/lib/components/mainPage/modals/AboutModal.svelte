@@ -46,10 +46,36 @@
         "Transforming your wildest vocal riffs into lines that actually kinda slap."
       </div>
 
-      <div class="flex justify-end items-end pt-2">
+      <!-- Privacy one-liner (family standard) -->
+      <p class="text-xs text-gray-500 leading-relaxed">
+        Your lyric collection lives on this device. Your voice makes one quick trip to the
+        transcriber to become words, then it's gone.
+      </p>
+
+      <div class="flex items-center gap-3 pt-2">
+        <a
+          href="https://ko-fi.com/madebypablo"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center min-h-11 text-xs text-pink-600 hover:text-pink-800 font-medium transition-colors"
+        >
+          ☕ Coffee jar
+        </a>
+        <a
+          href="https://github.com/pibulus"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center min-h-11 text-xs text-gray-500 hover:text-gray-700 font-medium transition-colors"
+        >
+          GitHub
+        </a>
+      </div>
+
+      <div class="flex justify-between items-end pt-2">
         <div>
           <p class="text-xs text-gray-500">Made with 💜 and mezcal in Melbourne, Australia</p>
         </div>
+        <div class="flex items-center gap-2 text-xs font-medium text-gray-600">Pablo</div>
       </div>
     </div>
   </div>

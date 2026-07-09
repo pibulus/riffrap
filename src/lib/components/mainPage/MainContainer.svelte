@@ -347,11 +347,7 @@
 		</div>
 	</ErrorBoundary>
 	<svelte:fragment slot="footer-buttons">
-		<FooterComponent
-			on:showAbout={showAboutModal}
-			on:showSettings={openSettingsModal}
-			on:showExtension={showExtensionModal}
-		/>
+		<FooterComponent on:showAbout={showAboutModal} on:showSettings={openSettingsModal} />
 	</svelte:fragment>
 </PageLayout>
 
