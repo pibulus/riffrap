@@ -33,7 +33,7 @@
   class="relative title-container mx-auto max-w-2xl px-4 sm:px-6 md:px-8 py-1 sm:py-2 md:py-3 flex flex-col items-center justify-center text-center space-y-1 sm:space-y-2 md:space-y-3 lg:space-y-2"
 >
   <h1
-    class="mb-0 text-5xl font-black tracking-tight text-center cursor-default select-none staggered-text sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl leading-[1.05]"
+    class="mb-0 text-[clamp(3rem,9vmin_+_1.1rem,8rem)] font-black tracking-tight text-center cursor-default select-none staggered-text leading-[1.05]"
     style="font-weight: 900; letter-spacing: -0.02em; font-feature-settings: 'kern' 1; font-kerning: normal; font-variation-settings: 'wght' 900, 'opsz' 32;"
     aria-label={title}
   >
