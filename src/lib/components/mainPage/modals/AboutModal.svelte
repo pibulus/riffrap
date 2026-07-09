@@ -48,8 +48,7 @@
 
       <!-- Privacy one-liner (family standard) -->
       <p class="text-xs text-gray-500 leading-relaxed">
-        Your lyric collection lives on this device. Your voice makes one quick trip to the
-        transcriber to become words, then it's gone.
+        Your lyric collection lives on this device — nothing's kept anywhere else.
       </p>
 
       <div class="flex items-center gap-3 pt-2">
