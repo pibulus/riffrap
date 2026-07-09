@@ -75,6 +75,34 @@
   // Service instances
   let services;
   let unsubscribers = [];
+
+  // On short desktop viewports the hero (mascot + title + button) can push the
+  // waveform card below the fold behind the fixed footer — zero visible
+  // feedback that the mic hears you. Reveal it with a minimal scroll once the
+  // expand animation has run (same fix as talktype).
+  let visualizerSpaceEl;
+  let visualizerRevealTimer = null;
+  $: if ($isRecording && visualizerSpaceEl) scheduleVisualizerReveal();
+
+  function scheduleVisualizerReveal() {
+    if (visualizerRevealTimer) return;
+    visualizerRevealTimer = setTimeout(() => {
+      visualizerRevealTimer = null;
+      try {
+        const reduceMotion = window.matchMedia?.(
+          "(prefers-reduced-motion: reduce)",
+        )?.matches;
+        visualizerSpaceEl?.scrollIntoView({
+          behavior: reduceMotion ? "auto" : "smooth",
+          block: "end",
+        });
+      } catch {
+        // Scrolling is a nicety — never let it break recording.
+      }
+    }, 500);
+  }
+
+  onDestroy(() => clearTimeout(visualizerRevealTimer));
   let timeoutIds = []; // Track all setTimeout calls for cleanup
   let recordingCommandPending = false;
 
@@ -561,7 +589,11 @@
       <!-- Content container with controlled overflow -->
       <div class="content-container flex w-full flex-col items-center gap-2">
         <!-- Audio visualizer - only visible when recording -->
-        <div class="visualizer-space" class:active={$isRecording}>
+        <div
+          class="visualizer-space"
+          class:active={$isRecording}
+          bind:this={visualizerSpaceEl}
+        >
           {#if $isRecording}
             <div
               class="visualizer-container flex w-full justify-center"
@@ -678,6 +710,9 @@
     transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     width: 100%;
     margin-bottom: 0;
+    /* scrollIntoView respects this (unlike margin) — keeps the card clear of
+       the fixed footer when the reveal scroll runs. */
+    scroll-margin-bottom: 7rem;
   }
 
   .visualizer-space.active {

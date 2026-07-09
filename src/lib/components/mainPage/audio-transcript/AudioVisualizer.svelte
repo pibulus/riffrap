@@ -28,8 +28,11 @@
 	const isMac = /Macintosh/i.test(userAgent);
 	const isSafari = /^((?!chrome|android).)*safari/i.test(userAgent);
 
-	// Flag for fallback mode - use for Safari or iOS
-	const useFallbackVisualizer = isiPhone || isSafari;
+	// Honest waveform everywhere: always try the real analyser first (same fix
+	// as talktype). This flips to true ONLY if the real path fails, so the
+	// simulated bars are an error fallback — never a UA-based default that
+	// shows fake levels to every iPhone/Safari user.
+	let usingFallbackVisualizer = false;
 
 	// Tweakable variables within AudioVisualizer
 	let scalingFactor;
@@ -101,6 +104,7 @@
 	let inactiveFrameCounter = 0; // For throttling when inactive
 
 	function initFallbackVisualizer() {
+		usingFallbackVisualizer = true;
 		history = Array(historyLength).fill(0);
 		fallbackAnimating = true;
 		recording = true;
@@ -258,7 +262,7 @@
 
 	// ===== COMMON CONTROL FUNCTIONS =====
 	function startVisualizer() {
-		if (useFallbackVisualizer) {
+		if (usingFallbackVisualizer) {
 			// Start fallback visualizer
 			if (!fallbackAnimating) {
 				fallbackAnimating = true;
@@ -277,7 +281,7 @@
 	function stopVisualizer() {
 		recording = false;
 
-		if (useFallbackVisualizer) {
+		if (usingFallbackVisualizer) {
 			// Let the visualization fade out naturally
 			// The fadeout and stop is handled in updateFallbackVisualizer
 		} else {
@@ -313,18 +317,14 @@
 
 	// ===== LIFECYCLE HOOKS =====
 	onMount(() => {
-		// Initialize visualizer
-		if (useFallbackVisualizer) {
-			initFallbackVisualizer();
-		} else {
-			initStandardVisualizer();
-		}
+		// Always attempt the real analyser; its catch falls back to simulation.
+		initStandardVisualizer();
 	});
 
 	$: {
 		// Reactively update recording state
 		if (recording) {
-			if (useFallbackVisualizer) {
+			if (usingFallbackVisualizer) {
 				if (!fallbackAnimating) {
 					startVisualizer();
 				}

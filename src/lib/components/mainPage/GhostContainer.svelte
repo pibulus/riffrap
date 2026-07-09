@@ -60,7 +60,7 @@
     class:recording={isRecording}
     class:processing={isProcessing}
     on:click={handleToggleRecording}
-    aria-label={isRecording ? "Stop recording" : "Start recording"}
+    aria-label={isRecording ? "RiffRap mascot — stop recording" : "RiffRap mascot — start recording"}
     title={isRecording ? "Stop recording" : "Start recording"}
   >
     <img
