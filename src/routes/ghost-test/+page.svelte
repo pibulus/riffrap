@@ -34,6 +34,6 @@
 	<GhostTestContainer />
 {:else}
 	<div class="flex items-center justify-center min-h-screen">
-		<p class="text-red-600">Failed to load Ghost Test Components</p>
+		<p class="text-rose-600">Failed to load Ghost Test Components</p>
 	</div>
 {/if}
