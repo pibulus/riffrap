@@ -27,10 +27,41 @@ const logger = createLogger("AudioService:Visualizer");
 export async function initializeVisualization(stream, existingContext) {
   let audioContext = existingContext;
 
+  // iOS reroutes the mic hardware (usually to 48kHz) once capture starts. A
+  // context created before getUserMedia keeps its old rate and stays
+  // 'running', but createMediaStreamSource then feeds the analyser pure
+  // silence — flat bars while the recording itself works fine. Recreate the
+  // context at the mic's real rate. (Safe after the grant: WebKit lets
+  // contexts run while capture is active.)
+  const micRate = stream?.getAudioTracks?.()[0]?.getSettings?.()?.sampleRate;
+  if (audioContext && micRate && audioContext.sampleRate !== micRate) {
+    logger.warn(
+      `AudioContext rate ${audioContext.sampleRate} != mic rate ${micRate} — recreating context`,
+    );
+    try {
+      await audioContext.close();
+    } catch (closeError) {
+      logger.warn("Old AudioContext refused to close; replacing anyway", {
+        error: closeError.message,
+      });
+    }
+    audioContext = null;
+  }
+
   if (!audioContext) {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     audioContext = new AudioContext();
     logger.info("Created new AudioContext for visualization");
+  }
+
+  if (audioContext.state === "suspended") {
+    try {
+      await audioContext.resume();
+    } catch (resumeError) {
+      logger.warn("AudioContext resume failed; bars may stay flat", {
+        error: resumeError.message,
+      });
+    }
   }
 
   const source = audioContext.createMediaStreamSource(stream);
