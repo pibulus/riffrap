@@ -96,7 +96,7 @@ class ErrorHandlerService {
         "That recording is too large. Try a shorter take.",
       ERR_API_RATE_LIMIT:
         "Too many transcription attempts. Give it a moment and try again.",
-      ERR_API_SERVER: "The server hit a Gemini configuration problem.",
+      ERR_API_SERVER: "The server hit a transcription configuration problem.",
       ERR_UI:
         "The application encountered an unexpected error. Please try again.",
       ERR_UNKNOWN:

@@ -59,7 +59,7 @@ The rougher, the better — Riff Rap thrives on turning vocal chaos into lyrical
 
 - **SvelteKit** – Reactive UI with minimal overhead
 - **Tailwind CSS + DaisyUI** – For the SoftStack™ design aesthetic
-- **Google Gemini 3.1 Flash-Lite** – AI-powered voice transcription that understands context
+- **Cloud voice transcription** – voice-to-text that understands context and just works
 - **Custom Audio Visualizer** – So you know when you're being heard
 - **PWA-ready** – Install as an app on any device
 - **Brain-friendly UX** – Designed for creative flow states

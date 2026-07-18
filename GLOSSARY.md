@@ -32,7 +32,7 @@
 - `AudioService_Visualizer.js` - Visualizer logic (lib/services/audio/)
 - `AudioService_Core.js` - Core audio functionality (lib/services/audio/)
 - `AudioService_Platform.js` - Platform-specific audio (iOS vs others) (lib/services/audio/)
-- `transcriptionService.js` - Gemini API transcription (lib/services/transcription/)
+- `transcriptionService.js` - Cloud transcription (lib/services/transcription/)
 - `snippetStore.js` - Lyrics collection state (lib/services/lyrics/)
 - `geminiService.js` - Gemini API wrapper (lib/services/)
 - `modalService.js` - Modal management (lib/services/modals/)
@@ -55,4 +55,4 @@
 - **Error Handling** - Custom error classes (RiffRapError, ApiError, UIError), centralized handler
 - **Staggered Text Animation** - Letter-by-letter timing with hardware-accelerated transforms
 - **Platform-Specific Audio** - iOS vs other implementations
-- **Gemini Transcription** - Audio to text via Gemini API
+- **Cloud Transcription** - Audio to text via the server transcription API

@@ -69,7 +69,7 @@ riffrap/
    - AudioVisualizer.svelte - Real-time visualization
 4. **src/lib/components/mainPage/lyrics-collection/** - Organize/edit/export transcripts
 5. **src/lib/services/audio/audioService.js** - Microphone + recording (iOS-specific handling)
-6. **src/lib/services/transcription/transcriptionService.js** - Gemini API transcription
+6. **src/lib/services/transcription/transcriptionService.js** - Cloud transcription
 7. **src/lib/services/** - errorHandler, eventBridge, loggerService, storageUtils
 8. **tailwind.config.js** - Colors and DaisyUI themes
 9. **scripts/dev.js** - Dev automation scripts
@@ -223,7 +223,7 @@ vercel --prod
 - **State management**: Svelte stores + unidirectional data flow
 - **Ghost component**: SVG with reactive theming + state animations
 - **Audio service**: Platform-specific (iOS vs other) + state machine for recording
-- **Transcription**: Gemini API (@google/generative-ai)
+- **Transcription**: cloud API (`@google/generative-ai`)
 - **Infrastructure**:
   - errorHandler.js - Custom error classes
   - eventBridge.js - Cross-component communication
