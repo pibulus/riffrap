@@ -53,14 +53,16 @@
 
 <!-- RiffRap Icon -->
 <div
-  class="riffrap-icon-wrapper mb-0 h-40 w-40 sm:h-44 sm:w-44 md:h-48 md:w-48 lg:h-52 lg:w-52"
+  class="riffrap-icon-wrapper mb-0 h-40 w-40 sm:h-44 sm:w-44 lg:h-48 lg:w-48"
 >
   <button
     class="riffrap-icon-button w-full h-full bg-transparent border-0 p-0 cursor-pointer transition-all duration-300 hover:scale-105 hover:drop-shadow-lg active:scale-95 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 rounded-lg"
     class:recording={isRecording}
     class:processing={isProcessing}
     on:click={handleToggleRecording}
-    aria-label={isRecording ? "RiffRap mascot — stop recording" : "RiffRap mascot — start recording"}
+    aria-label={isRecording
+      ? "RiffRap mascot — stop recording"
+      : "RiffRap mascot — start recording"}
     title={isRecording ? "Stop recording" : "Start recording"}
   >
     <img
