@@ -386,10 +386,11 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 
-  /* Enhanced button pulse with vibrant ring and breathing effect */
+  /* Enhanced button pulse with vibrant ring and breathing effect —
+     4.8s matches the fleet's idle breathe (talktype/daysay/ziplist). */
   .pulse-animation {
     position: relative;
-    animation: button-pulse 2.5s ease-in-out infinite;
+    animation: button-pulse 4.8s ease-in-out infinite;
     transform-origin: center;
   }
 
@@ -403,16 +404,16 @@
     border-radius: 9999px;
     z-index: -1;
     background-color: rgba(251, 191, 36, 0.4);
-    animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+    animation: pulse-ring 4.8s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
   }
-  
+
   .pulse-animation::after {
     content: '';
     position: absolute;
     inset: 0;
     background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
     opacity: 0;
-    animation: inner-glow 2.5s ease-in-out infinite alternate;
+    animation: inner-glow 4.8s ease-in-out infinite alternate;
   }
 
   /* Animation styles */
@@ -452,11 +453,13 @@
     );
   }
 
+  /* Danger = "wrap it up", not "alarm". Warm orange→pink like talktype's
+     danger fill — urgent-feeling, no flat red (fleet rule: no red states). */
   .recording-danger {
-    background-image: linear-gradient(to right, 
-      rgb(239, 68, 68) var(--progress, 0%), 
-      rgba(239, 68, 68, 0.5) var(--progress, 0%), 
-      rgba(220, 38, 38, 0.3) 100%
+    background-image: linear-gradient(to right,
+      rgb(249, 115, 22) var(--progress, 0%),
+      rgba(236, 72, 153, 0.55) var(--progress, 0%),
+      rgba(236, 72, 153, 0.3) 100%
     );
   }
 
@@ -651,6 +654,20 @@
     }
     100% {
       opacity: 0;
+    }
+  }
+
+  /* Fleet standard (talktype/daysay honor this — so do we): motion is
+     decoration, never information. Kill every animation on request. */
+  @media (prefers-reduced-motion: reduce) {
+    .pulse-animation,
+    .pulse-animation::before,
+    .pulse-animation::after,
+    .record-button::after,
+    .notification-pulse,
+    .lyrics-collected-animation,
+    .progress-bar {
+      animation: none !important;
     }
   }
 </style>
