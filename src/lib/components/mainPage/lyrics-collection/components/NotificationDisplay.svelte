@@ -114,12 +114,24 @@
     color: white;
   }
 
+  /* Errors are chill copy in warm rose (talktype's toast family), never
+     alarm red. Error/info also need dark ink — the base .notification-text
+     is white for the success gradient, which was invisible on white. */
   .enhanced-notification.error {
-    border-left: 4px solid #ef4444;
+    border-left: 4px solid #fecdd3;
+    background: #fff1f2;
+  }
+
+  .enhanced-notification.error .notification-text {
+    color: #881337;
   }
 
   .enhanced-notification.info {
     border-left: 4px solid #6366f1;
+  }
+
+  .enhanced-notification.info .notification-text {
+    color: #334155;
   }
 
   .notification-icon {
@@ -143,7 +155,7 @@
   }
 
   .enhanced-notification.error .notification-icon {
-    color: #ef4444;
+    color: #f43f5e;
   }
 
   .enhanced-notification.info .notification-icon {

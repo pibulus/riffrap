@@ -629,7 +629,7 @@
       {#if $errorMessage}
         <div class="error-message mt-6 text-center mx-auto max-w-md">
           <p
-            class="font-medium text-red-500 px-4 py-2 bg-red-50 border border-red-200 rounded-lg shadow-sm"
+            class="font-medium text-rose-900 px-4 py-2 bg-rose-50 border border-rose-200 rounded-lg shadow-sm"
           >
             {$errorMessage}
           </p>

@@ -295,12 +295,14 @@
   );
 }
 
+/* NOTE: this file is not imported anywhere (component keeps styles inline) —
+   kept in sync anyway so a future re-wire can't resurrect the red state. */
 .recording-danger {
   background-image: linear-gradient(
     to right,
-    rgb(239, 68, 68) var(--progress, 0%),
-    rgba(239, 68, 68, 0.5) var(--progress, 0%),
-    rgba(220, 38, 38, 0.3) 100%
+    rgb(249, 115, 22) var(--progress, 0%),
+    rgba(236, 72, 153, 0.55) var(--progress, 0%),
+    rgba(236, 72, 153, 0.3) 100%
   );
 }
 
