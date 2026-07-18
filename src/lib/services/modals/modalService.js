@@ -1,5 +1,10 @@
 import { browser } from "$app/environment";
+import { ANIMATION } from "$lib/constants";
 import { soundService } from "$lib/services/sound";
+
+// Must match --rr-modal-close-ms in app.css (180ms). This is how long we wait
+// before dialog.close() removes the element from the top layer.
+const MODAL_CLOSE_DURATION = ANIMATION.MODAL.CLOSE_DURATION;
 
 export class ModalService {
   constructor() {
@@ -7,6 +12,9 @@ export class ModalService {
     this.scrollPosition = 0;
     this.activeModal = null;
     this.handleNativeClose = null;
+    this.handleCancel = null;
+    this.isClosing = false;
+    this.closeTimer = null;
   }
 
   openModal(modalId) {
@@ -33,6 +41,13 @@ export class ModalService {
     };
     modal.addEventListener("close", this.handleNativeClose, { once: true });
 
+    // Esc: route through the animated close instead of vanishing instantly.
+    this.handleCancel = (event) => {
+      event.preventDefault();
+      this.closeModal();
+    };
+    modal.addEventListener("cancel", this.handleCancel);
+
     // Play popup sound
     soundService.playPopupSound();
 
@@ -45,31 +60,67 @@ export class ModalService {
   }
 
   closeModal() {
-    if (!browser || !this.modalOpen) return;
+    // Proceed even when we didn't open the dialog ourselves (the intro modal
+    // is opened raw via showModal() by firstVisitService) — any open dialog
+    // still deserves the animated close.
+    if (
+      !browser ||
+      this.isClosing ||
+      (!this.modalOpen && !document.querySelector("dialog[open]"))
+    ) {
+      return;
+    }
 
-    this.detachNativeCloseHandler();
+    this.isClosing = true;
 
-    // Close any open dialogs
-    document.querySelectorAll("dialog[open]").forEach((dialog) => {
-      if (dialog && typeof dialog.close === "function") {
-        dialog.close();
-      }
+    const openDialogs = Array.from(document.querySelectorAll("dialog[open]"));
+    openDialogs.forEach((dialog) => {
+      dialog.classList.add("rr-modal-closing");
     });
 
-    this.unlockScroll();
+    const closeDelay = window.matchMedia?.("(prefers-reduced-motion: reduce)")
+      .matches
+      ? 0
+      : MODAL_CLOSE_DURATION;
+
+    this.closeTimer = window.setTimeout(() => {
+      this.closeTimer = null;
+      this.detachNativeCloseHandler();
+
+      openDialogs.forEach((dialog) => {
+        // Close (leave the top layer) BEFORE stripping the closing class, so
+        // the entrance animation can never reappear for a frame.
+        if (dialog && typeof dialog.close === "function" && dialog.open) {
+          dialog.close();
+        }
+        dialog.classList.remove("rr-modal-closing");
+      });
+
+      this.isClosing = false;
+      this.unlockScroll();
+    }, closeDelay);
   }
 
   detachNativeCloseHandler() {
     if (this.activeModal && this.handleNativeClose) {
       this.activeModal.removeEventListener("close", this.handleNativeClose);
     }
+    if (this.activeModal && this.handleCancel) {
+      this.activeModal.removeEventListener("cancel", this.handleCancel);
+    }
     this.handleNativeClose = null;
+    this.handleCancel = null;
   }
 
   unlockScroll() {
-    if (!browser || !this.modalOpen) return;
+    if (!browser) return;
 
     this.detachNativeCloseHandler();
+
+    // Only restore scroll if we were the ones who locked it — a dialog opened
+    // raw (outside the service) never moved the body, and scrolling to a stale
+    // position would jump the page.
+    const wasLocked = document.body.style.position === "fixed";
 
     // Restore body styles
     document.documentElement.classList.remove("modal-active");
@@ -81,7 +132,9 @@ export class ModalService {
     document.body.style.height = "";
 
     // Restore scroll position
-    window.scrollTo(0, this.scrollPosition);
+    if (wasLocked) {
+      window.scrollTo(0, this.scrollPosition);
+    }
 
     this.modalOpen = false;
     this.activeModal = null;

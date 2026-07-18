@@ -363,7 +363,7 @@
 <!-- Settings Modal - lazy loaded -->
 {#if SettingsModal}
 	<!-- Pass the close function down to the component -->
-	<svelte:component this={SettingsModal} on:close={closeSettingsModal} />
+	<svelte:component this={SettingsModal} closeModal={closeSettingsModal} on:close={closeSettingsModal} />
 {/if}
 
 <!-- PWA Install Prompt -->

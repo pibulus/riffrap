@@ -14,13 +14,13 @@
   </main>
 
   <footer
-    class="footer-component fixed bottom-0 left-0 right-0 z-10 box-border border-t border-pink-200/70 bg-gradient-to-r from-[#fff6e6]/90 via-[#ffead8]/90 to-[#fff1df]/90 pb-2 pt-2 text-center text-xs text-gray-600 shadow-[0_-4px_15px_rgba(249,168,212,0.22)] backdrop-blur-[8px] sm:pb-3 sm:pt-3"
+    class="footer-component fixed bottom-0 left-0 right-0 z-10 box-border border-t border-pink-200/70 bg-gradient-to-r from-[#fff6e6]/90 via-[#ffead8]/90 to-[#fff1df]/90 pb-2 pt-2 text-center text-xs text-gray-600 shadow-[0_-4px_15px_rgba(249,168,212,0.22)] backdrop-blur-[8px] sm:pb-3 sm:pt-3 px-4 sm:px-6 md:px-8"
   >
     <div
-      class="container mx-auto flex flex-row items-center justify-center gap-1 sm:justify-between sm:gap-3"
+      class="footer-row mx-auto flex w-full flex-row items-center justify-center gap-3 sm:justify-between"
     >
       <div
-        class="copyright ml-4 hidden flex-wrap items-center justify-center sm:ml-6 sm:flex md:ml-8"
+        class="copyright hidden items-center justify-center sm:flex min-w-0 shrink whitespace-nowrap"
       >
         <span class="mr-1 text-sm font-medium tracking-tight text-gray-500">
           &copy; {footerYear} RiffRap
@@ -35,7 +35,7 @@
           in Melbourne
         </span>
       </div>
-      <div class="flex items-center sm:mr-6 md:mr-8">
+      <div class="flex shrink-0 items-center">
         <slot name="footer-buttons" />
       </div>
     </div>
@@ -78,7 +78,7 @@
       padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
     }
 
-    footer .container {
+    footer .footer-row {
       gap: 0.75rem;
     }
   }

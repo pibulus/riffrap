@@ -3,14 +3,14 @@
   // Theme/vibe selection
   export let selectedVibe;
   export let gradientOptions;
-  
+
   // Feature toggles
   export let autoRecordValue;
   export const promptStyles = null;
   export const selectedPromptStyle = null;
   export const exportAsTextEnabled = false;
   export let soundsEnabled;
-  
+
   // Event handlers from core
   export let handleModalClose;
   export const handleModalOpen = () => {};
@@ -31,7 +31,7 @@
   aria-modal="true"
 >
   <div
-    class="animate-modal-enter modal-box relative max-h-[80vh] w-[95%] max-w-md overflow-y-auto rounded-2xl border border-pink-200 bg-gradient-to-br from-[#fffaef] to-[#fff6e6] shadow-xl md:max-w-lg"
+    class="modal-box relative max-h-[80vh] w-[95%] max-w-md overflow-y-auto rounded-2xl border border-pink-200 bg-gradient-to-br from-[#fffaef] to-[#fff6e6] shadow-xl md:max-w-lg"
   >
     <form method="dialog">
       <slot name="close-button"></slot>
@@ -40,8 +40,15 @@
     <div class="animate-fadeUp space-y-4">
       <!-- Modal Header -->
       <div class="flex items-center gap-3 mb-1">
-        <img src="/LyricSnapIcon.png" alt="RiffRap Icon" class="w-9 h-9 object-contain" />
-        <h3 id="settings_modal_title" class="text-xl font-black tracking-tight text-gray-800">
+        <img
+          src="/LyricSnapIcon.png"
+          alt="RiffRap Icon"
+          class="w-9 h-9 object-contain"
+        />
+        <h3
+          id="settings_modal_title"
+          class="text-xl font-black tracking-tight text-gray-800"
+        >
           Settings
         </h3>
       </div>
@@ -54,14 +61,18 @@
           class="mb-2 flex items-center justify-between rounded-xl border border-pink-100 bg-[#fffdf5] p-2 shadow-sm transition-all duration-200 hover:border-pink-200"
         >
           <div>
-            <span class="text-sm font-medium text-gray-700">Auto-Record on Start</span>
+            <span class="text-sm font-medium text-gray-700"
+              >Auto-Record on Start</span
+            >
             <p class="mt-0.5 text-xs text-gray-500">
               Start recording immediately when you open RiffRap
             </p>
           </div>
           <label class="flex cursor-pointer items-center">
             <span class="sr-only"
-              >Auto-Record Toggle {autoRecordValue ? 'Enabled' : 'Disabled'}</span
+              >Auto-Record Toggle {autoRecordValue
+                ? "Enabled"
+                : "Disabled"}</span
             >
             <div class="relative">
               <input
@@ -71,17 +82,17 @@
                 on:change={handleToggleAutoRecord}
               />
               <div
-                class={`h-5 w-10 rounded-full ${autoRecordValue ? 'bg-pink-400' : 'bg-gray-200'} transition-all duration-200`}
+                class={`h-5 w-10 rounded-full ${autoRecordValue ? "bg-pink-400" : "bg-gray-200"} transition-all duration-200`}
               ></div>
               <div
-                class={`absolute left-0.5 top-0.5 h-4 w-4 transform rounded-full bg-white transition-all duration-200 ${autoRecordValue ? 'translate-x-5' : ''}`}
+                class={`absolute left-0.5 top-0.5 h-4 w-4 transform rounded-full bg-white transition-all duration-200 ${autoRecordValue ? "translate-x-5" : ""}`}
               ></div>
             </div>
           </label>
         </div>
-        
+
         <!-- Export as Text Toggle removed as it's available on main page -->
-        
+
         <!-- Sounds Toggle -->
         <div
           class="mb-2 flex items-center justify-between rounded-xl border border-pink-100 bg-[#fffdf5] p-2 shadow-sm transition-all duration-200 hover:border-pink-200"
@@ -90,11 +101,16 @@
             <span class="text-sm font-medium text-gray-700">Sound Effects</span>
             <p class="mt-0.5 text-xs text-gray-500 flex items-center">
               Enable audio feedback for actions
-              <span class="ml-1 text-amber-500 text-[10px] font-medium border border-amber-200 rounded-full px-1.5 bg-amber-50">BETA</span>
+              <span
+                class="ml-1 text-amber-500 text-[10px] font-medium border border-amber-200 rounded-full px-1.5 bg-amber-50"
+                >BETA</span
+              >
             </p>
           </div>
           <label class="flex cursor-pointer items-center">
-            <span class="sr-only">Sound Effects {soundsEnabled ? 'Enabled' : 'Disabled'}</span>
+            <span class="sr-only"
+              >Sound Effects {soundsEnabled ? "Enabled" : "Disabled"}</span
+            >
             <div class="relative">
               <input
                 type="checkbox"
@@ -103,10 +119,10 @@
                 on:change={handleToggleSounds}
               />
               <div
-                class={`h-5 w-10 rounded-full ${soundsEnabled ? 'bg-blue-400' : 'bg-gray-200'} transition-all duration-200`}
+                class={`h-5 w-10 rounded-full ${soundsEnabled ? "bg-blue-400" : "bg-gray-200"} transition-all duration-200`}
               ></div>
               <div
-                class={`absolute left-0.5 top-0.5 h-4 w-4 transform rounded-full bg-white transition-all duration-200 ${soundsEnabled ? 'translate-x-5' : ''}`}
+                class={`absolute left-0.5 top-0.5 h-4 w-4 transform rounded-full bg-white transition-all duration-200 ${soundsEnabled ? "translate-x-5" : ""}`}
               ></div>
             </div>
           </label>
@@ -121,16 +137,23 @@
           {#each gradientOptions as gradient}
             <button
               on:click={() => handleChangeVibe(gradient.id)}
-              class="gradient-option flex-shrink-0 relative flex flex-col items-center rounded-xl border border-pink-100 bg-[#fffdf5] p-2 shadow-sm transition-all duration-300 hover:border-pink-200 hover:shadow-md {selectedVibe === gradient.id
+              class="gradient-option flex-shrink-0 relative flex flex-col items-center rounded-xl border border-pink-100 bg-[#fffdf5] p-2 shadow-sm transition-all duration-300 hover:border-pink-200 hover:shadow-md {selectedVibe ===
+              gradient.id
                 ? 'selected-vibe border-pink-300 ring-2 ring-pink-200 ring-opacity-60'
                 : ''}"
               data-gradient-id={gradient.id}
             >
-              <div class="preview-container mb-2 w-16 h-10 rounded-lg overflow-hidden">
-                <div class="w-full h-full bg-gradient-to-r {gradient.gradient}"></div>
+              <div
+                class="preview-container mb-2 w-16 h-10 rounded-lg overflow-hidden"
+              >
+                <div
+                  class="w-full h-full bg-gradient-to-r {gradient.gradient}"
+                ></div>
               </div>
 
-              <span class="text-xs font-medium text-gray-700">{gradient.name}</span>
+              <span class="text-xs font-medium text-gray-700"
+                >{gradient.name}</span
+              >
 
               {#if selectedVibe === gradient.id}
                 <div
@@ -150,22 +173,14 @@
     </div>
   </div>
 
+  <!-- Routes through handleModalClose → modalService.closeModal() so the
+       backdrop tap gets the same animated close as the ✕ button. -->
   <div
-    class="modal-backdrop bg-black/40"
-    on:click|self|preventDefault|stopPropagation={() => {
-      const modal = document.getElementById('settings_modal');
-      if (modal) {
-        modal.close();
-        setTimeout(handleModalClose, 50);
-      }
-    }}
+    class="modal-backdrop"
+    on:click|self|preventDefault|stopPropagation={handleModalClose}
     on:keydown={(e) => {
-      if (e.key === 'Escape') {
-        const modal = document.getElementById('settings_modal');
-        if (modal) {
-          modal.close();
-          setTimeout(handleModalClose, 50);
-        }
+      if (e.key === "Escape") {
+        handleModalClose();
       }
     }}
     role="button"
@@ -173,6 +188,10 @@
     aria-label="Close modal backdrop"
   ></div>
 </dialog>
+<!-- === END PROCESSING ZONE: COMPONENT STYLES === -->
+
+<!-- TRAIL MARKER (Unit Cleanup): This component handles the UI rendering for the settings modal -->
+
 <!-- === END PROCESSING ZONE: MODAL STRUCTURE === -->
 
 <!-- === PROCESSING ZONE: COMPONENT STYLES === -->
@@ -227,73 +246,6 @@
     transform: translateY(0px);
   }
 
-  /* Modal centering and animation styles */
-  :global(dialog.modal) {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    overflow: hidden !important;
-    max-height: 100vh !important;
-    max-width: 100vw !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
-    border: none !important;
-    inset: 0 !important;
-  }
-
-  /* Ensure modal box is centered and properly styled */
-  :global(.modal-box) {
-    position: relative !important;
-    margin: 1.5rem auto !important;
-    transform: none !important;
-    transition:
-      transform 0.3s ease-out,
-      opacity 0.3s ease-out !important;
-  }
-
-  /* Modal entrance animation */
-  .animate-modal-enter {
-    animation: modalEnter 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-    will-change: transform, opacity;
-  }
-
-  @keyframes modalEnter {
-    0% {
-      opacity: 0;
-      transform: scale(0.95) translateY(10px);
-    }
-    60% {
-      opacity: 1;
-      transform: scale(1.02) translateY(-5px);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-  }
-
-  /* Fix modal backdrop with animation */
-  :global(.modal-backdrop) {
-    animation: backdropFadeIn 0.3s ease forwards !important;
-    background-color: rgba(0, 0, 0, 0.4) !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    position: fixed !important;
-    right: 0 !important;
-    top: 0 !important;
-    z-index: -1 !important;
-  }
-
-  @keyframes backdropFadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
+  /* Modal centering, backdrop, and open/close motion all live in app.css
+     (shared modal DNA) — nothing modal-structural belongs in here. */
 </style>
-<!-- === END PROCESSING ZONE: COMPONENT STYLES === -->
-
-<!-- TRAIL MARKER (Unit Cleanup): This component handles the UI rendering for the settings modal -->

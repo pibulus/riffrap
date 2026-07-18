@@ -53,25 +53,199 @@ body.modal-active {
   position: relative !important;
 }
 
-/* Modal fixes to prevent scrollbar issues */
+/* ===================================================================
+   MODAL DNA — centered floating card at every breakpoint (talktype ref)
+   =================================================================== */
+:root {
+  /* Keep --rr-modal-close-ms in sync with ANIMATION.MODAL.CLOSE_DURATION in
+     src/lib/constants.js; modalService uses it to time DOM teardown. */
+  --rr-modal-open-ms: 280ms;
+  --rr-modal-close-ms: 180ms;
+  --rr-modal-open-ease: cubic-bezier(0.16, 0.84, 0.24, 1.06);
+  --rr-modal-close-ease: cubic-bezier(0.4, 0, 0.24, 1);
+  --rr-modal-panel-width: min(92vw, 32rem);
+  --rr-modal-padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+/* Modal fixes to prevent scrollbar issues. The explicit width/height/margin
+   override the UA's default dialog sizing — without them the dialog is inset
+   from the viewport and the "centered" box sits visibly off-centre. */
 .modal {
   padding: 0 !important;
   overflow: hidden !important;
   position: fixed !important;
   inset: 0 !important;
+  /* 100% (not 100vw/100dvh): riffrap reserves a classic scrollbar via
+     html { overflow-y: scroll }, and 100vw includes that scrollbar — the
+     "centered" card would sit ~7px off-centre on any browser with classic
+     scrollbars. Percentages resolve against the viewport minus scrollbar. */
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+/* Centered card on every form factor — no bottom sheets. The padding is a
+   gutter so the card never touches the viewport edge on small screens. */
+dialog.modal[open] {
+  display: grid !important;
+  place-items: center !important;
+  padding: clamp(0.75rem, 2.5vw, 1.5rem) !important;
 }
 
 dialog.modal::backdrop {
-  background-color: rgba(0, 0, 0, 0.4);
+  background: transparent;
 }
 
-/* Custom modal styling */
+/* Warm-dark blurred backdrop. Targets the in-DOM .modal-backdrop element each
+   modal renders; the native ::backdrop above stays transparent so this one
+   paints (and can animate on close). */
+.modal > .modal-backdrop,
+.modal .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  cursor: pointer;
+  background-color: rgba(43, 38, 32, 0.46);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  animation: rr-modal-backdrop-in var(--rr-modal-close-ms) ease-out both;
+}
+
+/* ONE modal frame family-wide: 32rem max width, fluid padding, centered. */
 .modal-box {
   max-height: 85vh !important;
   overflow-y: auto !important;
-  margin: 1rem auto !important;
-  width: 95% !important;
+  /* The dialog is a centering grid; a vertical margin here would offset the
+     box from true centre. Padding on the dialog provides the viewport gutter. */
+  margin: 0 !important;
+  width: var(--rr-modal-panel-width) !important;
+  max-width: none !important;
+  padding: var(--rr-modal-padding) !important;
   border-radius: 1.5rem !important;
+  transform-origin: center;
+  /* Must stack above the fixed .modal-backdrop (z-index: 0) — with z-index
+     auto the later-DOM backdrop paints on top and eats every click. */
+  position: relative;
+  z-index: 1;
+}
+
+/* Every modal wraps its close button in a bare `<form method="dialog">`. Make
+   that wrapper sticky so the button rides along at the top of the panel
+   instead of scrolling out of reach. Zero-height so it never displaces the
+   content beneath it. */
+.modal-box > form:has(> .modal-close-btn) {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  height: 0;
+  overflow: visible;
+}
+
+/* Fade the top edge of the panel to its own background so scrolling content
+   dissolves out instead of sliding behind the pinned close button mid-glyph.
+   Sits under the button and above the content; never eats pointer events. */
+.modal-box > form:has(> .modal-close-btn)::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--rr-modal-padding));
+  left: calc(-1 * var(--rr-modal-padding));
+  right: calc(-1 * var(--rr-modal-padding));
+  height: 4rem;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 250, 239, 0.97) 0%,
+    rgba(255, 250, 239, 0.9) 55%,
+    rgba(255, 250, 239, 0) 100%
+  );
+  border-radius: 1.5rem 1.5rem 0 0;
+}
+
+/* OPEN animation — pop-in scoped to open, NON-closing dialogs so the entrance
+   can't restart for a frame during teardown. */
+dialog.modal[open]:not(.rr-modal-closing) > .modal-box {
+  animation: rr-modal-pop-in var(--rr-modal-open-ms) var(--rr-modal-open-ease)
+    both;
+}
+
+/* CLOSE animation — driven by modalService adding .rr-modal-closing before
+   the native dialog.close(). */
+dialog.modal.rr-modal-closing {
+  pointer-events: none;
+}
+
+dialog.modal.rr-modal-closing > .modal-box {
+  animation: rr-modal-pop-out var(--rr-modal-close-ms)
+    var(--rr-modal-close-ease) both;
+}
+
+dialog.modal.rr-modal-closing > .modal-backdrop,
+dialog.modal.rr-modal-closing .modal-backdrop {
+  animation: rr-modal-backdrop-out var(--rr-modal-close-ms) ease-out both;
+}
+
+/* Rises and settles with one small overshoot. No rotation — matches talktype. */
+@keyframes rr-modal-pop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.015);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes rr-modal-pop-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+
+@keyframes rr-modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rr-modal-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Honor reduced-motion: modal enters/leaves near-instantly. */
+@media (prefers-reduced-motion: reduce) {
+  dialog.modal[open]:not(.rr-modal-closing) > .modal-box,
+  dialog.modal.rr-modal-closing > .modal-box,
+  .modal > .modal-backdrop,
+  .modal .modal-backdrop,
+  dialog.modal.rr-modal-closing > .modal-backdrop,
+  dialog.modal.rr-modal-closing .modal-backdrop {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 /* Ensure scrollbars don't cause layout shifts */

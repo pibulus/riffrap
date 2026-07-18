@@ -3,40 +3,37 @@
    * A reusable modal close button component that provides consistent styling and behavior
    * across all modals in the application.
    */
-  import { playPopOffSound } from '../sound-integration.js';
-  
-  export let position = 'right-3 top-3';
-  export let size = 'md';
-  export let label = 'Close';
+  import { playPopOffSound } from "../sound-integration.js";
+  import { modalService } from "$lib/services/modals/modalService.js";
+
+  export let position = "right-3 top-3";
+  export let size = "md";
+  export let label = "Close";
   export let closeModal;
   export let modalId = null;
-  
+
   // Size classes mapping
   const sizeClasses = {
-    sm: 'h-11 w-11 text-sm',
-    md: 'h-11 w-11 text-base',
-    lg: 'h-12 w-12 text-lg'
+    sm: "h-11 w-11 text-sm",
+    md: "h-11 w-11 text-base",
+    lg: "h-12 w-12 text-lg",
   };
-  
+
   // Get size classes based on the size prop
   const sizeClass = sizeClasses[size] || sizeClasses.md;
-  
-  // Handle click with both dialog closing and function call
+
+  // Let the shared modal service own animated closes — calling dialog.close()
+  // here directly would skip the pop-out animation entirely.
   function handleClick() {
-    // Play close sound
     playPopOffSound();
-    
-    if (modalId) {
-      // Close the dialog by ID first
-      const modal = document.getElementById(modalId);
-      if (modal && typeof modal.close === 'function') {
-        modal.close();
-      }
-    }
-    
-    // Then call the provided closeModal function
-    if (typeof closeModal === 'function') {
+
+    if (typeof closeModal === "function") {
       closeModal();
+      return;
+    }
+
+    if (modalId) {
+      modalService.closeModal();
     }
   }
 </script>
@@ -47,7 +44,10 @@
   aria-label={label}
   on:click|preventDefault={handleClick}
 >
-  <span class="relative leading-none flex items-center justify-center h-full w-full">✕</span>
+  <span
+    class="relative leading-none flex items-center justify-center h-full w-full"
+    >✕</span
+  >
 </button>
 
 <style>
