@@ -68,6 +68,7 @@
   // Export functionality (copy/download)
   // No direct dependencies on other modules
   import { copyToClipboard, downloadLyricsAsText } from './modules/exportManager';
+  import { notePwaMoment } from '$lib/components/PwaInstallCard.svelte';
   
   // Snippet combination/compilation with undo support
   // Dependencies: lyricsStore (for saving state)
@@ -238,6 +239,7 @@
       () => {
         // Set visual feedback state
         copySuccess = true;
+        notePwaMoment(); // copied lyrics earn the install suggestion
         
         // Clear any existing timeout to prevent multiple timers
         if (copyTimeout) clearTimeout(copyTimeout);

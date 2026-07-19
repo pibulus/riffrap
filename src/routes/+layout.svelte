@@ -3,6 +3,7 @@
 	import { soundService } from '$lib/services/sound';
 	import { onMount } from 'svelte';
 	import { ErrorBoundary, ErrorNotification } from '$lib/components/ui';
+	import PwaInstallCard from '$lib/components/PwaInstallCard.svelte';
 	
 	// Get data from the loader function and props
 	let { children, data } = $props();
@@ -66,3 +67,10 @@
 <ErrorBoundary>
 	{@render children()}
 </ErrorBoundary>
+
+<PwaInstallCard
+	appName="RiffRap"
+	tagline="Gibberish in, killer lines out."
+	iconSrc="/icons/icon-192x192.png"
+	storagePrefix="riffrap"
+/>
