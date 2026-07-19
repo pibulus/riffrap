@@ -961,8 +961,9 @@
   }
 
   .lyrics-collected-toast.error {
-    background: linear-gradient(to right, rgba(254, 226, 226, 0.9), rgba(254, 226, 226, 0.7));
-    border-left: 4px solid #F87171;
+    background: linear-gradient(to right, rgba(255, 228, 230, 0.9), rgba(255, 228, 230, 0.7));
+    border-left: 4px solid #fecdd3;
+    color: #881337;
   }
 
   .lyrics-collected-toast.info {
@@ -985,7 +986,7 @@
   }
 
   .toast-error-icon {
-    color: #F87171;
+    color: #f43f5e;
   }
 
   .toast-info-icon {
