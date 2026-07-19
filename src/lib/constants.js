@@ -190,27 +190,27 @@ export const CTA_PHRASES = [
 
 // Clipboard Success Messages
 export const COPY_MESSAGES = [
-  "Copied to clipboard! ✨",
-  "Boom! In your clipboard! 🎉",
-  "Text saved to clipboard! 👍",
-  "Snagged that for you! 🙌",
-  "All yours now! 💫",
-  "Copied and ready to paste! 📋",
-  "Captured in clipboard! ✅",
-  "Text copied successfully! 🌟",
-  "Got it! Ready to paste! 🚀",
-  "Your text is saved! 💖",
-  "Copied with magic! ✨",
-  "Text safely copied! 🔮",
-  "Copied and good to go! 🎯",
-  "Saved to clipboard! 🎊",
+  "Copied to clipboard!",
+  "Boom! In your clipboard!",
+  "Text saved to clipboard!",
+  "Snagged that for you!",
+  "All yours now!",
+  "Copied and ready to paste!",
+  "Captured in clipboard!",
+  "Text copied successfully!",
+  "Got it! Ready to paste!",
+  "Your text is saved!",
+  "Copied with magic!",
+  "Text safely copied!",
+  "Copied and good to go!",
+  "Saved to clipboard!",
 ];
 
 // Attribution Tags
 export const ATTRIBUTION = {
-  SIMPLE_TAG: "𝘙𝘪𝘧𝘧𝘦𝘥 𝘣𝘺 𝘙𝘪𝘧𝘧 𝘙𝘢𝘱 💜",
-  SHARE_POSTFIX: "\n\n𝘙𝘪𝘧𝘧𝘦𝘥 𝘣𝘺 𝘙𝘪𝘧𝘧 𝘙𝘢𝘱 💜",
-  FOCUS_RECOVERY_MESSAGE: "Click in window first, then copy again! 🔍",
+  SIMPLE_TAG: "𝘙𝘪𝘧𝘧𝘦𝘥 𝘣𝘺 𝘙𝘪𝘧𝘧 𝘙𝘢𝘱",
+  SHARE_POSTFIX: "\n\n𝘙𝘪𝘧𝘧𝘦𝘥 𝘣𝘺 𝘙𝘪𝘧𝘧 𝘙𝘢𝘱",
+  FOCUS_RECOVERY_MESSAGE: "Click in window first, then copy again!",
 };
 
 // Offline Haikus

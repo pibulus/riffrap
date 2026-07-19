@@ -104,7 +104,7 @@
             closeModal();
           }}
         >
-          Pen Ya Tunes 🎵
+          Pen Ya Tunes
         </button>
       </form>
     </div>

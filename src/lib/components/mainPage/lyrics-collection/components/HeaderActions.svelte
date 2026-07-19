@@ -78,7 +78,7 @@
        use the registered 'music' icon name instead. -->
   <IconButton
     icon="music"
-    tooltip="💕 Grab Lyrics"
+    tooltip="Grab Lyrics"
     colorIndex={0}
     onClick={handleGrabLyrics}
     aria-label="Grab lyrics from transcript"
@@ -88,7 +88,7 @@
     <IconButton
       icon="plus"
       colorIndex={0}
-      tooltip="🔴 Snap a new lyric line"
+      tooltip="Snap a new lyric line"
       onClick={handleGrabLyrics}
       aria-label="Snap a new lyric line"
     />
@@ -98,7 +98,7 @@
     <IconButton
       icon="copy"
       colorIndex={1}
-      tooltip="🟠 Copy lyrics"
+      tooltip="Copy lyrics"
       onClick={handleCopySnippets}
       className={copySuccess ? 'copy-success' : ''}
       aria-label="Copy all lyrics to clipboard"
@@ -107,7 +107,7 @@
     <IconButton
       icon="edit"
       colorIndex={2}
-      tooltip="🟣 Compile selected into one block"
+      tooltip="Compile selected into one block"
       onClick={handleCombineSnippets}
       onMouseEnter={() => playHoverSound()}
       className={compileSuccess ? 'compile-success' : ''}
@@ -117,7 +117,7 @@
     <IconButton 
       icon="download" 
       colorIndex={3} 
-      tooltip="🟢 Download lyrics" 
+      tooltip="Download lyrics" 
       onClick={handleDownloadLyrics}
       onMouseEnter={() => playHoverSound()}
       aria-label="Download lyrics as text file"
@@ -126,7 +126,7 @@
     <IconButton 
       icon="trash" 
       colorIndex={4} 
-      tooltip="🔵 Clear" 
+      tooltip="Clear" 
       onClick={handleClearAll}
       onMouseEnter={() => playHoverSound()}
       aria-label="Clear all lyrics"

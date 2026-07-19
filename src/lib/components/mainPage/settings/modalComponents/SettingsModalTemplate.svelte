@@ -168,7 +168,7 @@
       </div>
 
       <div class="border-t border-pink-100 pt-2 text-center">
-        <p class="text-xs text-gray-500">RiffRap • Made with 💜 by Pablo</p>
+        <p class="text-xs text-gray-500">RiffRap • Made with love by Pablo</p>
       </div>
     </div>
   </div>

@@ -87,7 +87,7 @@
 
       <div class="pt-1 flex justify-end">
         <span class="text-xs text-gray-600 italic font-medium"
-          >Voice-to-text anywhere, anytime 🎙️</span
+          >Voice-to-text anywhere, anytime</span
         >
       </div>
     </div>

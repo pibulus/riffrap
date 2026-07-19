@@ -75,20 +75,20 @@
 
 	<!-- Right: Actions -->
 	<div class="flex items-center space-x-2">
-		<IconButton icon="plus" tooltip="✨ Snap a new lyric line" onClick={grabLyrics} />
-		<IconButton icon="copy" tooltip="📋 Copy lyrics" onClick={copyLyrics} disabled={!hasSnippets} />
+		<IconButton icon="plus" tooltip="Snap a new lyric line" onClick={grabLyrics} />
+		<IconButton icon="copy" tooltip="Copy lyrics" onClick={copyLyrics} disabled={!hasSnippets} />
 		<IconButton
 			icon="edit"
-			tooltip="🪄 Compile selected into one block"
+			tooltip="Compile selected into one block"
 			onClick={combineLyrics}
 			disabled={!hasSnippets}
 		/>
 		<IconButton
 			icon="download"
-			tooltip="⬇️ Download lyrics"
+			tooltip="Download lyrics"
 			onClick={downloadLyrics}
 			disabled={!hasSnippets}
 		/>
-		<IconButton icon="trash" tooltip="🗑️ Clear all" onClick={clearLyrics} disabled={!hasSnippets} />
+		<IconButton icon="trash" tooltip="Clear all" onClick={clearLyrics} disabled={!hasSnippets} />
 	</div>
 </div>

@@ -139,7 +139,7 @@
       uiActions.clearErrorMessage();
 
       // Set re-rolling state and UI feedback
-      const reRollingMessage = "✨ Re-rolling lyrics... ⏳";
+      const reRollingMessage = "Re-rolling lyrics...";
       transcriptionState.update((current) => ({
         ...current,
         inProgress: true,
