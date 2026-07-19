@@ -98,7 +98,7 @@
           rel="noopener noreferrer"
           class="inline-flex items-center min-h-11 text-xs text-pink-600 hover:text-pink-800 font-medium transition-colors"
         >
-          Coffee jar
+          ☕ Coffee jar
         </a>
         <a
           href="https://github.com/pibulus"
@@ -113,7 +113,7 @@
       <div class="flex justify-between items-end pt-2">
         <div>
           <p class="text-xs text-gray-500">
-            Made with love and mezcal in Melbourne, Australia
+            Made with 💜 and mezcal in Melbourne, Australia
           </p>
         </div>
         <div class="flex items-center gap-2 text-xs font-medium text-gray-600">
