@@ -547,7 +547,7 @@
 <!-- === MAIN CONTAINER CHUNK START === -->
 <div
   class="lyrics-collection-box {snippets.length === 0 ? 'empty-collection' : ''}"
-  style="border: none; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.08); background-color: #ffffff;"
+  style="border: none; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.08); background-color: #fffdf5;"
   aria-label="Lyrics Collection"
   role="region"
 >
@@ -555,7 +555,7 @@
   <!-- Header with actions and button controls -->
   <div
     class="panel-header relative mb-2 flex items-center overflow-visible rounded-t-2xl px-4 py-3 shadow-sm backdrop-blur-sm"
-    style="background: #FFFFFF;"
+    style="background: #fffdf5;"
   >
     <!-- Header layout with consistent styling -->
     <div class="flex w-full items-center justify-between">

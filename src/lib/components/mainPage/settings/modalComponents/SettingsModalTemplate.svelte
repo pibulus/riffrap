@@ -31,7 +31,7 @@
   aria-modal="true"
 >
   <div
-    class="modal-box relative max-h-[80vh] w-[95%] max-w-md overflow-y-auto rounded-2xl border border-pink-200 bg-gradient-to-br from-[#fffaef] to-[#fff6e6] shadow-xl md:max-w-lg"
+    class="modal-box relative max-h-[80vh] w-[95%] max-w-md overflow-y-auto rounded-2xl border border-pink-200 bg-gradient-to-br from-[#fffaef] to-[var(--rr-bg-cream)] shadow-xl md:max-w-lg"
   >
     <form method="dialog">
       <slot name="close-button"></slot>

@@ -13,7 +13,7 @@
   aria-modal="true"
 >
   <div
-    class="modal-box bg-gradient-to-br from-[#fffaef] to-[#fff6e6] shadow-xl border border-pink-200 rounded-2xl overflow-y-auto max-h-[80vh]"
+    class="modal-box bg-gradient-to-br from-[#fffaef] to-[var(--rr-bg-cream)] shadow-xl border border-pink-200 rounded-2xl overflow-y-auto max-h-[80vh]"
   >
     <form method="dialog">
       <ModalCloseButton

@@ -29,7 +29,7 @@
 		min-height: 100vh;
 		padding: 2rem;
 		text-align: center;
-		background: #fff6e6;
+		background: var(--rr-bg-cream);
 		color: #2f2430;
 		font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
 	}

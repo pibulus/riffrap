@@ -44,11 +44,11 @@
 
 <style>
   :global(.bg-gradient-mesh) {
-    background-color: #fff6e6;
+    background-color: var(--rr-bg-cream);
     background-image: radial-gradient(
       circle at center,
-      #fff6e6 0%,
-      #fff6e6 50%,
+      var(--rr-bg-cream) 0%,
+      var(--rr-bg-cream) 50%,
       #fff3df 85%,
       #ffefda 100%
     );

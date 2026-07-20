@@ -609,7 +609,7 @@
   .reroll-btn {
     position: relative;
     background-color: #fb7185; /* rose-400 fallback - light salmon pink */
-    color: #fff;
+    color: #fffaef;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     will-change: transform;
     overflow: hidden;

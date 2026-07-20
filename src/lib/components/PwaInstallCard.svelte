@@ -330,7 +330,7 @@
     justify-content: center;
     flex-shrink: 0;
     border-radius: 999px;
-    background: var(--ds-bg, #fff);
+    background: var(--ds-bg, #fffaef);
     font-size: 0.7rem;
     font-weight: 800;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
@@ -343,7 +343,7 @@
     border-radius: 12px;
     font-size: 0.85rem;
     font-weight: 800;
-    color: #fff;
+    color: #fffaef;
     background: linear-gradient(
       to right,
       var(--ds-primary-color, #ec4899),

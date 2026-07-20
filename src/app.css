@@ -65,6 +65,11 @@ body.modal-active {
   --rr-modal-close-ease: cubic-bezier(0.4, 0, 0.24, 1);
   --rr-modal-panel-width: min(92vw, 32rem);
   --rr-modal-padding: clamp(1.25rem, 4vw, 2rem);
+
+  /* Warm cream — matches tailwind.config.js theme.background (#fff6e6).
+     Same hex, exposed as a var so the app-shell/modal-shell/error-page
+     surfaces that share this exact background stay in sync from one place. */
+  --rr-bg-cream: #fff6e6;
 }
 
 /* Modal fixes to prevent scrollbar issues. The explicit width/height/margin
