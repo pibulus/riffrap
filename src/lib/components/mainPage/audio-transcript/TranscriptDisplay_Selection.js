@@ -4,21 +4,11 @@
  * Text selection system for the TranscriptDisplay component.
  * This module handles all aspects of text selection within the transcript,
  * including selection detection, highlighting, and selection utilities.
+ *
+ * These are plain functions that operate on the component's `ctx` object
+ * (see TranscriptDisplay_Core.js for the shape). No Svelte stores.
  */
 
-import {
-  editableTranscriptStore,
-  transcriptBoxRefStore,
-  selectionActiveStore,
-  selectionLeftStore,
-  selectionTopStore,
-  selectedTextStore,
-  currentSelectionStore,
-  dispatchStore,
-  parentContainerStore,
-} from "./TranscriptDisplay_Core.js";
-
-import { get } from "svelte/store";
 import { dev } from "$app/environment";
 
 // This file's console.log calls are leftover DOM-hunting debug scaffolding
@@ -33,10 +23,10 @@ function debugLog(...args) {
 // Simple line-by-line selection system
 
 // Export selection-related functions
-export function handleTextSelection(event) {
-  const editableTranscript = get(editableTranscriptStore);
+export function handleTextSelection(ctx, event) {
+  const editableTranscript = ctx.getEditableTranscript();
   if (!editableTranscript || !editableTranscript.contains(event.target)) {
-    hideSelectionButton();
+    hideSelectionButton(ctx);
     return;
   }
 
@@ -53,7 +43,7 @@ export function handleTextSelection(event) {
       event.target.nodeName !== "BUTTON"
     ) {
       // Simple line selection - just select the clicked line
-      selectEntireLine(event.target);
+      selectEntireLine(ctx, event.target);
 
       // After selecting the line, get the new selection
       const newSelection = window.getSelection();
@@ -103,13 +93,13 @@ export function handleTextSelection(event) {
 
         // Position the selection button and activate it (but keep it invisible)
         if (lineElement) {
-          const transcriptBoxRef = get(transcriptBoxRefStore);
+          const transcriptBoxRef = ctx.getTranscriptBoxRef();
           const rect = lineElement.getBoundingClientRect();
           const containerRect = transcriptBoxRef.getBoundingClientRect();
-          selectionLeftStore.set(rect.right - containerRect.left - 160); // Position to the right
-          selectionTopStore.set(rect.top - containerRect.top + 3); // Slightly below the line
-          selectionActiveStore.set(true);
-          selectedTextStore.set(selectionText);
+          ctx.setSelectionLeft(rect.right - containerRect.left - 160); // Position to the right
+          ctx.setSelectionTop(rect.top - containerRect.top + 3); // Slightly below the line
+          ctx.setSelectionActive(true);
+          ctx.setSelectedText(selectionText);
         }
 
         // CRITICAL: Find and click the "Grab Lyrics" button in the LyricsPanel
@@ -126,14 +116,11 @@ export function handleTextSelection(event) {
               debugLog("Found Grab Lyrics button, triggering click!");
               grabLyricsButton.click();
 
-              // Show success notification - use dispatch from store
-              const dispatch = get(dispatchStore);
-              if (dispatch) {
-                dispatch("notification", {
-                  message: "Line collected!",
-                  type: "success",
-                });
-              }
+              // Show success notification
+              ctx.dispatch("notification", {
+                message: "Line collected!",
+                type: "success",
+              });
 
               // Reset collection flag after a delay
               setTimeout(() => {
@@ -153,13 +140,10 @@ export function handleTextSelection(event) {
               const result = window.addToMainCollectionBox(selectionText);
 
               if (result) {
-                const dispatch = get(dispatchStore);
-                if (dispatch) {
-                  dispatch("notification", {
-                    message: "Line collected!",
-                    type: "success",
-                  });
-                }
+                ctx.dispatch("notification", {
+                  message: "Line collected!",
+                  type: "success",
+                });
 
                 // Reset collection flag after a delay
                 setTimeout(() => {
@@ -195,15 +179,12 @@ export function handleTextSelection(event) {
           }
 
           // Check if parent container is available before trying to use it
-          const parentContainer = get(parentContainerStore);
+          const parentContainer = ctx.getParentContainer();
           if (
             parentContainer &&
             typeof parentContainer.addLyricsSnippet === "function"
           ) {
-            const dispatch = get(dispatchStore);
-            if (dispatch) {
-              dispatch("collect", { text: selectionText });
-            }
+            ctx.dispatch("collect", { text: selectionText });
 
             // Reset collection flag after a delay
             if (typeof window !== "undefined") {
@@ -223,34 +204,28 @@ export function handleTextSelection(event) {
               // Show notification and use global method if available
               setTimeout(() => {
                 // Check if collection was successful
-                const dispatch = get(dispatchStore);
-                if (dispatch) {
-                  if (window.transcriptCollectTrigger === false) {
-                    dispatch("notification", {
-                      message: "Line collected!",
-                      type: "success",
-                    });
-                  } else {
-                    window.transcriptCollectTrigger = false;
-                    dispatch("notification", {
-                      message: "Line collected!",
-                      type: "success",
-                    });
-                  }
+                if (window.transcriptCollectTrigger === false) {
+                  ctx.dispatch("notification", {
+                    message: "Line collected!",
+                    type: "success",
+                  });
+                } else {
+                  window.transcriptCollectTrigger = false;
+                  ctx.dispatch("notification", {
+                    message: "Line collected!",
+                    type: "success",
+                  });
                 }
 
                 // Reset collection flag
                 window.collectionInProgress = false;
               }, 300);
             } else {
-              const dispatch = get(dispatchStore);
-              if (dispatch) {
-                dispatch("notification", {
-                  message:
-                    "Collection not available. Try using the Grab Lyrics button.",
-                  type: "info",
-                });
-              }
+              ctx.dispatch("notification", {
+                message:
+                  "Collection not available. Try using the Grab Lyrics button.",
+                type: "info",
+              });
 
               // Reset collection flag
               if (typeof window !== "undefined") {
@@ -265,8 +240,7 @@ export function handleTextSelection(event) {
     // Make sure we have a valid selection - but only process if it wasn't already handled by click-to-grab
     if (selectionText.length > 0 && event.type !== "mouseup") {
       // Store the selected text for collection
-      selectedTextStore.set(selectionText);
-      currentSelectionStore.set(selection);
+      ctx.setSelectedText(selectionText);
 
       // IMPORTANT: Make the selected text available globally so collection boxes can access it
       if (typeof window !== "undefined") {
@@ -276,7 +250,7 @@ export function handleTextSelection(event) {
 
       debugLog("Selected text:", selectionText);
     } else if (selectionText.length === 0) {
-      selectedTextStore.set("");
+      ctx.setSelectedText("");
       if (typeof window !== "undefined") {
         window.transcriptSelectedText = "";
       }
@@ -284,8 +258,8 @@ export function handleTextSelection(event) {
   }
 }
 
-export function selectEntireLine(node) {
-  const editableTranscript = get(editableTranscriptStore);
+export function selectEntireLine(ctx, node) {
+  const editableTranscript = ctx.getEditableTranscript();
 
   // Remove selected class from all lines first
   if (editableTranscript) {
@@ -324,7 +298,7 @@ export function selectEntireLine(node) {
 
   // Fallback to old behavior if no line element found
   // Find the text node we clicked on or nearest to the click
-  let textNode = findTextNode(node);
+  let textNode = findTextNode(ctx, node);
   if (!textNode) return; // No text node found
 
   // Get the content of the text node
@@ -345,7 +319,7 @@ export function selectEntireLine(node) {
   selection.addRange(range);
 }
 
-export function selectElementContents(element) {
+function selectElementContents(element) {
   if (!element) return;
 
   const range = document.createRange();
@@ -356,17 +330,7 @@ export function selectElementContents(element) {
   selection.addRange(range);
 }
 
-export function getNodeOffset() {
-  if (!window.getSelection) return 0;
-
-  const selection = window.getSelection();
-  if (selection.rangeCount === 0) return 0;
-
-  const range = selection.getRangeAt(0);
-  return range.startOffset;
-}
-
-export function findFirstTextNode(element) {
+function findFirstTextNode(element) {
   if (!element) return null;
 
   // If this is a text node, return it
@@ -381,8 +345,8 @@ export function findFirstTextNode(element) {
   return null;
 }
 
-export function findTextNode(node) {
-  const editableTranscript = get(editableTranscriptStore);
+function findTextNode(ctx, node) {
+  const editableTranscript = ctx.getEditableTranscript();
 
   // If this is a text node, return it
   if (node.nodeType === Node.TEXT_NODE) return node;
@@ -398,11 +362,11 @@ export function findTextNode(node) {
   return findFirstTextNode(editableTranscript);
 }
 
-export function hideSelectionButton() {
-  selectionActiveStore.set(false);
+export function hideSelectionButton(ctx) {
+  ctx.setSelectionActive(false);
 
   // Remove selected class from all lines
-  const editableTranscript = get(editableTranscriptStore);
+  const editableTranscript = ctx.getEditableTranscript();
   if (editableTranscript) {
     const allLines = editableTranscript.querySelectorAll(".lyric-line");
     allLines.forEach((line) => line.classList.remove("selected"));

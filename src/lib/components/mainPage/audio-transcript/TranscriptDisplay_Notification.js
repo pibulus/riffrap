@@ -4,19 +4,13 @@
  * Notification and feedback system for the TranscriptDisplay component.
  * This module handles user feedback interactions including collecting snippets,
  * showing notifications, and handling collection errors.
+ *
+ * These are plain functions that operate on the component's `ctx` object
+ * (see TranscriptDisplay_Core.js for the shape). No Svelte stores.
  */
 
-import {
-  notificationStore,
-  notificationTimeoutStore,
-  parentContainerStore,
-  selectedTextStore,
-  editableTranscriptStore,
-  selectionActiveStore,
-} from "./TranscriptDisplay_Core.js";
-
 import { dev } from "$app/environment";
-import { get } from "svelte/store";
+import { hideSelectionButton } from "./TranscriptDisplay_Selection.js";
 
 // This file's console.log calls are leftover DOM-hunting debug scaffolding
 // (selected text, fallback-path tracing) — gate them so they never leak
@@ -28,9 +22,9 @@ function debugLog(...args) {
 }
 
 // Export notification functions
-export function showNotification({ message, type = "info" }) {
+export function showNotification(ctx, { message, type = "info" }) {
   // Clear any existing notification timeout
-  const notificationTimeout = get(notificationTimeoutStore);
+  const notificationTimeout = ctx.getNotificationTimeout();
   if (notificationTimeout) {
     clearTimeout(notificationTimeout);
   }
@@ -42,19 +36,19 @@ export function showNotification({ message, type = "info" }) {
   ) {
     // Find both the transcription box and the selected text element
     const transcriptBox = document.querySelector(".transcript-box");
-    const editableTranscript = get(editableTranscriptStore);
+    const editableTranscript = ctx.getEditableTranscript();
     const selectedLine =
       editableTranscript?.querySelector(".lyric-line-grabbed") ||
       editableTranscript?.querySelector(".selected");
     if (!transcriptBox || !selectedLine) {
       // If we can't find the elements, just show a global notification
-      notificationStore.set({ message, type });
+      ctx.setNotification({ message, type });
 
       const newTimeout = setTimeout(() => {
-        notificationStore.set(null);
+        ctx.setNotification(null);
       }, 2000);
 
-      notificationTimeoutStore.set(newTimeout);
+      ctx.setNotificationTimeout(newTimeout);
       return;
     }
 
@@ -69,30 +63,30 @@ export function showNotification({ message, type = "info" }) {
     }, 1500);
 
     // ALWAYS set global notification for collection actions
-    notificationStore.set({ message, type });
+    ctx.setNotification({ message, type });
 
     const newTimeout = setTimeout(() => {
-      notificationStore.set(null);
+      ctx.setNotification(null);
     }, 1500);
 
-    notificationTimeoutStore.set(newTimeout);
+    ctx.setNotificationTimeout(newTimeout);
     return;
   }
 
   // For other notifications, set the global notification
-  notificationStore.set({ message, type });
+  ctx.setNotification({ message, type });
 
   // Auto-hide after shorter time for success notifications
   const hideDelay = type === "success" ? 1500 : 2500;
 
   const newTimeout = setTimeout(() => {
-    notificationStore.set(null);
+    ctx.setNotification(null);
   }, hideDelay);
 
-  notificationTimeoutStore.set(newTimeout);
+  ctx.setNotificationTimeout(newTimeout);
 }
 
-export function handleCollectSnippet(event) {
+export function handleCollectSnippet(ctx, event) {
   // Get the text from the event detail
   const { text } = event.detail;
   let collectionSuccessful = false;
@@ -111,7 +105,7 @@ export function handleCollectSnippet(event) {
     debugLog("Setting collection in progress flag in handleCollectSnippet");
   }
 
-  const parentContainer = get(parentContainerStore);
+  const parentContainer = ctx.getParentContainer();
 
   debugLog("TranscriptDisplay.handleCollectSnippet called with text:", text);
   debugLog("parentContainer exists:", !!parentContainer);
@@ -181,7 +175,7 @@ export function handleCollectSnippet(event) {
 
     // Show appropriate notification based on collection result
     if (collectionSuccessful) {
-      showNotification({
+      showNotification(ctx, {
         message: "Line collected!",
         type: "success",
       });
@@ -192,7 +186,7 @@ export function handleCollectSnippet(event) {
       }
     } else {
       console.error("All collection methods failed");
-      showNotification({
+      showNotification(ctx, {
         message: "Try using the Grab Lyrics button instead",
         type: "info",
       });
@@ -209,14 +203,14 @@ export function handleCollectSnippet(event) {
     }
 
     // Always clear the selection regardless of collection success
-    selectedTextStore.set(""); // Reset the text AFTER collection is complete
-    hideSelectionButton();
+    ctx.setSelectedText(""); // Reset the text AFTER collection is complete
+    hideSelectionButton(ctx);
     if (window.getSelection) {
       window.getSelection().removeAllRanges();
     }
   } else {
     // No valid text
-    showNotification({
+    showNotification(ctx, {
       message: "No text selected",
       type: "error",
     });
@@ -229,10 +223,10 @@ export function handleCollectSnippet(event) {
   }
 }
 
-export function handleCollectionError(event) {
+export function handleCollectionError(ctx, event) {
   const { message } = event.detail;
 
-  showNotification({
+  showNotification(ctx, {
     message: message || "Failed to collect snippet",
     type: "error",
   });
@@ -244,7 +238,7 @@ export function handleCollectionError(event) {
   }
 }
 
-export function handleDirectCollection(event) {
+export function handleDirectCollection(ctx, event) {
   const { text } = event.detail;
   let collectionSuccessful = false;
 
@@ -263,7 +257,7 @@ export function handleDirectCollection(event) {
   }
 
   if (!text || !text.trim()) {
-    showNotification({
+    showNotification(ctx, {
       message: "No text selected for direct collection",
       type: "error",
     });
@@ -279,7 +273,7 @@ export function handleDirectCollection(event) {
   debugLog("TranscriptDisplay: Direct collection requested:", text);
 
   // Try multiple collection methods in order of preference
-  const parentContainer = get(parentContainerStore);
+  const parentContainer = ctx.getParentContainer();
 
   // 1. Direct window method (preferred)
   if (
@@ -341,20 +335,20 @@ export function handleDirectCollection(event) {
 
   // Show appropriate notification and clear selection
   if (collectionSuccessful) {
-    showNotification({
+    showNotification(ctx, {
       message: "Line collected!",
       type: "success",
     });
 
     // Clear the selection
-    selectedTextStore.set("");
-    hideSelectionButton();
+    ctx.setSelectedText("");
+    hideSelectionButton(ctx);
     if (window.getSelection) {
       window.getSelection().removeAllRanges();
     }
   } else {
     console.error("All direct collection methods failed");
-    showNotification({
+    showNotification(ctx, {
       message: "Collection failed, try the Grab Lyrics button instead",
       type: "info",
     });
@@ -371,8 +365,8 @@ export function handleDirectCollection(event) {
   }
 }
 
-export function handleClickOutside(event) {
-  const editableTranscript = get(editableTranscriptStore);
+export function handleClickOutside(ctx, event) {
+  const editableTranscript = ctx.getEditableTranscript();
 
   // Don't hide if clicking on the selection button
   const isSelectButton = event.target.closest(".selection-button-container");
@@ -383,43 +377,25 @@ export function handleClickOutside(event) {
 
   if (editableTranscript && !editableTranscript.contains(event.target)) {
     debugLog("Click outside transcript, hiding selection button");
-    hideSelectionButton();
+    hideSelectionButton(ctx);
   }
 }
 
-export function handleKeyboardShortcut(event) {
-  const selectedText = get(selectedTextStore);
+export function handleKeyboardShortcut(ctx, event) {
+  const selectedText = ctx.getSelectedText();
 
   // Debug shortcut: Ctrl+Shift+A adds test snippet
   if (dev && event.ctrlKey && event.shiftKey && event.key === "A") {
     debugLog("Debug shortcut: Adding current selection");
     if (selectedText) {
-      handleCollectSnippet({ detail: { text: selectedText } });
+      handleCollectSnippet(ctx, { detail: { text: selectedText } });
     } else {
       // Add generic test text
-      handleCollectSnippet({
+      handleCollectSnippet(ctx, {
         detail: {
           text: `Test text from keyboard shortcut at ${new Date().toLocaleTimeString()}`,
         },
       });
     }
   }
-}
-
-// Import hideSelectionButton from TranscriptDisplay_Selection
-// but use direct functionality to avoid circular dependency
-function hideSelectionButton() {
-  if (typeof window.getSelection === "function") {
-    window.getSelection().removeAllRanges();
-  }
-
-  // Set the active state to false via store
-  const editableTranscript = get(editableTranscriptStore);
-  if (editableTranscript) {
-    const allLines = editableTranscript.querySelectorAll(".lyric-line");
-    allLines.forEach((line) => line.classList.remove("selected"));
-  }
-
-  // Use local logic instead of importing from Selection module
-  selectionActiveStore.set(false);
 }

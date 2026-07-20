@@ -1,7 +1,7 @@
 <script>
   /**
    * === COMPONENT OVERVIEW ===
-   * 
+   *
    * TranscriptDisplay Component
    *
    * This is a large, complex component that displays transcribed text from audio recordings.
@@ -11,87 +11,28 @@
    * - Snippet collection for lyrics
    * - Visual feedback for user actions
    * - Accessibility features
-   * 
-   * IMPORTANT: This component has been modularized into multiple files:
-   * - TranscriptDisplay.svelte - Main component with UI and event handlers (this file)
-   * - TranscriptDisplay_Core.js - Core state, config, imports, and stores
-   * - TranscriptDisplay_Selection.js - Text selection and highlighting functionality
+   *
+   * State lives here as plain `let` variables (props down / events up, the same
+   * pattern the lyrics-collection/modules use). The helper modules are pure
+   * functions that receive a `ctx` object of accessors instead of reaching into
+   * shared Svelte stores:
+   * - TranscriptDisplay.svelte - UI, local state, and the ctx wiring (this file)
+   * - TranscriptDisplay_Core.js - Core helpers + lifecycle setup
+   * - TranscriptDisplay_Selection.js - Text selection and highlighting
    * - TranscriptDisplay_Notification.js - Notification and feedback system
    */
-  
-  // Import stores from module
-  import { 
-    // State and props as stores
-    showCopyTooltipStore,
-    parentContainerStore,
-    editableTranscriptStore,
-    copyButtonRefStore,
-    transcriptBoxRefStore,
-    notificationStore,
-    isScrollableStore,
-    isRerollingStore,
-    selectionActiveStore,
-    selectionLeftStore,
-    selectionTopStore,
-    selectedTextStore,
-    dispatchStore,
-    
-    // Core functions
-    getEditedTranscript, checkScrollable,
-    isWebShareSupported, handleReroll,
+
+  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { fly } from 'svelte/transition';
+
+  import {
+    getEditedTranscript as getEditedTranscriptCore,
+    checkScrollable as checkScrollableCore,
+    isWebShareSupported,
+    handleReroll as handleRerollCore,
     setupLifecycleHooks
   } from './TranscriptDisplay_Core.js';
-  
-  // Create local props from store values
-  export let transcript;
-  export let showCopyTooltip;
-  export let parentContainer;
-  
-  // DOM references that need binding
-  let editableTranscript;
-  let copyButtonRef;
-  let transcriptBoxRef;
-  
-  // Derived values from stores
-  let notification;
-  let selectionActive;
-  let selectionLeft;
-  let selectionTop;
-  let selectedText;
-  let isScrollable;
-  
-  // Create event dispatcher - this must be done inside the component
-  import { createEventDispatcher } from 'svelte';
-  const dispatch = createEventDispatcher();
-  
-  // Set the dispatch in the store for other modules to use
-  dispatchStore.set(dispatch);
-  
-  // Subscribe to stores for local use - FIXED: Removed the transcript subscription that was causing feedback loop
-  // The transcriptStore is now updated directly from TranscriptDisplay_Core.js
-  const storeUnsubscribers = [
-    showCopyTooltipStore.subscribe(value => (showCopyTooltip = value)),
-    parentContainerStore.subscribe(value => (parentContainer = value)),
-    notificationStore.subscribe(value => (notification = value)),
-    selectionActiveStore.subscribe(value => (selectionActive = value)),
-    selectionLeftStore.subscribe(value => (selectionLeft = value)),
-    selectionTopStore.subscribe(value => (selectionTop = value)),
-    selectedTextStore.subscribe(value => (selectedText = value)),
-    isScrollableStore.subscribe(value => (isScrollable = value))
-  ];
-  
-  // Set the store values when props change - FIXED: Removed bidirectional binding for transcript
-  // We now only allow one-way updates from global transcriptionText to local transcriptStore
-  $: showCopyTooltipStore.set(showCopyTooltip);
-  $: parentContainerStore.set(parentContainer);
-  
-  // Sync DOM refs with stores when they update
-  $: if (editableTranscript) editableTranscriptStore.set(editableTranscript);
-  $: if (copyButtonRef) copyButtonRefStore.set(copyButtonRef);
-  $: if (transcriptBoxRef) transcriptBoxRefStore.set(transcriptBoxRef);
-  
   import { handleTextSelection } from './TranscriptDisplay_Selection.js';
-  
   import {
     showNotification,
     handleCollectSnippet,
@@ -100,37 +41,101 @@
     handleClickOutside,
     handleKeyboardShortcut
   } from './TranscriptDisplay_Notification.js';
-  
-  // Import Svelte components and transitions
   import SelectionButton from './SelectionButton.svelte';
-  import { fly } from 'svelte/transition';
-  import { onDestroy } from 'svelte';
-  
-  // Handler for notification events from modules
+
+  // Props
+  export let transcript;
+  export let showCopyTooltip;
+  export let parentContainer;
+
+  // DOM references bound in the template
+  let editableTranscript;
+  let transcriptBoxRef;
+
+  // Local UI state
+  let notification = null;
+  let selectionActive = false;
+  let selectionLeft = 0;
+  let selectionTop = 0;
+  let selectedText = '';
+  let isScrollable = false;
+  let isRerolling = false;
+  let notificationTimeout = null;
+
+  const dispatch = createEventDispatcher();
+
+  // The context object the helper modules operate on: explicit getters for the
+  // current value and setters that reassign the component's reactive `let`s.
+  const ctx = {
+    dispatch,
+    getTranscript: () => transcript,
+    getEditableTranscript: () => editableTranscript,
+    getTranscriptBoxRef: () => transcriptBoxRef,
+    getParentContainer: () => parentContainer,
+    getSelectedText: () => selectedText,
+    setSelectedText: (v) => (selectedText = v),
+    getSelectionActive: () => selectionActive,
+    setSelectionActive: (v) => (selectionActive = v),
+    setSelectionLeft: (v) => (selectionLeft = v),
+    setSelectionTop: (v) => (selectionTop = v),
+    getNotificationTimeout: () => notificationTimeout,
+    setNotificationTimeout: (v) => (notificationTimeout = v),
+    setNotification: (v) => (notification = v),
+    setIsScrollable: (v) => (isScrollable = v),
+    getIsRerolling: () => isRerolling,
+    setIsRerolling: (v) => (isRerolling = v)
+  };
+
+  // Bound wrappers passed to markup and to the lifecycle (global) listeners.
+  function checkScrollable() {
+    checkScrollableCore(ctx);
+  }
+  function handleReroll() {
+    handleRerollCore(ctx);
+  }
+  function getEditedTranscript() {
+    return getEditedTranscriptCore(ctx);
+  }
+  function onTextSelection(event) {
+    handleTextSelection(ctx, event);
+  }
+  function onClickOutside(event) {
+    handleClickOutside(ctx, event);
+  }
+  function onKeyboardShortcut(event) {
+    handleKeyboardShortcut(ctx, event);
+  }
+  function onCollectSnippet(event) {
+    handleCollectSnippet(ctx, event);
+  }
+  function onCollectionError(event) {
+    handleCollectionError(ctx, event);
+  }
+  function onDirectCollection(event) {
+    handleDirectCollection(ctx, event);
+  }
+
+  // Handler for notification events dispatched from child components/modules
   function handleNotification(event) {
     if (event && event.detail) {
-      showNotification(event.detail);
+      showNotification(ctx, event.detail);
     }
   }
-  
-  // Initialize lifecycle hooks
-  const cleanup = setupLifecycleHooks({
-    handleTextSelection,
-    handleClickOutside, 
-    handleKeyboardShortcut,
-    handleCollectSnippet,
-    handleDirectCollection
+
+  // Initialize lifecycle hooks (global listeners + transcription-state sync)
+  const cleanup = setupLifecycleHooks(ctx, {
+    handleTextSelection: onTextSelection,
+    handleClickOutside: onClickOutside,
+    handleKeyboardShortcut: onKeyboardShortcut,
+    handleCollectSnippet: onCollectSnippet,
+    handleDirectCollection: onDirectCollection
   });
-  
+
   // Ensure cleanup on destroy
   onDestroy(() => {
-    storeUnsubscribers.forEach(unsubscribe => unsubscribe());
-
     if (typeof cleanup === 'function') {
       cleanup();
     }
-    // Clean up the dispatcher in the store
-    dispatchStore.set(null);
   });
 </script>
 
@@ -184,10 +189,10 @@
             on:click|preventDefault={handleReroll}
             aria-label="Re-roll lyrics"
             title="Generate new interpretation from the same audio"
-            class:reroll-spinning={$isRerollingStore}
+            class:reroll-spinning={isRerolling}
           >
             <!-- Enhanced dice icon with spinning animation when rerolling -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="dice-icon" class:spin-animation={$isRerollingStore}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="dice-icon" class:spin-animation={isRerolling}>
               <rect width="12" height="12" x="2" y="10" rx="2" ry="2"></rect>
               <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"></path>
               <path d="M6 18h.01"></path>
@@ -196,7 +201,7 @@
               <path d="M18 9h.01"></path>
             </svg>
             <!-- Dynamic text based on rerolling state -->
-            <span class="text-white font-medium">{$isRerollingStore ? 'Rolling...' : 'Reroll'}</span>
+            <span class="text-white font-medium">{isRerolling ? 'Rolling...' : 'Reroll'}</span>
           </button>
         </div>
       
@@ -247,8 +252,8 @@
               top={selectionTop}
               visible={false}
               selectedText={selectedText}
-              on:collect={handleCollectSnippet}
-              on:collection-error={handleCollectionError}
+              on:collect={onCollectSnippet}
+              on:collection-error={onCollectionError}
               on:notification={handleNotification}
             />
           {/if}
@@ -258,7 +263,6 @@
         
         <div class="transcript-actions flex flex-wrap items-center justify-end gap-2 px-6 pb-5">
           <button
-            bind:this={copyButtonRef}
             type="button"
             class="min-h-[44px] rounded-full border border-amber-200 bg-amber-100 px-4 text-sm font-bold text-amber-950 shadow-sm transition-colors hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
             on:click={() => dispatch('copy', { text: getEditedTranscript() })}
