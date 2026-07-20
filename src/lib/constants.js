@@ -71,16 +71,6 @@ export const ANIMATION = {
     ERROR_DURATION: 5000, // How long error toasts stay visible
   },
 
-  // Modal timing
-  MODAL: {
-    CLOSE_DELAY: 50, // Delay before running closeModal function
-    // Must match --rr-modal-close-ms in app.css. modalService waits this long
-    // before removing the dialog from the top layer; too short clips the
-    // close animation, too long leaves a dead frame after it finishes.
-    CLOSE_DURATION: 180,
-    PERMISSION_ERROR_DURATION: 8000, // How long the permission error shows
-  },
-
   // Recording time limits
   RECORDING: {
     LIMIT: 600, // Maximum recording time in seconds

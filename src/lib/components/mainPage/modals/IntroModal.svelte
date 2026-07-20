@@ -1,46 +1,37 @@
 <script>
+  import ModalShell from "$lib/components/modal/ModalShell.svelte";
   import { ModalCloseButton } from "./index.js";
 
-  export let closeModal;
-  export let markIntroAsSeen;
+  /** Parent-owned open state (see ModalShell contract). The parent marks
+   * the intro as seen in its on:close handler, so every close path counts. */
+  export let open = false;
   export let triggerGhostClick;
-
-  // Use Svelte's binding instead of getElementById
-  let modalElement;
-
-  function handleActionButton() {
-    // Route through the service so the pop-out animation plays.
-    closeModal();
-    markIntroAsSeen();
-
-    setTimeout(() => {
-      triggerGhostClick();
-    }, 300);
-  }
 </script>
 
-<dialog
-  bind:this={modalElement}
-  id="intro_modal"
-  class="modal"
-  aria-labelledby="intro_modal_title"
-  aria-modal="true"
+<!-- Intro wears its own skin over the shared shell: solid warm card, no
+     border, pink glow shadow (display:contents so only the tokens cascade). -->
+<div
+  style="display: contents; --charm-modal-bg: #fff9ed; --charm-modal-border: 0; --charm-modal-shadow: 0 10px 25px -5px rgba(249, 168, 212, 0.3), 0 8px 10px -6px rgba(249, 168, 212, 0.2), 0 0 15px rgba(249, 168, 212, 0.15);"
 >
-  <div
-    class="modal-box relative bg-[#fff9ed] rounded-3xl p-6 sm:p-8 md:p-10 w-[95%] max-w-[90vw] sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto border-0 max-h-[85vh] overflow-y-auto"
-    style="box-shadow: 0 10px 25px -5px rgba(249, 168, 212, 0.3), 0 8px 10px -6px rgba(249, 168, 212, 0.2), 0 0 15px rgba(249, 168, 212, 0.15);"
+  <ModalShell
+    {open}
+    labelledby="intro_modal_title"
+    maxWidth="32rem"
+    scrollable
+    showClose={false}
+    on:close
+    let:requestClose
   >
-    <form method="dialog">
+    <div class="modal-close-dock">
       <ModalCloseButton
-        {closeModal}
+        closeModal={requestClose}
         position="right-4 top-4"
         size="sm"
         label="Close Intro"
-        modalId="intro_modal"
       />
-    </form>
+    </div>
 
-    <div class="space-y-5 sm:space-y-6 md:space-y-7 animate-fadeIn">
+    <div class="modal-fade-in space-y-5 sm:space-y-6 md:space-y-7">
       <div class="flex justify-center mb-4">
         <div class="w-20 h-20 animate-pulse-slow">
           <img
@@ -84,7 +75,12 @@
 
       <button
         class="w-full bg-gradient-to-r from-amber-100 to-amber-200 px-4 py-3 sm:px-5 sm:py-4 rounded-xl text-center text-sm sm:text-base md:text-lg text-gray-800 font-bold shadow-md border border-amber-300/50 hover:shadow-lg hover:bg-gradient-to-r hover:from-amber-200 hover:to-amber-300 hover:text-gray-900 active:scale-[0.98] transition-all duration-300 cursor-pointer relative"
-        on:click={handleActionButton}
+        on:click={() => {
+          requestClose();
+          setTimeout(() => {
+            triggerGhostClick();
+          }, 300);
+        }}
       >
         You sing the gibberish, RiffRap does the magic.
       </button>
@@ -95,44 +91,18 @@
         It's wild, it's weird, it's weirdly good.
       </p>
 
-      <form method="dialog">
-        <button
-          type="button"
-          class="w-full text-base sm:text-lg font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-full bg-gradient-to-r from-yellow-400 to-pink-400 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-          on:click={() => {
-            markIntroAsSeen();
-            closeModal();
-          }}
-        >
-          Pen Ya Tunes
-        </button>
-      </form>
+      <button
+        type="button"
+        class="w-full text-base sm:text-lg font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-full bg-gradient-to-r from-yellow-400 to-pink-400 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+        on:click={requestClose}
+      >
+        Pen Ya Tunes
+      </button>
     </div>
-  </div>
-  <button
-    type="button"
-    class="modal-backdrop"
-    on:click={closeModal}
-    aria-label="Close intro modal"
-  ></button>
-</dialog>
+  </ModalShell>
+</div>
 
 <style>
-  .animate-fadeIn {
-    animation: fadeIn 0.5s ease-out forwards;
-  }
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
   .animate-pulse-slow {
     animation: pulse-slow 3s ease-in-out infinite;
   }

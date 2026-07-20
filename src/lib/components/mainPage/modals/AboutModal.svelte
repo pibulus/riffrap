@@ -1,154 +1,122 @@
 <script>
+  import ModalShell from "$lib/components/modal/ModalShell.svelte";
   import { ModalCloseButton } from "./index.js";
-  export let closeModal;
+
+  /** Parent-owned open state (see ModalShell contract). */
+  export let open = false;
 </script>
 
-<dialog
-  id="about_modal"
-  class="modal overflow-hidden fixed z-50"
-  style="overflow-y: hidden!important;"
-  aria-labelledby="about_modal_title"
-  aria-modal="true"
+<ModalShell
+  {open}
+  labelledby="about_modal_title"
+  maxWidth="32rem"
+  scrollable
+  showClose={false}
+  on:close
+  let:requestClose
 >
-  <div
-    class="modal-box bg-gradient-to-br from-[#fffaef] to-[var(--rr-bg-cream)] shadow-xl border border-pink-200 rounded-2xl overflow-y-auto max-h-[80vh]"
-  >
-    <form method="dialog">
-      <ModalCloseButton
-        {closeModal}
-        label="Close about modal"
-        modalId="about_modal"
+  <div class="modal-close-dock">
+    <ModalCloseButton closeModal={requestClose} label="Close about modal" />
+  </div>
+
+  <div class="modal-fade-in space-y-4">
+    <div class="flex items-center gap-3 mb-1">
+      <img
+        src="/LyricSnapIcon.png"
+        alt="RiffRap Icon"
+        class="w-9 h-9 object-contain"
       />
-    </form>
-
-    <div class="animate-fadeUp space-y-4">
-      <div class="flex items-center gap-3 mb-1">
-        <img
-          src="/LyricSnapIcon.png"
-          alt="RiffRap Icon"
-          class="w-9 h-9 object-contain"
-        />
-        <h3
-          id="about_modal_title"
-          class="font-black text-xl text-gray-800 tracking-tight"
-        >
-          About RiffRap
-        </h3>
-      </div>
-
-      <div
-        class="bg-gradient-to-r from-pink-50/90 to-amber-50/90 p-4 rounded-lg border border-pink-200/60 shadow-sm"
+      <h3
+        id="about_modal_title"
+        class="font-black text-xl text-gray-800 tracking-tight"
       >
-        <p class="text-sm leading-relaxed text-gray-700">
-          RiffRap is where freestyle meets cut & paste! Just sing, hum, or
-          freestyle into your mic, and watch as your ramblings magically turn
-          into actual rhymes you can snag and use.
-          <span class="text-pink-600 font-medium">No friction</span>,
-          <span class="text-amber-600 font-medium">just flow</span>
-          -
-          <span class="text-pink-600 font-medium">create</span> your next hit song
-          with ease!
+        About RiffRap
+      </h3>
+    </div>
+
+    <div
+      class="bg-gradient-to-r from-pink-50/90 to-amber-50/90 p-4 rounded-lg border border-pink-200/60 shadow-sm"
+    >
+      <p class="text-sm leading-relaxed text-gray-700">
+        RiffRap is where freestyle meets cut & paste! Just sing, hum, or
+        freestyle into your mic, and watch as your ramblings magically turn
+        into actual rhymes you can snag and use.
+        <span class="text-pink-600 font-medium">No friction</span>,
+        <span class="text-amber-600 font-medium">just flow</span>
+        -
+        <span class="text-pink-600 font-medium">create</span> your next hit song
+        with ease!
+      </p>
+    </div>
+
+    <div>
+      <h4 class="font-bold text-sm text-gray-700 mb-2">
+        Why you'll love it:
+      </h4>
+      <ul class="space-y-1.5 text-sm text-gray-600">
+        <li class="flex items-start gap-2">
+          <span class="text-pink-500 text-lg">⬩</span>
+          <span
+            ><span class="italic">Totally gibberish-friendly</span> — sing your
+            heart out, RiffRap makes it work</span
+          >
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-pink-500 text-lg">⬩</span>
+          <span
+            >Snap up the good bits with a single click to build your lyrics
+            piece by piece</span
+          >
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-pink-500 text-lg">⬩</span>
+          <span>Save, shuffle, and re-roll until your lyrics are perfect</span
+          >
+        </li>
+      </ul>
+    </div>
+
+    <div
+      class="border-l-3 border-pink-300 py-1 pl-4 ml-1 my-2 italic text-gray-600"
+    >
+      "Transforming your wildest vocal riffs into lines that actually kinda
+      slap."
+    </div>
+
+    <!-- Privacy one-liner (family standard) -->
+    <p class="text-xs text-gray-500 leading-relaxed">
+      Your lyric collection lives on this device — nothing's kept anywhere
+      else.
+    </p>
+
+    <div class="flex items-center gap-3 pt-2">
+      <a
+        href="https://ko-fi.com/madebypablo"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center min-h-11 text-xs text-pink-600 hover:text-pink-800 font-medium transition-colors"
+      >
+        ☕ Coffee jar
+      </a>
+      <a
+        href="https://github.com/pibulus"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center min-h-11 text-xs text-gray-500 hover:text-gray-700 font-medium transition-colors"
+      >
+        GitHub
+      </a>
+    </div>
+
+    <div class="flex justify-between items-end pt-2">
+      <div>
+        <p class="text-xs text-gray-500">
+          Made with 💜 and mezcal in Melbourne, Australia
         </p>
       </div>
-
-      <div>
-        <h4 class="font-bold text-sm text-gray-700 mb-2">
-          Why you'll love it:
-        </h4>
-        <ul class="space-y-1.5 text-sm text-gray-600">
-          <li class="flex items-start gap-2">
-            <span class="text-pink-500 text-lg">⬩</span>
-            <span
-              ><span class="italic">Totally gibberish-friendly</span> — sing your
-              heart out, RiffRap makes it work</span
-            >
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="text-pink-500 text-lg">⬩</span>
-            <span
-              >Snap up the good bits with a single click to build your lyrics
-              piece by piece</span
-            >
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="text-pink-500 text-lg">⬩</span>
-            <span>Save, shuffle, and re-roll until your lyrics are perfect</span
-            >
-          </li>
-        </ul>
-      </div>
-
-      <div
-        class="border-l-3 border-pink-300 py-1 pl-4 ml-1 my-2 italic text-gray-600"
-      >
-        "Transforming your wildest vocal riffs into lines that actually kinda
-        slap."
-      </div>
-
-      <!-- Privacy one-liner (family standard) -->
-      <p class="text-xs text-gray-500 leading-relaxed">
-        Your lyric collection lives on this device — nothing's kept anywhere
-        else.
-      </p>
-
-      <div class="flex items-center gap-3 pt-2">
-        <a
-          href="https://ko-fi.com/madebypablo"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center min-h-11 text-xs text-pink-600 hover:text-pink-800 font-medium transition-colors"
-        >
-          ☕ Coffee jar
-        </a>
-        <a
-          href="https://github.com/pibulus"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center min-h-11 text-xs text-gray-500 hover:text-gray-700 font-medium transition-colors"
-        >
-          GitHub
-        </a>
-      </div>
-
-      <div class="flex justify-between items-end pt-2">
-        <div>
-          <p class="text-xs text-gray-500">
-            Made with 💜 and mezcal in Melbourne, Australia
-          </p>
-        </div>
-        <div class="flex items-center gap-2 text-xs font-medium text-gray-600">
-          Pablo
-        </div>
+      <div class="flex items-center gap-2 text-xs font-medium text-gray-600">
+        Pablo
       </div>
     </div>
   </div>
-  <div
-    class="modal-backdrop"
-    on:click={closeModal}
-    on:keydown={(e) => {
-      if (e.key === "Escape") {
-        closeModal();
-      }
-    }}
-    role="button"
-    tabindex="0"
-    aria-label="Close modal backdrop"
-  ></div>
-</dialog>
-
-<style>
-  .animate-fadeUp {
-    animation: fadeUp 0.5s ease-out forwards;
-  }
-
-  @keyframes fadeUp {
-    0% {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-</style>
+</ModalShell>

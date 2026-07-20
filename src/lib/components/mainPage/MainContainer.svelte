@@ -5,10 +5,9 @@
 	import ContentContainer from './ContentContainer.svelte';
 	import FooterComponent from './FooterComponent.svelte';
 	import { geminiService } from '$lib/services/geminiService';
-	import { modalService } from '$lib/services/modals';
 	import { firstVisitService } from '$lib/services/first-visit';
 	import { pwaService, deferredInstallPrompt, showPwaInstallPrompt } from '$lib/services/pwa';
-	import { isRecording as recordingStore } from '$lib/services';
+	import { isRecording as recordingStore, soundService } from '$lib/services';
 	import { PageLayout } from '$lib/components/layout';
 	import { eventBridge } from '$lib/services/infrastructure/eventBridge';
 	import { createLogger } from '$lib/services/infrastructure/loggerService';
@@ -42,26 +41,33 @@
 		logger.debug(message);
 	}
 
+	// Modal open state — each ModalShell instance is parent-owned (see
+	// src/lib/components/modal/README.md); flipped false in on:close.
+	let showAbout = false;
+	let showExtension = false;
+	let showIntro = false;
+	let showSettings = false;
+
 	// Modal functions
 	function showAboutModal() {
 		debug('showAboutModal called');
-		modalService.openModal('about_modal');
+		soundService.playPopupSound();
+		showAbout = true;
 	}
 
 	function showExtensionModal() {
 		debug('showExtensionModal called');
-		modalService.openModal('extension_modal');
+		soundService.playPopupSound();
+		showExtension = true;
 	}
 
 	async function openSettingsModal() {
 		debug('openSettingsModal called');
 
-		// First, ensure any open dialogs are closed
-		if (modalService.isModalOpen()) {
-			debug('Another modal was open, closing it first.');
-			modalService.closeModal();
-			await new Promise((resolve) => setTimeout(resolve, 50));
-		}
+		// Force-close anything else first (programmatic close — no exit animation)
+		showAbout = false;
+		showExtension = false;
+		showIntro = false;
 
 		// Check if we're already loading the modal
 		if (loadingSettingsModal) {
@@ -97,16 +103,13 @@
 		}
 
 		// Open the settings modal
-		modalService.openModal('settings_modal');
+		soundService.playPopupSound();
+		showSettings = true;
 	}
 
 	function closeSettingsModal() {
 		debug('closeSettingsModal called');
-		modalService.closeModal();
-	}
-
-	function closeModal() {
-		modalService.closeModal();
+		showSettings = false;
 	}
 
 	// Function to preload speech model for faster initial response
@@ -320,7 +323,12 @@
 			debug('Added listeners for settings changes and show-settings events');
 		}
 
-			firstVisitService.showIntroModal('intro_modal', 600);
+			// First visit: pop the intro after a short beat.
+			if (firstVisitService.checkFirstVisit()) {
+				setTimeout(() => {
+					showIntro = true;
+				}, 600);
+			}
 		});
 </script>
 
@@ -352,18 +360,21 @@
 </PageLayout>
 
 <!-- Modals -->
-<AboutModal {closeModal} />
-<ExtensionModal {closeModal} />
+<AboutModal open={showAbout} on:close={() => (showAbout = false)} />
+<ExtensionModal open={showExtension} on:close={() => (showExtension = false)} />
 <IntroModal
-	{closeModal}
-	markIntroAsSeen={() => firstVisitService.markIntroAsSeen()}
+	open={showIntro}
+	on:close={() => {
+		firstVisitService.markIntroAsSeen();
+		showIntro = false;
+	}}
 	{triggerGhostClick}
 />
 
 <!-- Settings Modal - lazy loaded -->
 {#if SettingsModal}
 	<!-- Pass the close function down to the component -->
-	<svelte:component this={SettingsModal} closeModal={closeSettingsModal} on:close={closeSettingsModal} />
+	<svelte:component this={SettingsModal} open={showSettings} closeModal={closeSettingsModal} />
 {/if}
 
 <!-- PWA Install Prompt -->

@@ -4,13 +4,11 @@
    * across all modals in the application.
    */
   import { playPopOffSound } from "../sound-integration.js";
-  import { modalService } from "$lib/services/modals/modalService.js";
 
   export let position = "right-3 top-3";
   export let size = "md";
   export let label = "Close";
   export let closeModal;
-  export let modalId = null;
 
   // Size classes mapping
   const sizeClasses = {
@@ -22,18 +20,13 @@
   // Get size classes based on the size prop
   const sizeClass = sizeClasses[size] || sizeClasses.md;
 
-  // Let the shared modal service own animated closes — calling dialog.close()
-  // here directly would skip the pop-out animation entirely.
+  // closeModal is the shell's requestClose — it owns the pop-out animation,
+  // so never bypass it here.
   function handleClick() {
     playPopOffSound();
 
     if (typeof closeModal === "function") {
       closeModal();
-      return;
-    }
-
-    if (modalId) {
-      modalService.closeModal();
     }
   }
 </script>

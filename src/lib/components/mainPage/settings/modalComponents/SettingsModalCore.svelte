@@ -3,8 +3,7 @@
   import { onMount } from 'svelte';
   import { theme, autoRecord, promptStyle } from '$lib/index.js';
   import { geminiService } from '$lib/services/geminiService';
-  import { ModalCloseButton } from '../../modals/index.js';
-  
+
   // Import the template and handlers
   import SettingsModalTemplate from './SettingsModalTemplate.svelte';
   import * as handlers from './SettingsFeatureHandlers.js';
@@ -15,10 +14,11 @@
   // === PROCESSING ZONE: COMPONENT STATE AND PROPS ===
   // Props for the modal
   export let closeModal = () => {};
+  /** Parent-owned open state, threaded down to the shared ModalShell. */
+  export let open = false;
 
   // Theme/vibe selection
   let selectedVibe;
-  let scrollPosition = 0;
   let autoRecordValue = false;
 
   // Prompt style selection
@@ -104,25 +104,6 @@
     // Load saved settings
     loadSavedSettings();
 
-    // Set up event listeners for the modal
-    const modal = document.getElementById('settings_modal');
-    if (modal) {
-      // Listen for custom beforeshow event
-      modal.addEventListener('beforeshow', () => {
-        // Just update the selected value, don't apply theme
-        // The main app already has the theme applied
-        // This fixes the double flash issue
-      });
-
-      // Also listen for the standard dialog open event
-      modal.addEventListener('open', () => {
-        // No need to apply theme here - we just want settings to reflect current state
-
-        // Update prompt style selection in case it was changed elsewhere
-        selectedPromptStyle = geminiService.getPromptStyle();
-      });
-    }
-
     // Clean up subscriptions on component destroy
     return () => {
       unsubscribeTheme();
@@ -135,38 +116,12 @@
   // TRAIL MARKER (Unit Cleanup): The onMount function handles initialization and cleanup
 
   // === PROCESSING ZONE: MODAL HANDLING ===
-  // Handle modal opening - called when the modal is opened
-  function handleModalOpen() {
-    if (typeof window === 'undefined') return;
-
-    // Get current scroll position
-    scrollPosition = window.scrollY;
-    const width = document.body.clientWidth;
-
-    // Lock the body in place exactly where it was
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollPosition}px`;
-    document.body.style.width = `${width}px`;
-    document.body.style.overflow = 'hidden';
-  }
-
-  // Handle modal closure - called when the modal is closed
+  // Handle modal closure — the shared ModalShell owns scroll-lock and the
+  // close animation; this just tells the parent to flip `open` false.
   function handleModalClose() {
-    // Restore body styles
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-    document.body.style.overflow = '';
-
-    // Restore scroll position
-    window.scrollTo(0, scrollPosition);
-
-    // Call the passed closeModal function
     closeModal();
   }
   // === END PROCESSING ZONE: MODAL HANDLING ===
-  
-  // TRAIL MARKER (Unit Cleanup): These functions handle opening and closing the modal with body scroll locking
 
   // Create wrapper functions that pass state to handlers
   function handleChangeVibe(vibeId) {
@@ -195,6 +150,7 @@
 
 <!-- Render the template component with all required props -->
 <SettingsModalTemplate
+  {open}
   {selectedVibe}
   {autoRecordValue}
   {promptStyles}
@@ -203,19 +159,9 @@
   {soundsEnabled}
   {gradientOptions}
   {handleModalClose}
-  {handleModalOpen}
   {handleChangeVibe}
   {handleChangePromptStyle}
   {handleToggleAutoRecord}
   {handleToggleExportAsText}
   {handleToggleSounds}
->
-  <svelte:fragment slot="close-button">
-    <ModalCloseButton 
-      closeModal={handleModalClose} 
-      label="Close settings" 
-      position="right-2 top-2"
-      modalId="settings_modal"
-    />
-  </svelte:fragment>
-</SettingsModalTemplate>
+/>

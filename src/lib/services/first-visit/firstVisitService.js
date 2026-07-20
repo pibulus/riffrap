@@ -41,36 +41,6 @@ export class FirstVisitService {
     this.log("Marked intro as seen in localStorage");
   }
 
-  showIntroModal(modalId = "intro_modal", delay = 500) {
-    if (!browser || !this.checkFirstVisit()) return null;
-
-    this.log("Scheduling intro modal to appear");
-
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-          this.log("Opening intro modal on first visit");
-          modal.showModal();
-
-          // Set up event listener to handle modal close
-          const handleClose = () => {
-            this.log("Intro modal closed, marking intro as seen");
-            this.markIntroAsSeen();
-            modal.removeEventListener("close", handleClose);
-            resolve(true);
-          };
-
-          modal.addEventListener("close", handleClose, { once: true });
-          resolve(modal);
-        } else {
-          console.error("Intro modal element not found");
-          this.log("Intro modal element not found");
-          resolve(null);
-        }
-      }, delay);
-    });
-  }
 }
 
 export const firstVisitService = new FirstVisitService();
