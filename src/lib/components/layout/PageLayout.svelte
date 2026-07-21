@@ -14,7 +14,7 @@
   </main>
 
   <footer
-    class="footer-component fixed bottom-0 left-0 right-0 z-10 box-border border-t border-pink-200/70 bg-gradient-to-r from-[#fff6e6]/90 via-[#ffead8]/90 to-[#fff1df]/90 pb-2 pt-2 text-center text-xs text-gray-600 shadow-[0_-4px_15px_rgba(249,168,212,0.22)] backdrop-blur-[8px] sm:pb-3 sm:pt-3 px-4 sm:px-6 md:px-8"
+    class="footer-component rr-app-footer fixed bottom-0 left-0 right-0 z-10 box-border border-t border-pink-200/70 bg-gradient-to-r from-[#fff6e6]/80 via-[#ffead8]/80 to-[#fff1df]/80 pb-2 pt-2 text-center text-xs text-gray-600 shadow-[0_-4px_15px_rgba(249,168,212,0.22)] sm:pb-3 sm:pt-3 px-4 sm:px-6 md:px-8"
   >
     <div
       class="footer-row mx-auto flex w-full flex-row items-center justify-center gap-3 sm:justify-between"
@@ -64,6 +64,24 @@
 
   footer {
     padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  }
+
+  /* Fleet-standard frosted footer (2026-07-21) — same values across
+     ziplist / talktype / daysay / riffrap / dr_shrink. Declared in CSS
+     rather than a backdrop-blur-* utility so it can't be dropped by a
+     later class shuffle. RiffRap was already closest to right (8px);
+     14px + saturation is the agreed fleet value. */
+  .rr-app-footer {
+    -webkit-backdrop-filter: blur(14px) saturate(1.5);
+    backdrop-filter: blur(14px) saturate(1.5);
+  }
+
+  /* No backdrop-filter support: go nearly opaque. The translucency only
+     earns its keep when a blur is actually frosting what's behind it. */
+  @supports not (backdrop-filter: blur(1px)) {
+    .rr-app-footer {
+      background: rgba(255, 246, 230, 0.97);
+    }
   }
 
   @media (max-width: 640px) {
