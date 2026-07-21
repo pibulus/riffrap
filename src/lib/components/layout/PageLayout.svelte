@@ -58,7 +58,7 @@
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
-    padding-top: clamp(2.75rem, 6vh, 5rem);
+    padding-top: clamp(4rem, 12vh, 8rem);
     padding-bottom: calc(5.25rem + env(safe-area-inset-bottom));
   }
 
@@ -69,7 +69,7 @@
   @media (max-width: 640px) {
     .page-shell {
       min-height: 100vh;
-      padding-top: 6vh;
+      padding-top: max(env(safe-area-inset-top), clamp(4rem, 10svh, 5.5rem));
       padding-bottom: calc(5.25rem + env(safe-area-inset-bottom));
     }
 
@@ -85,7 +85,7 @@
 
   @media (min-width: 1024px) {
     .page-shell {
-      padding-top: clamp(4rem, 10vh, 7rem);
+      padding-top: 15vh;
       padding-bottom: calc(6rem + env(safe-area-inset-bottom));
     }
   }

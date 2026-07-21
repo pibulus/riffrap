@@ -33,7 +33,7 @@
   class="relative title-container mx-auto max-w-2xl px-4 sm:px-6 md:px-8 py-1 sm:py-2 md:py-3 flex flex-col items-center justify-center text-center space-y-1 sm:space-y-2 md:space-y-3 lg:space-y-2"
 >
   <h1
-    class="mb-0 text-[clamp(3rem,7.5vmin_+_1rem,5.5rem)] font-black tracking-tight text-center cursor-default select-none staggered-text leading-[1.05]"
+    class="mb-1 text-[clamp(3rem,9vmin_+_1.1rem,8rem)] font-black tracking-tight text-center cursor-default select-none staggered-text leading-[1.05]"
     style="font-weight: 900; letter-spacing: -0.02em; font-feature-settings: 'kern' 1; font-kerning: normal; font-variation-settings: 'wght' 900, 'opsz' 32;"
     aria-label={title}
   >
@@ -62,8 +62,8 @@
           <AppSuffix
             color="inherit"
             size="35%"
-            offsetX="-0.3em"
-            offsetY="2px"
+            offsetX="-0.6em"
+            offsetY="8px"
             position="bottom-right"
             customClass="title-suffix text-sm align-super relative -top-[6px] ml-1"
           />
@@ -74,7 +74,7 @@
 </div>
 
 <div
-  class="subtitle-container mx-auto max-w-md px-4 mt-0 mb-1 text-center cursor-default select-none"
+  class="subtitle-container mx-auto max-w-md px-4 mt-3 mb-6 sm:mt-6 sm:mb-7 text-center cursor-default select-none"
 >
   <div class="tagline-wrapper max-w-2xl mx-auto">
     <p
@@ -166,12 +166,12 @@
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: "kern" 1;
     font-kerning: normal;
-    max-inline-size: none;
+    max-inline-size: 40ch;
     text-wrap: balance;
     margin-left: auto;
     margin-right: auto;
     font-family: "Inter", system-ui, sans-serif;
-    line-height: 1.25;
+    line-height: 1.4;
   }
 
   /* Focus attention on the central line with subtle text enhancement */
@@ -258,9 +258,8 @@
 
   @media (max-width: 640px) {
     h1.staggered-text {
-      font-size: 3.5rem;
-      line-height: 1.05;
-      margin-bottom: 0;
+      font-size: 3rem;
+      line-height: 1.1;
     }
 
     /* Adjust suffix for tablet screens */
@@ -272,7 +271,7 @@
     .slide-in-subtitle {
       max-inline-size: 28ch !important;
       font-size: 1rem;
-      line-height: 1.3;
+      line-height: 1.6;
       text-wrap: balance;
       margin-bottom: 0.5rem;
     }

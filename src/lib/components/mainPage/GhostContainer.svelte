@@ -53,7 +53,7 @@
 
 <!-- RiffRap Icon -->
 <div
-  class="riffrap-icon-wrapper mb-0 h-40 w-40 sm:h-44 sm:w-44 lg:h-48 lg:w-48"
+  class="riffrap-icon-wrapper mb-4 h-44 w-44 sm:h-48 sm:w-48 md:mb-0 md:h-56 md:w-56 lg:h-64 lg:w-64"
 >
   <button
     class="riffrap-icon-button w-full h-full bg-transparent border-0 p-0 cursor-pointer transition-all duration-300 hover:scale-105 hover:drop-shadow-lg active:scale-95 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 rounded-lg"
@@ -83,6 +83,11 @@
     position: relative;
     margin-left: auto;
     margin-right: auto;
+    /* HERO-SPEC.md: talktype's ghost wrapper carries 1rem glow padding inside
+       the family slot — same art, same padding, so ink matches exactly. */
+    padding: 1rem;
+    box-sizing: border-box;
+    overflow: visible;
     animation: subtleBounce 4s ease-in-out infinite;
   }
 
