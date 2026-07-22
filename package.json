@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
+    "@sveltejs/adapter-netlify": "6.0.4",
     "canvas-confetti": "^1.9.3",
     "daisyui": "^4.12.23"
   }

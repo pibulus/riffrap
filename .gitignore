@@ -30,5 +30,5 @@ pnpm-debug.log*
 
 # Local development
 /.vercel/
-/.netlify/.env
+/.netlify
 /.wrangler/
