@@ -409,6 +409,11 @@ export async function cleanup(context) {
     AudioStates.RECORDING,
     AudioStates.STOPPING,
     AudioStates.ERROR,
+    // Without this, PERMISSION_DENIED is a one-way door: nothing else clears
+    // it, so cleanup() bailed at the guard below and the recorder never
+    // returned to IDLE. Deny the mic once, grant it, and the record button
+    // stayed dead until a page refresh.
+    AudioStates.PERMISSION_DENIED,
     AudioStates.PAUSED,
   ];
 
