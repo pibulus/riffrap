@@ -3,12 +3,19 @@
 //   hydration bootstrap; tighten to nonces only if we move to kit.csp.
 // - img-src allows data:/blob: for canvas confetti + generated waveform art.
 // - media-src allows blob: for recorded-audio playback.
+// - style-src/font-src must name the Google Fonts origins. app.html loads
+//   DM Sans, Quicksand and Recursive from fonts.googleapis.com, and until
+//   2026-07-31 the CSP blocked that stylesheet outright: document.fonts was
+//   empty and every glyph in the app silently fell back to ui-sans-serif.
+//   The two origins are separate on purpose — googleapis.com serves the
+//   @font-face CSS, gstatic.com serves the actual woff2 files, so allowing
+//   only the first still leaves the fonts unloadable.
 const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'",
-  "style-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob:",
-  "font-src 'self' data:",
+  "font-src 'self' data: https://fonts.gstatic.com",
   "media-src 'self' blob:",
   "connect-src 'self'",
   "worker-src 'self' blob:",
