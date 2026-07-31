@@ -12,6 +12,7 @@
  */
 
 import { UIError } from "../infrastructure/errorHandler";
+import { getUnsupportedBrowserMessage } from "./inAppBrowser";
 import { createLogger } from "../infrastructure/loggerService";
 
 const logger = createLogger("AudioService:Platform");
@@ -97,7 +98,12 @@ export async function requestPermissions(options) {
 
   try {
     if (!(await checkMediaDevices())) {
-      const error = new UIError("MediaDevices API not available", {
+      // The message IS the user-facing copy, because nothing downstream maps
+      // ERR_AUDIO_MEDIADEVICES_UNSUPPORTED to anything friendlier. The usual
+      // cause is an in-app browser (Messenger, Instagram) where there is no mic
+      // API at all — so "try again" is advice that can never work, and naming
+      // the offending app is what makes "open it in Safari" actionable.
+      const error = new UIError(getUnsupportedBrowserMessage(), {
         code: "ERR_AUDIO_MEDIADEVICES_UNSUPPORTED",
         isOperational: true,
       });
