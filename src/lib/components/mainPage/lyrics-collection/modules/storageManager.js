@@ -3,7 +3,13 @@
  *
  * This module handles saving and loading lyrics collections to/from localStorage,
  * ensuring persistence across page reloads.
+ *
+ * Note: "persistence across page reloads" is not the same as persistence across
+ * time — browsers evict ordinary script storage, so saveCollectionToStorage
+ * also asks for durable storage. See durableStorage.js.
  */
+
+import { ensureDurableStorage } from "$lib/services/infrastructure/durableStorage.js";
 
 /**
  * Storage keys used for lyrics collection data
@@ -41,6 +47,10 @@ export function saveCollectionToStorage(
       // Clear original snippets if undo is not available
       localStorage.removeItem(STORAGE_KEYS.LYRICS_ORIGINALS);
     }
+
+    // There are lyrics worth keeping now, so ask the browser not to bin them.
+    // Fire-and-forget, at most once per browser.
+    void ensureDurableStorage();
 
     return true;
   } catch (error) {

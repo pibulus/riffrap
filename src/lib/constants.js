@@ -19,6 +19,9 @@ export const DEFAULT_THEME = THEMES.PEACH;
 export const STORAGE_KEYS = {
   // Application Settings
   THEME: "riffrap-theme",
+  // Remembers we already asked for durable storage, so someone who declined
+  // Firefox's prompt isn't asked again on every save.
+  DURABLE_STORAGE_ASKED: "riffrap-durable-storage-asked",
   FIRST_VISIT: "hasSeenRiffRapIntro",
   AUTO_RECORD: "riffrap-autoRecord",
   PROMPT_STYLE: "riffrap-prompt-style",
