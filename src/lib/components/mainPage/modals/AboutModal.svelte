@@ -42,9 +42,8 @@
         keep the lines worth keeping.
       </p>
       <p class="text-sm leading-relaxed text-gray-600 mt-2">
-        I kept losing the good bit of a mumble before I could get to a
-        notes app. So this one listens while I ramble and lets me grab the
-        keepers after.
+        It listens while you ramble, so the good line does not vanish before
+        you can get to a notes app.
       </p>
     </div>
 
