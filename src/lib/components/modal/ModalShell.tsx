@@ -53,7 +53,8 @@ export function ModalShell(props: ModalShellProps) {
   if (!shell.mounted) return null;
 
   const closingMod = shell.closing ? " charm-modal--closing" : "";
-  const cardClass = "charm-modal" +
+  const cardClass =
+    "charm-modal" +
     (scrollable ? " charm-modal--scrollable" : "") +
     closingMod +
     (props.class ? ` ${props.class}` : "");

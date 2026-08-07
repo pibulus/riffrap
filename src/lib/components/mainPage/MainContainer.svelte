@@ -55,12 +55,6 @@
 		showAbout = true;
 	}
 
-	function showExtensionModal() {
-		debug('showExtensionModal called');
-		soundService.playPopupSound();
-		showExtension = true;
-	}
-
 	async function openSettingsModal() {
 		debug('openSettingsModal called');
 

@@ -20,6 +20,7 @@ record of everything that changed.
 ## Findings and fixes (ranked by launch impact)
 
 ### 1. Missing security headers — the one real gap in an otherwise well-built API
+
 Unlike its siblings, RiffRap's `/api/gemini` route (`src/lib/server/apiGuard.js`)
 already had a **correctly-built** origin check + rate limiter using the right
 Cloudflare header trust order (`cf-connecting-ip` first) — neither the
@@ -30,12 +31,14 @@ pattern (scoped to RiffRap's actual origins — no PartyKit/live-share, so a
 simpler `connect-src 'self'`).
 
 ### 2. Rate-limit Map had no eviction
+
 `apiGuard.js`'s in-memory bucket Map could grow unbounded under a flood of
 distinct keys (e.g. spoofed X-Forwarded-For when `cf-connecting-ip` is
 somehow absent). Capped at 10k tracked keys, oldest-evicted — same pattern as
 ziplist's rate limiter.
 
 ### 3. MediaRecorder had no bitrate cap or enforced duration limit
+
 `AudioService_Recording.js` used the browser-default MediaRecorder bitrate
 (~128kbps) with **no `audioBitsPerSecond` set anywhere**. Worse than ziplist's
 equivalent bug: RiffRap sends audio as a **JSON base64 payload**
@@ -52,6 +55,7 @@ that force-calls `stopRecording()` when `ANIMATION.RECORDING.LIMIT` is
 reached, independent of whatever UI timer does or doesn't fire.
 
 ### 4. Console.log leaking user transcript/lyric content
+
 Two lyrics stores (`lyricsStore.js`, `snippetStore.js`) logged the actual
 snippet text on every add. Two DOM-fallback-chasing files
 (`TranscriptDisplay_Notification.js`, `TranscriptDisplay_Selection.js`,
@@ -66,6 +70,7 @@ used elsewhere in the codebase — RiffRap already has a proper
 weren't using it).
 
 ### 5. Dead task-master CLI scaffolding — 389 packages removed
+
 `scripts/dev.js` imported `./modules/commands.js`, **which does not exist in
 the repo** — `npm run list`/`generate`/`parse-prd` would throw immediately on
 invocation. It was leftover Task-Master AI-dev-tooling scaffolding, unrelated

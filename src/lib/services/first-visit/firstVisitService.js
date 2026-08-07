@@ -40,7 +40,6 @@ export class FirstVisitService {
     isFirstVisit.set(false);
     this.log("Marked intro as seen in localStorage");
   }
-
 }
 
 export const firstVisitService = new FirstVisitService();

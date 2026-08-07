@@ -118,7 +118,6 @@
   let recordingCommandPending = false;
 
   // Local component state
-  let showCopyTooltip = false;
   // These will be set from the parent component
   export const isModelPreloaded = false;
   export let onPreloadRequest = null;
@@ -626,7 +625,6 @@
           <div class="transcript-container" style="min-width: 280px;">
             <TranscriptDisplay
               transcript={$transcriptionText || ""}
-              {showCopyTooltip}
               {parentContainer}
               on:copy={handleTranscriptEvent}
               on:reroll={handleReroll}

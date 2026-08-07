@@ -119,18 +119,24 @@ export function setupLifecycleHooks(ctx, handlers) {
     // Make this component available globally for debugging in local dev only.
     if (dev && typeof window !== "undefined") {
       window.forceCollect = (text) => {
-        handleCollectSnippet({ detail: { text: text || ctx.getSelectedText() } });
+        handleCollectSnippet({
+          detail: { text: text || ctx.getSelectedText() },
+        });
       };
 
       // Create a debug monitor object to track transcript selection state
       window.transcriptDebug = {
         getSelectedText: () => ctx.getSelectedText(),
         forceCollect: (text) => {
-          handleCollectSnippet({ detail: { text: text || ctx.getSelectedText() } });
+          handleCollectSnippet({
+            detail: { text: text || ctx.getSelectedText() },
+          });
           return "Collection triggered";
         },
         forceDirectCollect: (text) => {
-          handleDirectCollection({ detail: { text: text || ctx.getSelectedText() } });
+          handleDirectCollection({
+            detail: { text: text || ctx.getSelectedText() },
+          });
           return "Direct collection triggered";
         },
         resetCollectionFlag: () => {

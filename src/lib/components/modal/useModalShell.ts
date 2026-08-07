@@ -57,7 +57,9 @@ function prefersReducedMotion(): boolean {
   }
 }
 
-export function useModalShell(options: UseModalShellOptions): UseModalShellResult {
+export function useModalShell(
+  options: UseModalShellOptions,
+): UseModalShellResult {
   const { open, onClose, dismissible = true, closeMs = null } = options;
 
   const [closing, setClosing] = useState(false);

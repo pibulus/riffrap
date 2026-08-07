@@ -26,7 +26,6 @@
 	const isAndroid = /Android/i.test(userAgent);
 	const isiPhone = /iPhone|iPad/i.test(userAgent);
 	const isMac = /Macintosh/i.test(userAgent);
-	const isSafari = /^((?!chrome|android).)*safari/i.test(userAgent);
 
 	// Honest waveform everywhere: always try the real analyser first (same fix
 	// as talktype). This flips to true ONLY if the real path fails, so the

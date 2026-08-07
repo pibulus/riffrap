@@ -45,7 +45,6 @@
 
   // Props
   export let transcript;
-  export let showCopyTooltip;
   export let parentContainer;
 
   // DOM references bound in the template

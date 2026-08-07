@@ -47,12 +47,15 @@ body {
   --charm-modal-z: 10000;
   --charm-modal-scrim: rgba(43, 38, 32, 0.46);
   --charm-modal-blur: 2px;
-  --charm-modal-bg: linear-gradient(to bottom right, #fffaef, var(--rr-bg-cream));
+  --charm-modal-bg: linear-gradient(
+    to bottom right,
+    #fffaef,
+    var(--rr-bg-cream)
+  );
   --charm-modal-ink: #2b2016;
   --charm-modal-border: 1px solid #fbcfe8;
   --charm-modal-radius: 1.5rem;
-  --charm-modal-shadow:
-    0 20px 25px -5px rgba(30, 23, 20, 0.1),
+  --charm-modal-shadow: 0 20px 25px -5px rgba(30, 23, 20, 0.1),
     0 8px 10px -6px rgba(30, 23, 20, 0.1);
   --charm-modal-pad: clamp(1.25rem, 4vw, 2rem);
   --charm-modal-open-ms: 280ms;

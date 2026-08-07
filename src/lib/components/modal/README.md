@@ -14,18 +14,18 @@ re-copy (or `diff`) into the apps.
 
 ## Files
 
-| File | For |
-| --- | --- |
+| File                | For                                                                                       |
+| ------------------- | ----------------------------------------------------------------------------------------- |
 | `ModalShell.svelte` | SvelteKit apps (daysay, iconmakeit, riffrap, ziplist, talktype…) — imports the css itself |
-| `useModalShell.ts` | Fresh/Preact apps — the machinery as a hook, for modals needing a custom skeleton |
-| `ModalShell.tsx` | Fresh/Preact apps — the ready-made skeleton on top of the hook (qrbuddy, stargram…) |
-| `modal-shell.css` | The shared skeleton + keyframes BOTH flavors reference |
+| `useModalShell.ts`  | Fresh/Preact apps — the machinery as a hook, for modals needing a custom skeleton         |
+| `ModalShell.tsx`    | Fresh/Preact apps — the ready-made skeleton on top of the hook (qrbuddy, stargram…)       |
+| `modal-shell.css`   | The shared skeleton + keyframes BOTH flavors reference                                    |
 
 ## The contract (identical in both flavors)
 
 **The parent owns `open`.** Keep the component mounted/rendered and flip
 `open` to false only in response to the close event — the shell plays its
-exit animation FIRST, restores focus to whatever opened it, and *then*
+exit animation FIRST, restores focus to whatever opened it, and _then_
 notifies you. Unmounting the component yourself, or flipping `open` directly,
 skips the exit animation (allowed, e.g. for programmatic force-closes).
 
@@ -44,15 +44,15 @@ What the shell owns so your modal never re-implements it:
 
 ### Props
 
-| Prop | Default | What |
-| --- | --- | --- |
-| `open` | `false` (required in TSX) | Parent-owned open state |
-| `labelledby` | — | id of your heading element → `aria-labelledby` |
-| `maxWidth` | `'24rem'` | Card width is `min(92vw, maxWidth)` |
-| `scrollable` | `false` | Tall content scrolls inside the card (pair with `.cute-scroll`) |
-| `dismissible` | `true` | Escape + backdrop close; `false` = explicit close only |
-| `showClose` | `true` | The × button |
-| `closeMs` | `null` | Exit-timing override. **Leave null** — the shell reads `--charm-modal-close-ms` off the card, so CSS is the one source of truth (this exact prop/token drift was a shipped bug class) |
+| Prop          | Default                   | What                                                                                                                                                                                  |
+| ------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `open`        | `false` (required in TSX) | Parent-owned open state                                                                                                                                                               |
+| `labelledby`  | —                         | id of your heading element → `aria-labelledby`                                                                                                                                        |
+| `maxWidth`    | `'24rem'`                 | Card width is `min(92vw, maxWidth)`                                                                                                                                                   |
+| `scrollable`  | `false`                   | Tall content scrolls inside the card (pair with `.cute-scroll`)                                                                                                                       |
+| `dismissible` | `true`                    | Escape + backdrop close; `false` = explicit close only                                                                                                                                |
+| `showClose`   | `true`                    | The × button                                                                                                                                                                          |
+| `closeMs`     | `null`                    | Exit-timing override. **Leave null** — the shell reads `--charm-modal-close-ms` off the card, so CSS is the one source of truth (this exact prop/token drift was a shipped bug class) |
 
 **Svelte flavor:** default slot for content, exposes `let:requestClose` for
 in-body Done/Cancel buttons; dispatches `on:close` after the exit animation.
@@ -68,7 +68,11 @@ in-body Done/Cancel buttons; dispatches `on:close` after the exit animation.
 state/signal false inside it), plus `class` to add your card's body classes.
 
 ```tsx
-<ModalShell open={aboutOpen.value} labelledby="about-title" onClose={() => (aboutOpen.value = false)}>
+<ModalShell
+  open={aboutOpen.value}
+  labelledby="about-title"
+  onClose={() => (aboutOpen.value = false)}
+>
   <h2 id="about-title">About</h2>
 </ModalShell>
 ```
@@ -117,7 +121,7 @@ cp <app>/islands/modal/modal-shell.css <app>/static/
 ## Gotchas (do not reintroduce)
 
 - **THE fill-mode-forwards juice bug** (learned on microui, documented in the
-  css): `animation-fill-mode: forwards` on an *entrance* animation permanently
+  css): `animation-fill-mode: forwards` on an _entrance_ animation permanently
   owns `transform` in the cascade and silently kills every hover/`:active`
   transform on that element forever after. Entrances here are **from-only
   keyframes + `backwards` fill**. Exits are to-only + `forwards` — exempt
@@ -137,4 +141,4 @@ cp <app>/islands/modal/modal-shell.css <app>/static/
 
 ---
 
-*Seven hand-rolled shells walk into a folder. One walks out.* 🐚
+_Seven hand-rolled shells walk into a folder. One walks out._ 🐚
