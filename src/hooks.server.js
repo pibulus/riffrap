@@ -12,12 +12,12 @@
 //   only the first still leaves the fonts unloadable.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://fleetcount.pibulus.deno.net",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob:",
   "font-src 'self' data: https://fonts.gstatic.com",
   "media-src 'self' blob:",
-  "connect-src 'self'",
+  "connect-src 'self' https://fleetcount.pibulus.deno.net",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
   "base-uri 'self'",
