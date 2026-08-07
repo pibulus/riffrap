@@ -61,6 +61,17 @@
   } from "$lib/services";
   import { get } from "svelte/store";
 
+  // ZipList's escape hatch, ported (see memory mic-permission-deadlock):
+  // PERMISSION_DENIED must not be a terminal state. Dismissing the error UI
+  // is the user's "I've dealt with it" gesture — return the machine to IDLE
+  // so the next record tap can actually start.
+  function closePermissionError() {
+    uiActions.setPermissionError(false);
+    if (get(audioState).state === AudioStates.PERMISSION_DENIED) {
+      audioActions.updateState(AudioStates.IDLE);
+    }
+  }
+
   // Helper variable to check if we're in a browser environment
   const browser = typeof window !== "undefined";
   const dispatch = createEventDispatcher();
@@ -657,7 +668,7 @@
 
 <!-- Permission error modal -->
 {#if $uiState.showPermissionError}
-  <PermissionError on:close={() => uiActions.setPermissionError(false)} />
+  <PermissionError on:close={closePermissionError} />
 {/if}
 
 <style>
