@@ -79,15 +79,21 @@ export class AudioService {
         this.audioContextRef.current = updatedContext;
         this.analyserRef.current = analyser;
 
-        // Start waveform monitoring
+        // Monitoring is NOT started here — the rAF loop guards on
+        // state === RECORDING and returns WITHOUT rescheduling if it isn't,
+        // and RECORDING is still set later. It only survives today because
+        // this function resolves as a microtask, ahead of any frame. Anything
+        // slower landing in between would kill the waveform permanently —
+        // exactly how TalkType's died for three months. Started explicitly
+        // after setState(RECORDING) instead.
+        return { audioContext: updatedContext, analyser };
+      },
+      startWaveformMonitoring: () =>
         startWaveformMonitoring({
           analyserRef: this.analyserRef,
           stateManager: this.stateManager,
           animationFrameIdRef: this.animationFrameIdRef,
-        });
-
-        return { audioContext: updatedContext, analyser };
-      },
+        }),
       streamRef: this.streamRef,
       mediaRecorderRef: this.mediaRecorderRef,
       audioChunksRef: this.audioChunksRef,

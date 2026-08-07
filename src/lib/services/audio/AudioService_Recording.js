@@ -43,6 +43,7 @@ export async function startRecording(context) {
     audioContext,
     cleanup,
     initializeVisualization,
+    startWaveformMonitoring,
     streamRef,
     mediaRecorderRef,
     audioChunksRef,
@@ -147,6 +148,7 @@ export async function startRecording(context) {
 
       mediaRecorderRef.current.start(1000);
       stateManager.setState(AudioStates.RECORDING);
+      startWaveformMonitoring?.();
       logger.info("Started recording audio");
 
       // The timer UI displays ANIMATION.RECORDING.LIMIT as a countdown but
