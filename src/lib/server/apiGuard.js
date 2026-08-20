@@ -38,19 +38,28 @@ function getClientKey(event) {
   return event.getClientAddress?.() || "unknown";
 }
 
-function isAllowedOrigin(origin) {
-  const allowedOrigins = (env.ALLOWED_ORIGINS || "")
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-
-  if (dev && (allowedOrigins.length === 0 || !origin)) {
-    return true;
+function isAllowedOrigin(event) {
+  const origin = event.request.headers.get("origin");
+  if (!origin) {
+    return dev;
   }
 
-  return (
-    !!origin && allowedOrigins.length > 0 && allowedOrigins.includes(origin)
-  );
+  // Same-origin is always allowed — no env var to forget on deploy.
+  // Compare hosts, not full origins, so an http/https proxy hop can't 403 us.
+  try {
+    if (new URL(origin).host === event.url.host) {
+      return true;
+    }
+  } catch {
+    return false;
+  }
+
+  // ALLOWED_ORIGINS is only for extra origins (staging domains, etc).
+  return (env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .includes(origin);
 }
 
 export function getGeminiModel() {
@@ -62,8 +71,7 @@ export function getMaxUploadBytes() {
 }
 
 export function guardRequest(event) {
-  const origin = event.request.headers.get("origin");
-  if (!isAllowedOrigin(origin)) {
+  if (!isAllowedOrigin(event)) {
     return json(
       { error: "This request is coming from an unexpected origin." },
       { status: 403 },
