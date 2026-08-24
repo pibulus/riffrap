@@ -9,7 +9,7 @@
   It uses a modular architecture with specialized modules for different parts of functionality:
   - lyricsStore: Central state management
   - themeManager: Handles theme styling
-  - dragDropManager: Drag-and-drop reordering of snippets
+  - pointerReorder: Grab-handle reordering (mouse + touch)
   - notificationSystem: User feedback notifications
   - exportManager: Copy and download functionality
   - compilationManager: Combining snippets with undo support
@@ -27,8 +27,9 @@
   import Confetti from '$lib/components/ui/effects/Confetti.svelte';
   import { eventBridge } from '$lib/services/infrastructure/eventBridge';
   import { createLogger } from '$lib/services/infrastructure/loggerService';
-  import { 
-    playCardHoverSound
+  import {
+    playCardHoverSound,
+    playDragStartSound
   } from '../sound-integration.js';
   // === IMPORTS CHUNK END ===
   // === END PROCESSING ZONE: IMPORTS AND DEPENDENCIES ===
@@ -57,9 +58,9 @@
   // Dependencies: localStorage
   import { loadSavedTheme, applyTheme } from './modules/themeManager';
   
-  // Drag and drop reordering of snippets
+  // Reordering of snippets, from each card's grab handle
   // Dependencies: lyricsStore (for reordering), notificationSystem (for feedback)
-  import { initDragDrop } from './modules/dragDropManager';
+  import { initPointerReorder } from './modules/pointerReorder';
   
   // User feedback notification system 
   // No direct dependencies on other modules
@@ -154,21 +155,18 @@
     $lyricsStore.isUndoAvailable
   );
 
-  // Initialize drag and drop system
-  // This system handles UI interactions for reordering snippets via drag & drop
+  // Initialize reordering
+  // Drags start from each card's grab handle and run on Pointer Events, so the
+  // same code path serves mouse, touch and pen. The card body stays free for
+  // click-to-edit.
   // Inputs:
   //   - Callback to find snippet index in lyricsStore
   //   - Callback to reorder snippets in lyricsStore
   //   - Callback to show notifications via notificationSystem
+  //   - Sound hooks for grab/drop
   // Outputs:
-  //   - Event handlers for drag operations (used in the template)
-  const {
-    handleDragStart,  // Called when drag starts
-    handleDragOver,   // Called when dragging over potential drop target
-    handleDragLeave,  // Called when leaving potential drop target
-    handleDrop,       // Called when item is dropped
-    handleDragEnd     // Called when drag operation ends
-  } = initDragDrop(
+  //   - handleGrabStart, bound to the handle in the template
+  const { handleGrabStart } = initPointerReorder(
     // Find item index by ID - this connects to lyricsStore
     (id) => $lyricsStore.snippets.findIndex(s => s.id === id),
     // Reorder items - this connects to lyricsStore
@@ -176,7 +174,10 @@
       lyricsStore.reorderSnippets(sourceId, targetId);
     },
     // Show notification - this connects to notificationSystem
-    (message) => notificationSystem.showNotification(message)
+    (message) => notificationSystem.showNotification(message),
+    // Only the grab is ours — lyricsStore.reorderSnippets already plays the
+    // drop sound, and hooking it here too fired it twice.
+    { onGrab: playDragStartSound }
   );
 
   // Initialize transcript monitoring system
@@ -596,11 +597,8 @@
         {editingSnippetId}
         {currentTheme}
         canUndo={canUndo}
-        {handleDragStart}
-        {handleDragOver}
-        {handleDragLeave}
-        {handleDrop}
-        {handleDragEnd}
+        {handleGrabStart}
+        activeCount={snippets.length}
         {playCardHoverSound}
         on:delete={handleSnippetDelete}
         on:edit={handleSnippetEdit}

@@ -29,12 +29,11 @@
   /** Flag indicating if undo operation is available */
   export let canUndo = false;
   
-  /** Drag and drop handler functions */
-  export let handleDragStart;
-  export let handleDragOver;
-  export let handleDragLeave;
-  export let handleDrop;
-  export let handleDragEnd;
+  /** Starts a pointer-driven reorder from a card's grab handle */
+  export let handleGrabStart;
+
+  /** True while any card is mid-reorder, so siblings can dim */
+  export let activeCount = 0;
   
   /** Sound effect function */
   export let playCardHoverSound;
@@ -65,11 +64,8 @@
       {editingSnippetId}
       {currentTheme}
       {canUndo}
-      {handleDragStart}
-      {handleDragOver}
-      {handleDragLeave}
-      {handleDrop}
-      {handleDragEnd}
+      {handleGrabStart}
+      {activeCount}
       {playCardHoverSound}
       on:delete={forwardEvent}
       on:edit={forwardEvent}

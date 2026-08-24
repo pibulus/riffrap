@@ -16,7 +16,7 @@ export {
   combineSnippets,
   formatLyricsForDownload,
 } from "./modules/textUtils";
-export { initDragDrop, sortableConfig } from "./modules/dragDropManager";
+export { initPointerReorder } from "./modules/pointerReorder";
 export { createNotificationSystem } from "./modules/notificationSystem";
 export { copyToClipboard, downloadLyricsAsText } from "./modules/exportManager";
 export { createCompilationManager } from "./modules/compilationManager";

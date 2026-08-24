@@ -34,20 +34,11 @@
   /** Flag indicating if undo operation is available */
   export let canUndo = false;
   
-  /** Handler for drag start event */
-  export let handleDragStart;
+  /** Starts a pointer-driven reorder. Bound ONLY to the grab handle. */
+  export let handleGrabStart;
   
-  /** Handler for drag over event */
-  export let handleDragOver;
-  
-  /** Handler for drag leave event */
-  export let handleDragLeave;
-  
-  /** Handler for drop event */
-  export let handleDrop;
-  
-  /** Handler for drag end event */
-  export let handleDragEnd;
+  /** How many snippets are in the collection — no handle when there's one */
+  export let activeCount = 0;
   
   /** Handler for playing hover sound */
   export let playCardHoverSound;
@@ -130,20 +121,18 @@
   // === EVENT HANDLERS CHUNK END ===
 </script>
 
+<!-- The card is NOT draggable. It used to be, and a draggable parent steals
+     pointer-down from its children — which is why tapping a lyric to edit it
+     fought with the drag. Dragging lives on the grab handle now, and the card
+     body means exactly one thing: edit. -->
 <li
   class="snippet-item group relative rounded-2xl px-4 py-3 {snippet.isParagraph
     ? 'stanza-card'
-    : ''} cursor-grab border border-purple-100 text-[15px] leading-snug shadow-sm transition-all duration-150 hover:shadow-md active:scale-[0.98] {
+    : ''} border border-purple-100 text-[15px] leading-snug shadow-sm transition-all duration-150 hover:shadow-md {
     snippet.isCompiled ? 'compiled-card' : ''}"
   style="background-color: {currentTheme.styles.cardColors ? currentTheme.styles.cardColors[index % currentTheme.styles.cardColors.length] : (index % 2 === 0 ? currentTheme.styles.cardEvenBackground : currentTheme.styles.cardOddBackground)};"
   data-id={snippet.id}
-  draggable="true"
-  on:mouseenter={() => playCardHoverSound()} 
-  on:dragstart={(e) => handleDragStart(e, snippet.id)}
-  on:dragover={(e) => handleDragOver(e, snippet.id)}
-  on:dragleave={handleDragLeave}
-  on:drop={(e) => handleDrop(e, snippet.id)}
-  on:dragend={handleDragEnd}
+  on:mouseenter={() => playCardHoverSound()}
 >
   <!-- Wrapper container for content with relative positioning -->
   <div class="relative flex w-full items-center">
@@ -249,6 +238,27 @@
     {/if}
   </div>
 
+  <!-- Grab handle. This is the ONLY entry point into reordering — nothing else
+       starts a drag. It must stay rendered and hit-testable on touch devices;
+       hiding it with CSS disables reordering on every phone, which is exactly
+       what the old draggable-card version did (it never worked on touch at all).
+       Sits beside the delete button so all the card's controls share one edge. -->
+  {#if activeCount > 1 && editingSnippetId !== snippet.id}
+    <button
+      type="button"
+      class="grab-indicator absolute {snippet.isCompiled
+        ? 'left-14 top-2'
+        : 'right-14 top-2'} flex h-11 w-11 flex-col items-center justify-center gap-[3px] rounded-full border border-purple-200 bg-white opacity-100 transition-colors duration-150 sm:opacity-0 sm:group-hover:opacity-100"
+      aria-label="Reorder {snippet.text}"
+      title="Drag to reorder"
+      on:pointerdown={(e) => handleGrabStart(e, snippet.id)}
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  {/if}
+
   <!-- Delete button in the top-right corner (for non-compiled cards) or top-left for compiled cards -->
   <button
     on:click={handleDelete}
@@ -319,6 +329,49 @@
   .snippet-item:hover {
     box-shadow: 0 3px 8px rgba(180, 120, 255, 0.08);
     transform: translateY(0) scale(1);
+  }
+
+  /* Grab handle. touch-action:none is load-bearing — without it the browser
+     claims the vertical drag for page scrolling and the reorder never starts. */
+  .grab-indicator {
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .grab-indicator span {
+    display: block;
+    width: 14px;
+    height: 2px;
+    border-radius: 999px;
+    background: rgba(139, 92, 246, 0.55);
+  }
+
+  .grab-indicator:hover {
+    background-color: #f3f0ff;
+  }
+
+  .grab-indicator:active {
+    cursor: grabbing;
+    transform: scale(0.95);
+  }
+
+  /* Set by pointerReorder while a card is in flight */
+  :global(.snippet-item.dragging) {
+    opacity: 0.55;
+    transform: scale(0.99);
+  }
+
+  :global(.snippet-item.drag-over.drop-above) {
+    box-shadow: inset 0 3px 0 0 rgba(139, 92, 246, 0.75);
+  }
+
+  :global(.snippet-item.drag-over.drop-below) {
+    box-shadow: inset 0 -3px 0 0 rgba(139, 92, 246, 0.75);
+  }
+
+  /* Kills text selection across the whole page mid-drag */
+  :global(body.snippets-reordering) {
+    user-select: none;
   }
 
   /* Delete button */
