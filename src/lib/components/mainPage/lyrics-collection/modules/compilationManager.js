@@ -5,7 +5,7 @@
  * and provides undo functionality.
  */
 
-import { playCompileSound, playEditSound } from "./soundIntegration.js";
+import { playCompileSound, playEditSound } from "../../sound-integration.js";
 import { combineSnippets } from "./textUtils";
 
 /**

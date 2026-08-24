@@ -16,7 +16,7 @@ import {
   playDeleteSound,
   playDropSound,
   playGrabSound,
-} from "../modules/soundIntegration.js";
+} from "../../sound-integration.js";
 
 // Load the initial state from storage
 const initialState = loadCollectionFromStorage();

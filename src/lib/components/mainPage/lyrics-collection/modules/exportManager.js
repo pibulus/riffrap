@@ -5,7 +5,7 @@
  * exporting/downloading lyrics as text files.
  */
 
-import { playCopySound } from "./soundIntegration.js";
+import { playCopySound } from "../../sound-integration.js";
 import { createFilename } from "./textUtils";
 
 /**

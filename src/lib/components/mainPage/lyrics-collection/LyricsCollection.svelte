@@ -51,7 +51,7 @@
   // Import all specialized modules for functionality
   
   // Central state management for lyrics snippets
-  // Dependencies: storageManager.js, soundIntegration.js
+  // Dependencies: storageManager.js, sound-integration.js
   import { lyricsStore } from './stores/lyricsStore';
   
   // Theme management for visual styling
