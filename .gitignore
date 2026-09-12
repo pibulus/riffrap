@@ -32,3 +32,6 @@ pnpm-debug.log*
 /.vercel/
 /.netlify
 /.wrangler/
+
+# Generated at build time by scripts/stamp-version.mjs
+static/version.json
