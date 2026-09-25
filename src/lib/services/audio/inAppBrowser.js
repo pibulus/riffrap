@@ -24,11 +24,13 @@
 // Ordered most-specific first: Messenger and Instagram user agents also carry
 // the Facebook FBAN/FBAV tokens, so a naive FBAN check would label everything
 // "Facebook" and point people at the wrong app's menu.
-const IN_APP_BROWSERS = [
+export const IN_APP_BROWSERS = [
   { pattern: /FB_IAB\/MESSENGER|Messenger/i, name: "Messenger" },
   { pattern: /Instagram/i, name: "Instagram" },
   { pattern: /FBAN|FBAV|FB_IAB/i, name: "Facebook" },
   { pattern: /TikTok|musical_ly|BytedanceWebview/i, name: "TikTok" },
+  { pattern: /Threads|Barcelona/i, name: "Threads" },
+  { pattern: /Discord/i, name: "Discord" },
   { pattern: /LinkedInApp/i, name: "LinkedIn" },
   { pattern: /Snapchat/i, name: "Snapchat" },
   { pattern: /\bLine\//i, name: "LINE" },
@@ -69,13 +71,27 @@ export function isRecordingUnsupported() {
  * Copy for an environment that cannot reach the mic at all. Names the offending
  * app where possible, because "open it in your browser" is much easier to act
  * on when you know which app you are escaping.
+ * @param {string} [userAgent]
  * @returns {string}
  */
-export function getUnsupportedBrowserMessage() {
-  const app = getInAppBrowserName();
+export function getUnsupportedBrowserMessage(userAgent) {
+  const app = getInAppBrowserName(userAgent);
   return app
     ? `${app}'s built-in browser blocks the mic. RiffRap works in Safari or Chrome.`
     : "This browser blocks mic access. RiffRap works in Safari or Chrome.";
+}
+
+/**
+ * Generic helper for any app feature blocked inside an in-app webview.
+ * @param {string} [featureName]
+ * @param {string} [userAgent]
+ * @returns {string}
+ */
+export function getInAppFeatureWarning(featureName = "this feature", userAgent) {
+  const app = getInAppBrowserName(userAgent);
+  return app
+    ? `${app}'s built-in browser may restrict ${featureName}. For best results, tap ••• and open in Safari or Chrome.`
+    : `Your browser may restrict ${featureName}. Open in Safari or Chrome for full support.`;
 }
 
 /**

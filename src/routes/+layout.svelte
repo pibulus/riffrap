@@ -2,7 +2,8 @@
 	import '../app.css';
 	import { soundService } from '$lib/services/sound';
 	import { onMount } from 'svelte';
-	import { ErrorBoundary, ErrorNotification } from '$lib/components/ui';
+	import { ErrorBoundary } from '$lib/components/ui';
+	import Toast from '$lib/components/Toast.svelte';
 	import PwaInstallCard from '$lib/components/PwaInstallCard.svelte';
 	
 	// Get data from the loader function and props
@@ -34,6 +35,21 @@
 		if (typeof window !== 'undefined') {
 			window.soundService = soundService;
 		}
+
+		// Dropzone Miss Shield: prevent accidental file drops outside dropzones
+		// from navigating away from the page
+		const preventFileNav = (e) => {
+			if (e.dataTransfer?.types?.includes('Files')) {
+				e.preventDefault();
+			}
+		};
+		window.addEventListener('dragover', preventFileNav);
+		window.addEventListener('drop', preventFileNav);
+
+		return () => {
+			window.removeEventListener('dragover', preventFileNav);
+			window.removeEventListener('drop', preventFileNav);
+		};
 	});
 </script>
 
@@ -62,7 +78,7 @@
 	<meta name="twitter:image:alt" content={openGraph.imageAlt} />
 </svelte:head>
 
-<ErrorNotification position="top-right" />
+<Toast />
 
 <ErrorBoundary>
 	{@render children()}

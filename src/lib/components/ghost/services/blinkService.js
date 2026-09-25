@@ -39,17 +39,16 @@ export function applyEyeTransforms(leftEye, rightEye) {
   if (!leftEye || !rightEye) return;
 
   const state = get(ghostStateStore);
+  const { x, y } = state.eyePosition;
+  const xTransform = x * EYE_CONFIG.X_MULTIPLIER;
+  const yTransform = y * EYE_CONFIG.Y_MULTIPLIER;
 
   if (state.eyesClosed) {
-    // Apply closed eyes transform
-    leftEye.style.transform = `scaleY(${EYE_CONFIG.CLOSED_SCALE})`;
-    rightEye.style.transform = `scaleY(${EYE_CONFIG.CLOSED_SCALE})`;
+    // Retain current gaze translation so the eyes don't snap to center during blinks
+    leftEye.style.transform = `translate(${xTransform}px, ${yTransform}px) scaleY(${EYE_CONFIG.CLOSED_SCALE})`;
+    rightEye.style.transform = `translate(${xTransform}px, ${yTransform}px) scaleY(${EYE_CONFIG.CLOSED_SCALE})`;
   } else {
     // Apply position transforms
-    const { x, y } = state.eyePosition;
-    const xTransform = x * EYE_CONFIG.X_MULTIPLIER;
-    const yTransform = y * EYE_CONFIG.Y_MULTIPLIER;
-
     leftEye.style.transform = `translate(${xTransform}px, ${yTransform}px)`;
     rightEye.style.transform = `translate(${xTransform}px, ${yTransform}px)`;
   }
@@ -70,6 +69,17 @@ export function initBlinking(elements, config = {}) {
 
   // Set initial counter
   blinkCounter = 0;
+
+  // Set CSS transform-origin and dynamic transition for organic squish without snappy snapping
+  for (const eye of [leftEye, rightEye]) {
+    if (eye && eye.style) {
+      eye.style.transformOrigin = "center";
+      eye.style.transformBox = "fill-box";
+      if (!eye.style.transition || !eye.style.transition.includes("transform")) {
+        eye.style.transition = "transform 70ms cubic-bezier(0.4, 0, 0.2, 1)";
+      }
+    }
+  }
 
   // Initial application of eye transforms
   applyEyeTransforms(leftEye, rightEye);

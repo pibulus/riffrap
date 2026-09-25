@@ -36,6 +36,7 @@
 /* Individual eye styles - avoids transform conflicts */
 .ghost-eye {
   transform-origin: center center;
+  transform-box: fill-box;
   will-change: transform;
   transition: transform
     var(--ghost-eye-blink-transition, 0.08s cubic-bezier(0.4, 0, 0.2, 1));
