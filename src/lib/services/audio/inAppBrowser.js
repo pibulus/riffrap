@@ -87,7 +87,10 @@ export function getUnsupportedBrowserMessage(userAgent) {
  * @param {string} [userAgent]
  * @returns {string}
  */
-export function getInAppFeatureWarning(featureName = "this feature", userAgent) {
+export function getInAppFeatureWarning(
+  featureName = "this feature",
+  userAgent,
+) {
   const app = getInAppBrowserName(userAgent);
   return app
     ? `${app}'s built-in browser may restrict ${featureName}. For best results, tap ••• and open in Safari or Chrome.`

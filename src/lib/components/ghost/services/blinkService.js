@@ -75,7 +75,10 @@ export function initBlinking(elements, config = {}) {
     if (eye && eye.style) {
       eye.style.transformOrigin = "center";
       eye.style.transformBox = "fill-box";
-      if (!eye.style.transition || !eye.style.transition.includes("transform")) {
+      if (
+        !eye.style.transition ||
+        !eye.style.transition.includes("transform")
+      ) {
         eye.style.transition = "transform 70ms cubic-bezier(0.4, 0, 0.2, 1)";
       }
     }
