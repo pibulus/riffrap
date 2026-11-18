@@ -23,7 +23,7 @@ export default {
         surface: "#fffdf7",
       },
       fontFamily: {
-        sans: ["DM Sans", "ui-sans-serif", "system-ui"],
+        sans: ["Inter", "ui-sans-serif", "system-ui"],
         mono: ["Recursive", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       spacing: {

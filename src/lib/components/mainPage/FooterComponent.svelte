@@ -42,7 +42,7 @@
 >
   <button
     type="button"
-    class="btn btn-ghost btn-sm !h-[44px] !min-h-[44px] min-w-11 px-2 py-2 text-xs text-gray-600 shadow-none transition-all hover:bg-pink-50/60 hover:text-pink-500 focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 sm:px-3 sm:text-base"
+    class="btn btn-ghost btn-sm !h-[44px] !min-h-[44px] min-w-11 px-2 py-2 text-xs text-[#463f3a] shadow-none transition-all hover:bg-pink-50/60 hover:text-pink-500 focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 sm:px-3 sm:text-base"
     on:click={showAbout}
     aria-label="About RiffRap"
   >
@@ -50,7 +50,7 @@
   </button>
   <button
     type="button"
-    class="btn btn-ghost btn-sm !h-[44px] !min-h-[44px] min-w-11 px-2 py-2 text-xs text-gray-600 shadow-none transition-all hover:bg-pink-50/60 hover:text-pink-500 focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 sm:px-3 sm:text-base"
+    class="btn btn-ghost btn-sm !h-[44px] !min-h-[44px] min-w-11 px-2 py-2 text-xs text-[#463f3a] shadow-none transition-all hover:bg-pink-50/60 hover:text-pink-500 focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 sm:px-3 sm:text-base"
     on:click={showSettings}
     aria-label="Open settings"
   >
@@ -58,7 +58,7 @@
   </button>
   <button
     type="button"
-    class="btn btn-ghost btn-sm !h-[44px] !min-h-[44px] min-w-11 px-2 py-2 text-xs text-gray-600 shadow-none transition-all hover:bg-pink-50/60 hover:text-pink-500 focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 sm:px-3 sm:text-base"
+    class="btn btn-ghost btn-sm !h-[44px] !min-h-[44px] min-w-11 px-2 py-2 text-xs text-[#463f3a] shadow-none transition-all hover:bg-pink-50/60 hover:text-pink-500 focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 sm:px-3 sm:text-base"
     on:click={shareApp}
     aria-label="Share RiffRap"
   >

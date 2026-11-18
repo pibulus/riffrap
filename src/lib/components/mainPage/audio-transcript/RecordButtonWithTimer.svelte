@@ -120,15 +120,18 @@
   
   // Compute button classes dynamically to improve readability
   $: buttonClasses = [
-    'record-button w-full rounded-full',
-    clipboardSuccess ? 'border border-purple-200 bg-purple-50 text-black notification-pulse' : 'text-black',
-    showLyricMessage ? 'lyrics-collected-animation' : '',
-    !recording && !clipboardSuccess && !showLyricMessage ? 'pulse-animation' : '', 
-    recording ? 'recording-active' : '',
-    isWarning && recording ? 'recording-warning' : '',
-    isDanger && recording ? 'recording-danger' : '',
-    'mx-auto px-6 py-5 text-center text-xl font-bold shadow-md focus:outline focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:px-8 sm:py-5 sm:text-xl md:text-2xl mb-3'
-  ].filter(Boolean).join(' ');
+    "record-button flex h-[64px] w-full items-center justify-center rounded-full px-6 sm:px-8 font-bold text-[#1e1714]",
+    clipboardSuccess
+      ? "border-purple-200 bg-purple-50 text-black notification-pulse"
+      : "",
+    showLyricMessage ? "lyrics-collected-animation" : "",
+    recording ? "recording-active" : "",
+    isWarning && recording ? "recording-warning" : "",
+    isDanger && recording ? "recording-danger" : "",
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2",
+  ]
+    .filter(Boolean)
+    .join(" ");
   
   // Timer and warning state calculations
   $: timeRemaining = getTimeRemainingUtil(recordingDuration);
@@ -181,7 +184,9 @@
   </div>
 {:else}
   <!-- Recording Button -->
-  <div class="relative w-full sm:w-[85%] mx-auto max-w-[420px] flex justify-center items-center">
+  <div
+    class="record-button-shell relative mx-auto flex w-[90%] min-w-[280px] max-w-[420px] items-center justify-center sm:w-[85%]"
+  >
     <button
       bind:this={recordButtonElement}
       class={buttonClasses}
@@ -199,7 +204,7 @@
       <!-- Main button text -->
       <span
         class="cta-text relative inline-block whitespace-nowrap transition-all duration-300 ease-out"
-        style="letter-spacing: 0.02em;"
+        style="letter-spacing: 0;"
       >
         <!-- Clipboard success message -->
         <span
@@ -263,7 +268,7 @@
           <span class="button-content relative z-10">
             <!-- Main label - the button text is on top of the progress bar -->
             <span class="flex items-center justify-center relative">
-              <span class="cta__label relative z-10 px-1 py-0.5 rounded-lg flex items-center gap-2 {recording ? 'text-shadow-recording' : ''}" style="font-size: clamp(1rem, 0.5vw + 0.9rem, 1.25rem); letter-spacing: .02em;">
+              <span class="cta__label relative z-10 flex items-center gap-2" style="font-size: clamp(1rem, 0.5vw + 0.9rem, 1.25rem); letter-spacing: 0;">
                 <!-- Microphone icon -->
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
@@ -302,118 +307,42 @@
 {/if}
 
 <style>
-  /* Base button styling */
+  /* Base button styling — TalkType Soft Neo Toybrut flat pill */
   .record-button {
     position: relative;
     overflow: hidden;
-    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
-    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), 
-                box-shadow 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
-    
-    /* Basic shadow */
-    box-shadow: 
-      0 4px 6px -1px rgba(251, 191, 36, 0.2),
-      0 2px 4px -1px rgba(0, 0, 0, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    
-    /* Consistent sizing for better mobile support */
+    height: 64px;
     min-width: 280px;
-    min-height: 64px;
+    border: 2px solid #1e1714;
+    background-color: #fbbf24;
+    box-shadow: 3px 3px 0px #1e1714;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease,
+      background-color 0.15s ease;
     transform-origin: center center;
   }
 
-  /* Sparkle effect on first load */
-  .record-button::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.8) 1%, transparent 5%),
-                      radial-gradient(circle, rgba(255, 255, 255, 0.6) 1%, transparent 10%),
-                      radial-gradient(circle, rgba(255, 255, 255, 0.4) 1%, transparent 15%);
-    background-position: 85% 15%, 30% 40%, 60% 80%;
-    background-size: 400% 400%, 300% 300%, 200% 200%;
-    background-repeat: no-repeat;
-    opacity: 0;
-    animation: sparkle-entry 1.5s ease-out forwards;
-    pointer-events: none;
-  }
-
-  /* Focus state */
   .record-button:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.4), 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
-  /* Enhanced focus ring for keyboard navigation */
   .record-button:focus-visible {
     outline: 3px solid #ffd65c;
     outline-offset: 2px;
   }
 
-  /* Hover state */
-  .record-button:hover:not(:disabled) {
-    transform: translateY(-1px) scale(1.02);
-    box-shadow: 
-      0 6px 10px -2px rgba(251, 191, 36, 0.25),
-      0 4px 6px -1px rgba(0, 0, 0, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  .record-button:hover:not(.recording-active):not(:disabled) {
+    transform: translateY(-2px);
+    background-color: #fcd34d;
+    box-shadow: 4px 4px 0px #1e1714;
     cursor: pointer;
   }
 
-  /* Non-recording hover effect with gradient position animation */
-  .record-button:not(.recording-active):not(:disabled) {
-    background-size: 300% 100%;
-    background-image: linear-gradient(
-      to right,
-      rgba(251, 191, 36, 1), /* Default amber */
-      rgba(245, 158, 11, 0.96), /* Default amber darker */
-      rgba(251, 146, 60, 0.95), /* Hover peach */
-      rgba(249, 115, 22, 0.9) /* Hover peach darker */
-    );
-    background-position: 0% 0%;
-    transition: all 0.6s ease;
-  }
-  
-  .record-button:not(.recording-active):hover:not(:disabled) {
-    background-position: 100% 0%;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
-    box-shadow: 
-      0 6px 10px -2px rgba(251, 146, 60, 0.3),
-      0 4px 6px -1px rgba(0, 0, 0, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  }
-
-  /* Enhanced button pulse with vibrant ring and breathing effect —
-     4.8s matches the fleet's idle breathe (talktype/daysay/ziplist). */
-  .pulse-animation {
-    position: relative;
-    animation: button-pulse 4.8s ease-in-out infinite;
-    transform-origin: center;
-  }
-
-  .pulse-animation::before {
-    content: '';
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    bottom: -6px;
-    left: -6px;
-    border-radius: 9999px;
-    z-index: -1;
-    background-color: rgba(251, 191, 36, 0.4);
-    animation: pulse-ring 4.8s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-  }
-
-  .pulse-animation::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    opacity: 0;
-    animation: inner-glow 4.8s ease-in-out infinite alternate;
+  .record-button:active:not(.recording-active):not(:disabled) {
+    transform: translateY(2px);
+    background-color: #f59e0b;
+    box-shadow: 1px 1px 0px #1e1714;
   }
 
   /* Animation styles */
@@ -521,32 +450,6 @@
   }
   
   /* Keyframes */
-  @keyframes button-pulse {
-    0%, 100% {
-      transform: scale(1);
-      box-shadow: 0 0 10px 2px rgba(251, 191, 36, 0.4);
-    }
-    50% {
-      transform: scale(1.015);
-      box-shadow: 0 0 15px 3px rgba(251, 191, 36, 0.5);
-    }
-  }
-
-  @keyframes pulse-ring {
-    0% {
-      opacity: 0.5;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.2;
-      transform: scale(1.03);
-    }
-    100% {
-      opacity: 0.5;
-      transform: scale(1);
-    }
-  }
-
   @keyframes notification-glow {
     0%, 100% {
       box-shadow: 
@@ -571,23 +474,6 @@
     }
     100% {
       box-shadow: inset 0 0 5px rgba(255, 190, 60, 0.5);
-    }
-  }
-
-  @keyframes sparkle-entry {
-    0% {
-      opacity: 0;
-      background-position: 85% 15%, 30% 40%, 60% 80%;
-    }
-    20% {
-      opacity: 1;
-    }
-    70% {
-      opacity: 0.8;
-    }
-    100% {
-      opacity: 0;
-      background-position: 90% 20%, 35% 50%, 70% 90%;
     }
   }
 
@@ -644,26 +530,10 @@
     from { opacity: 0; }
     to { opacity: 1; }
   }
-  
-  @keyframes inner-glow {
-    0% {
-      opacity: 0;
-    }
-    50% {
-      opacity: 0.7;
-    }
-    100% {
-      opacity: 0;
-    }
-  }
 
   /* Fleet standard (talktype/daysay honor this — so do we): motion is
      decoration, never information. Kill every animation on request. */
   @media (prefers-reduced-motion: reduce) {
-    .pulse-animation,
-    .pulse-animation::before,
-    .pulse-animation::after,
-    .record-button::after,
     .notification-pulse,
     .lyrics-collected-animation,
     .progress-bar {

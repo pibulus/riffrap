@@ -568,11 +568,10 @@
   >
     <!-- Recording button/progress bar section - sticky positioned for stability -->
     <div
-      class="button-section relative sticky top-0 z-20 flex w-full justify-center text-center bg-transparent pb-2 pt-2 sm:pt-3 md:pt-4 sm:pb-2 md:pb-2 mt-2 sm:mt-3"
+      class="button-section sticky top-0 z-20 flex w-full justify-center bg-transparent pb-4 pt-2 text-center"
     >
       <div
-        class="button-container flex items-center justify-center w-full"
-        style="margin-left: auto; margin-right: auto; position: relative; left: 0; right: 0; text-align: center;"
+        class="button-container relative mx-auto flex w-full max-w-[500px] items-center justify-center text-center"
       >
         <RecordButtonWithTimer
           recording={$isRecording}
@@ -789,8 +788,6 @@
     position: sticky;
     top: 0;
     z-index: 20;
-    padding-bottom: 8px; /* Add a small amount of padding */
-    margin-bottom: 8px; /* Add some margin to ensure separation */
     background: transparent;
     display: flex;
     align-items: center;
@@ -800,11 +797,6 @@
 
   /* Media queries for mobile responsiveness - simplified and modernized */
   @media (max-width: 768px) {
-    .button-container {
-      width: 90%;
-      max-width: min(90vw, 420px); /* Prevent overflow and set reasonable max */
-      margin: 0 auto; /* Center horizontally */
-    }
 
     /* Adjust spacing for mobile */
     .position-wrapper {

@@ -101,6 +101,20 @@
     }
   }
 
+  @media (min-width: 768px) and (max-height: 820px) {
+    .riffrap-icon-wrapper {
+      width: 12rem;
+      height: 12rem;
+    }
+  }
+
+  @media (min-width: 768px) and (max-height: 650px) {
+    .riffrap-icon-wrapper {
+      width: 9rem;
+      height: 9rem;
+    }
+  }
+
   /* Recording icon effect - enhanced contrast for accessibility */
   .riffrap-icon-button.recording .riffrap-icon {
     filter: drop-shadow(0 0 18px rgba(236, 72, 153, 0.85));

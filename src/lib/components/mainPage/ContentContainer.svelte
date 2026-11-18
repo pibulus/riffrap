@@ -144,8 +144,8 @@
 </script>
 
 <AnimatedTitle
-  titleText="Catchy Lyrics and Snap"
-  subtitleText="Click, Send, Collect, and Collage"
+  titleText="RiffRap"
+  subtitleText={"Gibberish in. Killer lines out.\nA freestyle-ready lyric scrapbook"}
   on:titleAnimationComplete={handleTitleAnimationComplete}
   on:subtitleAnimationComplete={handleSubtitleAnimationComplete}
 />

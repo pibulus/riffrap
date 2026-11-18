@@ -328,7 +328,7 @@
 
 <PageLayout>
 	<ErrorBoundary>
-		<div class="flex flex-col items-center justify-start flex-1 gap-1 sm:gap-0">
+		<div class="flex w-full flex-col items-center">
 			<GhostContainer
 				bind:this={ghostContainer}
 				isRecording={$recordingStore}

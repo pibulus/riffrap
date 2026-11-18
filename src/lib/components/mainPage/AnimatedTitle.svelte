@@ -6,16 +6,16 @@
   const dispatch = createEventDispatcher();
 
   // Component props
-  export let titleText = "Riff Rap";
+  export let titleText = "RiffRap";
   export let subtitleText =
-    "Freestyle-ready lyric scrapbook.\nRiff the bars — we fill the gaps.\nGibberish in, killer lines out.";
+    "Gibberish in. Killer lines out.\nA freestyle-ready lyric scrapbook";
   export let title = titleText;
   export const subtitle = subtitleText;
 
   // AppSuffix configuration
   export let showAppSuffix = true;
   export const suffixColor = "inherit"; // Inherit color from parent title
-  export const suffixSize = "40%"; // Smaller suffix (40% of parent size)
+  export const suffixSize = "35%"; // TalkType family standard (35% of parent size)
 
   onMount(() => {
     // Set up animation sequence timing (for title/subtitle)
@@ -30,11 +30,11 @@
 </script>
 
 <div
-  class="relative title-container mx-auto max-w-2xl px-4 sm:px-6 md:px-8 py-1 sm:py-2 md:py-3 flex flex-col items-center justify-center text-center space-y-1 sm:space-y-2 md:space-y-3 lg:space-y-2"
+  class="relative title-container mx-auto max-w-2xl flex flex-col items-center justify-center text-center"
 >
   <h1
-    class="mb-1 text-[clamp(3rem,9vmin_+_1.1rem,8rem)] font-black tracking-tight text-center cursor-default select-none staggered-text leading-[1.05]"
-    style="font-weight: 900; letter-spacing: -0.02em; font-feature-settings: 'kern' 1; font-kerning: normal; font-variation-settings: 'wght' 900, 'opsz' 32;"
+    class="mb-1 text-[clamp(3rem,9vmin_+_1.1rem,8rem)] font-black tracking-normal text-center cursor-default select-none staggered-text"
+    style="font-weight: 900; letter-spacing: 0; font-feature-settings: 'kern' 1; font-kerning: normal; font-variation-settings: 'wght' 900, 'opsz' 32;"
     aria-label={title}
   >
     <!-- Use aria-hidden for spans if H1 has aria-label -->
@@ -63,9 +63,9 @@
             color="inherit"
             size="35%"
             offsetX="-0.6em"
-            offsetY="8px"
+            offsetY="0px"
             position="bottom-right"
-            customClass="title-suffix text-sm align-super relative -top-[6px] ml-1"
+            customClass="title-suffix"
           />
         </span>
       </span>
@@ -73,36 +73,17 @@
   </h1>
 </div>
 
-<div
-  class="subtitle-container mx-auto max-w-md px-4 mt-3 mb-6 sm:mt-6 sm:mb-7 text-center cursor-default select-none"
+<p
+  class="slide-in-subtitle mx-auto mb-6 mt-3 max-w-prose cursor-default select-none text-center text-sm font-medium leading-relaxed tracking-normal text-gray-600 sm:mb-7 sm:mt-6 sm:text-lg sm:font-normal sm:text-gray-700/85 md:text-xl lg:text-2xl"
 >
-  <div class="tagline-wrapper max-w-2xl mx-auto">
-    <p
-      class="first-line slide-in-subtitle slide-delay-1 text-base sm:text-lg md:text-xl lg:text-xl mb-1"
-      style="letter-spacing: 0.01em; line-height: 1.3;"
-    >
-      Gibberish in. Killer lines out.
-    </p>
-    <p
-      class="hero-line slide-in-subtitle slide-delay-2 text-xl font-semibold text-black sm:text-xl md:text-2xl lg:text-2xl mt-1 mb-1 px-1 md:px-0"
-      style="letter-spacing: -0.01em; line-height: 1.25; font-variation-settings: 'wght' 650; white-space: nowrap;"
-    >
-      <span class="text-black">You riff the bars</span> —
-      <span class="text-purple-500">we fill the gaps.</span>
-    </p>
-    <p
-      class="third-line slide-in-subtitle slide-delay-3 text-sm italic text-black opacity-70 sm:text-base md:text-base lg:text-lg mt-1"
-      style="letter-spacing: 0.01em; line-height: 1.3; font-weight: 400;"
-    >
-      A freestyle-ready lyric scrapbook.
-    </p>
-  </div>
-</div>
+  {subtitleText}
+</p>
 
 <style>
   /* Staggered text animation for title - more reliable approach */
   .staggered-text {
     opacity: 1;
+    line-height: 1.1;
     font-feature-settings: "kern" 1;
     font-kerning: normal;
     -webkit-font-smoothing: antialiased;
@@ -166,29 +147,13 @@
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: "kern" 1;
     font-kerning: normal;
-    max-inline-size: 40ch;
+    max-inline-size: 52ch;
     text-wrap: balance;
+    white-space: pre-line;
     margin-left: auto;
     margin-right: auto;
     font-family: "Inter", system-ui, sans-serif;
     line-height: 1.4;
-  }
-
-  /* Focus attention on the central line with subtle text enhancement */
-  .hero-line {
-    text-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
-  }
-
-  .slide-delay-1 {
-    animation-delay: 0.6s;
-  }
-
-  .slide-delay-2 {
-    animation-delay: 0.8s;
-  }
-
-  .slide-delay-3 {
-    animation-delay: 1s;
   }
 
   @keyframes slideIn {
@@ -235,25 +200,8 @@
 
   /* Simple styles for the suffix in title context */
   :global(.title-suffix) {
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
     font-variation-settings: inherit;
-  }
-
-  /* Media queries for mobile optimization */
-  /* Compact desktop viewports (≤820px tall): smaller wordmark so the lyrics
-     panel surfaces above the fold. */
-  @media (min-width: 768px) and (max-height: 820px) {
-    h1.staggered-text {
-      font-size: 4rem;
-      line-height: 1.05;
-    }
-  }
-
-  /* Squat laptops: smaller still. */
-  @media (min-width: 768px) and (max-height: 740px) {
-    h1.staggered-text {
-      font-size: 3.25rem;
-    }
   }
 
   @media (max-width: 640px) {
@@ -269,31 +217,10 @@
 
     /* Simple tagline styling for mobile */
     .slide-in-subtitle {
-      max-inline-size: 28ch !important;
+      max-inline-size: 28ch;
       font-size: 1rem;
       line-height: 1.6;
       text-wrap: balance;
-      margin-bottom: 0.5rem;
-    }
-
-    /* Fix hero line wrapping on small screens */
-    .hero-line {
-      font-size: 1.25rem;
-      line-height: 1.3;
-      white-space: normal;
-      padding: 0 0.5rem;
-    }
-
-    /* Container padding on mobile */
-    .title-container {
-      padding-top: 0.25rem;
-      padding-bottom: 0.5rem;
-    }
-
-    /* Subtitle container spacing on mobile */
-    .subtitle-container {
-      margin-top: 0.25rem;
-      margin-bottom: 0;
     }
   }
 
